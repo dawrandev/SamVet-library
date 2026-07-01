@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\BookRepositoryInterface;
+use App\Repositories\Contracts\CopyRepositoryInterface;
 use App\Repositories\Eloquent\BookRepository;
+use App\Repositories\Eloquent\CopyRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -16,5 +18,6 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public array $bindings = [
         BookRepositoryInterface::class => BookRepository::class,
+        CopyRepositoryInterface::class => CopyRepository::class,
     ];
 }

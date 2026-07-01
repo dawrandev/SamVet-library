@@ -90,9 +90,10 @@ errors/        maxsus xato sahifalari (404, 403, ...)
 
 ## Ko'p tillilik (i18n)
 
-- 3 til: **O'zbek (uz, default)**, **Rus (ru)**, **Qoraqalpoq (kaa)**. Ingliz YO'Q.
+- 3 til: **O'zbek (uz, default)**, **Rus (ru)**, **Qoraqalpoq (kk)**. Ingliz YO'Q. (Qoraqalpoq uchun `kk` kodi — loyiha qarori.)
+- **Admin panel — FAQAT o'zbekcha** (til almashtirgich yo'q; `SetLocale` admin'ни doim `uz`ga majburlaydi). Ko'p tillilik faqat **client sayt** uchun.
 - Matnlar BOSHIDANOQ `{{ __('Tabiiy o\'zbekcha matn') }}` bilan yoziladi (retrofit qilinmaydi).
-- Tarjima fayllari (`lang/ru.json`, `lang/kaa.json`) loyiha OXIRIDA to'ldiriladi. `uz` default bo'lgani uchun kalit = o'zbekcha matn.
+- Tarjima fayllari (`lang/ru.json`, `lang/kk.json`) loyiha OXIRIDA to'ldiriladi. `uz` default bo'lgani uchun kalit = o'zbekcha matn.
 
 ## Client sayt doirasi
 
@@ -122,7 +123,9 @@ Loyiha tez va uzluksiz ishlashi shart:
 - **Server-render (Blade)** — kontent sahifalar (katalog, kitob sahifasi) SEO va tezlik uchun.
 - **JS/AJAX** — interaktiv joylarда (live search, filtr, autocomplete, "ko'proq yuklash") **yengil JSON endpoint + Alpine.js `fetch`** ishlatiladi. Butun sahifa qayta yuklanmaydi. Livewire YO'Q.
 - **N+1 oldini olish:** har doim `with()` (eager loading). Ro'yxatlarда `paginate()`.
-- **Indekslar:** qidiriladigan/filtrlanadigan ustunларга (masalan `title`, FK'lar, `status`) DB indeks. Qidiruv uchun FULLTEXT.
+- **Indekslar:** qidiriladigan/filtrlanadigan ustunларга (masalan `title`, FK'lar, `status`) DB indeks.
+- **Aqilli qidiruv (HAM admin, HAM client):** real-time, imlo xatoni kechiradigan, relevantlik bo'yicha. **Laravel Scout + Meilisearch** (boshda MySQL FULLTEXT, Repository orqali oson o'tkaziladi). Admin=barcha kitob, client=ochiq katalog — bitta indeks, so'rov konteksti har xil. Real-time UI = Alpine `fetch` → JSON endpoint.
+- **i18n DB darajasi:** lookup nomlari (kategoriya, tur, joylashuv, til) + nashriyot joyi → JSON tarjima (spatie/laravel-translatable); kitob title/annotation → bitta til (oddiy ustun, FULLTEXT); publisher/author → bitta qiymat. Translation jadval faqat katta jadvalда tarjima bo'yicha qidiruv/index kerak bo'lganда.
 - **Og'ir JS** faqat kerak sahifада (masalan ApexCharts dashboardда), umumiy bundle'ni shishirma.
 - **Keshlash** kerak bo'lganda (kategoriyalar daraxti kabi kam o'zgaradigan ma'lumot).
 

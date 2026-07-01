@@ -98,6 +98,8 @@
                             </td>
                             <td class="px-5 py-4">
                                 <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('admin.books.show', $book) }}"
+                                       class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Ko‘rish') }}</a>
                                     <a href="{{ route('admin.books.edit', $book) }}"
                                        class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</a>
                                     <form method="POST" action="{{ route('admin.books.destroy', $book) }}"

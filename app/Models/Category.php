@@ -7,14 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = ['name', 'parent_id'];
 
-    // Ierarxiya
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');

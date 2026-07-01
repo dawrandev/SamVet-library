@@ -27,6 +27,7 @@ class BookSeeder extends Seeder
             'type' => 'Darslik',
             'language' => 'O‘zbek',
             'publisher' => 'Iqtisod-moliya',
+            'publication_place' => ['uz' => 'Toshkent', 'ru' => 'Ташкент', 'kk' => 'Tashkent'],
             'publication_year' => 2020,
             'pages' => 480,
             'isbn' => '978-9943-13-456-7',
@@ -49,6 +50,7 @@ class BookSeeder extends Seeder
             'type' => 'Darslik',
             'language' => 'O‘zbek',
             'publisher' => 'Fan',
+            'publication_place' => ['uz' => 'Samarqand', 'ru' => 'Самарканд', 'kk' => 'Samarqand'],
             'publication_year' => 2019,
             'pages' => 320,
             'isbn' => '978-9943-11-222-3',
@@ -71,9 +73,10 @@ class BookSeeder extends Seeder
                 'title' => $data['title'],
                 'udc' => $data['udc'],
                 'author_mark' => $data['author_mark'],
-                'book_type_id' => BookType::where('name', $data['type'])->value('id'),
-                'language_id' => Language::where('name', $data['language'])->value('id'),
+                'book_type_id' => BookType::where('name->uz', $data['type'])->value('id'),
+                'language_id' => Language::where('name->uz', $data['language'])->value('id'),
                 'publisher_id' => Publisher::where('name', $data['publisher'])->value('id'),
+                'publication_place' => $data['publication_place'],
                 'publication_year' => $data['publication_year'],
                 'pages' => $data['pages'],
                 'isbn' => $data['isbn'],
@@ -86,8 +89,8 @@ class BookSeeder extends Seeder
         $authorIds = Author::whereIn('name', $data['authors'])->pluck('id');
         $book->authors()->sync($authorIds);
 
-        // Kategoriyalar (many-to-many)
-        $categoryIds = Category::whereIn('name', $data['categories'])->pluck('id');
+        // Kategoriyalar (many-to-many) — tarjima, uz bo'yicha topamiz
+        $categoryIds = Category::whereIn('name->uz', $data['categories'])->pluck('id');
         $book->categories()->sync($categoryIds);
 
         // Jismoniy nusxalar
@@ -98,7 +101,7 @@ class BookSeeder extends Seeder
                     'format' => $copy['format'],
                     'condition' => $copy['condition'],
                     'status' => $copy['status'],
-                    'location_id' => Location::where('name', $copy['location'])->value('id'),
+                    'location_id' => Location::where('name->uz', $copy['location'])->value('id'),
                     'price' => $copy['price'],
                 ]
             );

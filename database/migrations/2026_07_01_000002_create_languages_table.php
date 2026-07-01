@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('languages', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // O'zbek, Rus, Ingliz, Qoraqalpoq...
+            $table->json('name'); // tarjima: {"uz":..,"ru":..,"kk":..}
             $table->timestamps();
         });
     }

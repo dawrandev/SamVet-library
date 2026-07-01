@@ -29,6 +29,13 @@ class BookController extends Controller
         ]);
     }
 
+    public function show(Book $book): View
+    {
+        $book->load(['type', 'language', 'publisher', 'authors', 'categories.parent', 'copies.location', 'work']);
+
+        return view('pages.admin.books.show', ['book' => $book]);
+    }
+
     public function create(): View
     {
         return view('pages.admin.books.create', $this->bookService->formOptions());
@@ -36,11 +43,11 @@ class BookController extends Controller
 
     public function store(StoreBookRequest $request): RedirectResponse
     {
-        $this->bookService->create(BookData::fromRequest($request));
+        $book = $this->bookService->create(BookData::fromRequest($request));
 
         return redirect()
-            ->route('admin.books.index')
-            ->with('success', __('Kitob muvaffaqiyatli qo‘shildi.'));
+            ->route('admin.books.show', $book)
+            ->with('success', __('Kitob yaratildi. Endi nusxalar qo‘shishingiz mumkin.'));
     }
 
     public function edit(Book $book): View

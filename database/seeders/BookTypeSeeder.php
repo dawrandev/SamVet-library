@@ -9,10 +9,20 @@ class BookTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        $types = ['Darslik', 'O‘quv qo‘llanma', 'Uslubiy qo‘llanma', 'Monografiya', 'Dissertatsiya', 'To‘plam'];
+        // [uz, ru, kk] tarjimalar (kk — namunaviy, keyin aniqlanadi)
+        $types = [
+            ['uz' => 'Darslik', 'ru' => 'Учебник', 'kk' => 'Sabaqlıq'],
+            ['uz' => 'O‘quv qo‘llanma', 'ru' => 'Учебное пособие', 'kk' => 'Oqıw qollanba'],
+            ['uz' => 'Uslubiy qo‘llanma', 'ru' => 'Методическое пособие', 'kk' => 'Uslubiy qollanba'],
+            ['uz' => 'Monografiya', 'ru' => 'Монография', 'kk' => 'Monografiya'],
+            ['uz' => 'Dissertatsiya', 'ru' => 'Диссертация', 'kk' => 'Dissertatsiya'],
+            ['uz' => 'To‘plam', 'ru' => 'Сборник', 'kk' => 'Jıynaq'],
+        ];
 
         foreach ($types as $name) {
-            BookType::firstOrCreate(['name' => $name]);
+            if (! BookType::where('name->uz', $name['uz'])->exists()) {
+                BookType::create(['name' => $name]);
+            }
         }
     }
 }

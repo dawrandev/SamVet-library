@@ -9,19 +9,30 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        // Ierarxik daraxt: [nom => [bolalar...]]
         $tree = [
-            'O‘quv-uslubiy adabiyotlar' => [
-                'Iqtisodiyot' => [
-                    'Iqtisodiyot nazariyasi' => [],
-                ],
-                'Veterinariya' => [
-                    'Umumiy veterinariya' => [],
-                    'Epizootologiya' => [],
+            [
+                'name' => ['uz' => 'O‘quv-uslubiy adabiyotlar', 'ru' => 'Учебно-методическая литература', 'kk' => 'Oqıw-uslubiy ádebiyatlar'],
+                'children' => [
+                    [
+                        'name' => ['uz' => 'Iqtisodiyot', 'ru' => 'Экономика', 'kk' => 'Ekonomika'],
+                        'children' => [
+                            ['name' => ['uz' => 'Iqtisodiyot nazariyasi', 'ru' => 'Экономическая теория', 'kk' => 'Ekonomika teoriyası']],
+                        ],
+                    ],
+                    [
+                        'name' => ['uz' => 'Veterinariya', 'ru' => 'Ветеринария', 'kk' => 'Veterinariya'],
+                        'children' => [
+                            ['name' => ['uz' => 'Umumiy veterinariya', 'ru' => 'Общая ветеринария', 'kk' => 'Ulıwma veterinariya']],
+                            ['name' => ['uz' => 'Epizootologiya', 'ru' => 'Эпизоотология', 'kk' => 'Epizootologiya']],
+                        ],
+                    ],
                 ],
             ],
-            'Ilmiy adabiyotlar' => [
-                'Monografiyalar' => [],
+            [
+                'name' => ['uz' => 'Ilmiy adabiyotlar', 'ru' => 'Научная литература', 'kk' => 'Ilimiy ádebiyatlar'],
+                'children' => [
+                    ['name' => ['uz' => 'Monografiyalar', 'ru' => 'Монографии', 'kk' => 'Monografiyalar']],
+                ],
             ],
         ];
 
@@ -29,18 +40,24 @@ class CategorySeeder extends Seeder
     }
 
     /**
-     * Daraxtni rekursiv yaratish.
+     * @param  array<int, array{name: array, children?: array}>  $nodes
      */
     private function createTree(array $nodes, ?int $parentId): void
     {
-        foreach ($nodes as $name => $children) {
-            $category = Category::firstOrCreate([
-                'name' => $name,
-                'parent_id' => $parentId,
-            ]);
+        foreach ($nodes as $node) {
+            $category = Category::where('name->uz', $node['name']['uz'])
+                ->where('parent_id', $parentId)
+                ->first();
 
-            if (! empty($children)) {
-                $this->createTree($children, $category->id);
+            if (! $category) {
+                $category = Category::create([
+                    'name' => $node['name'],
+                    'parent_id' => $parentId,
+                ]);
+            }
+
+            if (! empty($node['children'])) {
+                $this->createTree($node['children'], $category->id);
             }
         }
     }

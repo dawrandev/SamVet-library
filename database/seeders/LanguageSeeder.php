@@ -9,10 +9,17 @@ class LanguageSeeder extends Seeder
 {
     public function run(): void
     {
-        $languages = ['O‘zbek', 'Rus', 'Ingliz', 'Qoraqalpoq'];
+        $languages = [
+            ['uz' => 'O‘zbek', 'ru' => 'Узбекский', 'kk' => 'Ózbek'],
+            ['uz' => 'Rus', 'ru' => 'Русский', 'kk' => 'Rus'],
+            ['uz' => 'Ingliz', 'ru' => 'Английский', 'kk' => 'Ingliz'],
+            ['uz' => 'Qoraqalpoq', 'ru' => 'Каракалпакский', 'kk' => 'Qaraqalpaq'],
+        ];
 
         foreach ($languages as $name) {
-            Language::firstOrCreate(['name' => $name]);
+            if (! Language::where('name->uz', $name['uz'])->exists()) {
+                Language::create(['name' => $name]);
+            }
         }
     }
 }

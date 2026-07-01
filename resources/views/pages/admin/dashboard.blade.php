@@ -42,7 +42,7 @@
                         <span class="bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500 absolute left-1/2 top-[85%] -translate-x-1/2 -translate-y-[85%] rounded-full px-3 py-1 text-xs font-medium">+10%</span>
                     </div>
                     <p class="mx-auto mt-1.5 w-full max-w-[380px] text-center text-sm text-gray-500 sm:text-base">
-                        {{ __('Bugun kutubxona faolligi o‘tgan oyга nisbatan yuqori. Ajoyib natija!') }}
+                        {{ __('Bugun kutubxona faolligi o‘tgan oyga nisbatan yuqori. Ajoyib natija!') }}
                     </p>
                 </div>
             </div>

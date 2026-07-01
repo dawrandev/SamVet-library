@@ -9,19 +9,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 #[ObservedBy([BookObserver::class])]
 class Book extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
         'title', 'slug', 'udc', 'author_mark',
-        'book_type_id', 'language_id', 'publisher_id',
-        'publication_year', 'pages', 'isbn', 'print_run', 'annotation',
+        'book_type_id', 'language_id', 'publisher_id', 'work_id',
+        'publication_year', 'publication_place', 'pages', 'isbn', 'print_run', 'annotation',
         'cover_image', 'electronic_file', 'audio_file',
         'has_continuation', 'views_count',
     ];
+
+    /** Faqat nashriyot joyi tarjima qilinadi (title/annotation — bitta til). */
+    public array $translatable = ['publication_place'];
 
     protected function casts(): array
     {
@@ -49,6 +53,12 @@ class Book extends Model
     public function publisher(): BelongsTo
     {
         return $this->belongsTo(Publisher::class);
+    }
+
+    // Asar guruhi (turli tildagi nashrlar)
+    public function work(): BelongsTo
+    {
+        return $this->belongsTo(Work::class);
     }
 
     public function authors(): BelongsToMany

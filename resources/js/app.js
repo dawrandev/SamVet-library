@@ -5,10 +5,15 @@ import persist from '@alpinejs/persist';
 import flatpickr from 'flatpickr';
 
 import { initCharts } from './admin/charts';
+import lookupTable from './admin/lookup-table';
 
 // Alpine.js (persist plugin — sidebar/dark mode holatini eslab qoladi)
 Alpine.plugin(persist);
 window.Alpine = Alpine;
+
+// Ma'lumotnoma boshqaruv jadvali (qo'shish/tahrirlash modali)
+Alpine.data('lookupTable', lookupTable);
+
 Alpine.start();
 
 // Sana tanlash (dashboard filtri)

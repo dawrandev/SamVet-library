@@ -46,24 +46,43 @@
                         </a>
                     </li>
 
-                    {{-- Kategoriyalar --}}
-                    <li>
-                        <a href="#" class="menu-item group menu-item-inactive">
-                            <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {{-- Ma'lumotnomalar (ochiladigan guruh) --}}
+                    <li x-data="{ open: {{ request()->routeIs('admin.lookups.*') ? 'true' : 'false' }} }">
+                        <button type="button" @click="open = !open"
+                                class="menu-item group w-full {{ request()->routeIs('admin.lookups.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.lookups.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M3.25 5.5C3.25 4.25736 4.25736 3.25 5.5 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V18.5C20.75 19.7426 19.7426 20.75 18.5 20.75H5.5C4.25736 20.75 3.25 19.7426 3.25 18.5V5.5ZM5.5 4.75C5.08579 4.75 4.75 5.08579 4.75 5.5V8.58325L19.25 8.58325V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H5.5ZM19.25 10.0833H15.416V13.9165H19.25V10.0833ZM13.916 10.0833L10.083 10.0833V13.9165L13.916 13.9165V10.0833ZM8.58301 10.0833H4.75V13.9165H8.58301V10.0833ZM4.75 18.5V15.4165H8.58301V19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5ZM10.083 19.25V15.4165L13.916 15.4165V19.25H10.083ZM15.416 19.25V15.4165H19.25V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15.416Z" fill="" />
                             </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Kategoriyalar') }}</span>
-                        </a>
-                    </li>
-
-                    {{-- Foydalanuvchilar --}}
-                    <li>
-                        <a href="#" class="menu-item group menu-item-inactive">
-                            <svg class="menu-item-icon-inactive" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z" fill="" />
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Ma’lumotnomalar') }}</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                 :class="[open ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Foydalanuvchilar') }}</span>
-                        </a>
+                        </button>
+
+                        <div x-show="open" x-cloak :class="sidebarToggle ? 'lg:hidden' : ''">
+                            <ul class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
+                                @php
+                                    $lookupLinks = [
+                                        'categories' => __('Kategoriyalar'),
+                                        'book-types' => __('Kitob turlari'),
+                                        'languages' => __('Tillar'),
+                                        'locations' => __('Joylashuvlar'),
+                                        'publishers' => __('Nashriyotlar'),
+                                        'authors' => __('Mualliflar'),
+                                    ];
+                                @endphp
+                                @foreach ($lookupLinks as $slug => $label)
+                                    <li>
+                                        <a href="{{ route('admin.lookups.' . $slug . '.index') }}"
+                                           class="menu-dropdown-item {{ request()->routeIs('admin.lookups.' . $slug . '.*') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            {{ $label }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </li>
                 </ul>
             </div>

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Kitob berish bo'limi, O'qish zali, Arxiv...
+            $table->json('name'); // tarjima: {"uz":..,"ru":..,"kk":..}
             $table->timestamps();
         });
     }

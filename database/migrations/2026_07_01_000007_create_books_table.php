@@ -22,8 +22,12 @@ return new class extends Migration
             $table->foreignId('language_id')->nullable()->constrained('languages')->nullOnDelete();
             $table->foreignId('publisher_id')->nullable()->constrained('publishers')->nullOnDelete();
 
+            // Asar guruhi — turli tildagi nashrlarni bog'laydi (tarjimasiz kitobда null)
+            $table->foreignId('work_id')->nullable()->constrained('works')->nullOnDelete();
+
             // Nashr ma'lumotlari
             $table->unsignedSmallInteger('publication_year')->nullable(); // Yili
+            $table->json('publication_place')->nullable();                // Nashriyot joyi (tarjima)
             $table->unsignedInteger('pages')->nullable();                 // Beti
             $table->string('isbn')->nullable();
             $table->unsignedInteger('print_run')->nullable();             // Tiraj

@@ -9,10 +9,17 @@ class LocationSeeder extends Seeder
 {
     public function run(): void
     {
-        $locations = ['Kitob berish bo‘limi', 'O‘qish zali', 'Ilmiy adabiyotlar zali', 'Arxiv'];
+        $locations = [
+            ['uz' => 'Kitob berish bo‘limi', 'ru' => 'Отдел выдачи книг', 'kk' => 'Kitap beriw bólimi'],
+            ['uz' => 'O‘qish zali', 'ru' => 'Читальный зал', 'kk' => 'Oqıw zalı'],
+            ['uz' => 'Ilmiy adabiyotlar zali', 'ru' => 'Зал научной литературы', 'kk' => 'Ilimiy ádebiyatlar zalı'],
+            ['uz' => 'Arxiv', 'ru' => 'Архив', 'kk' => 'Arxiv'],
+        ];
 
         foreach ($locations as $name) {
-            Location::firstOrCreate(['name' => $name]);
+            if (! Location::where('name->uz', $name['uz'])->exists()) {
+                Location::create(['name' => $name]);
+            }
         }
     }
 }
