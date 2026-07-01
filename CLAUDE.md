@@ -100,6 +100,39 @@ errors/        maxsus xato sahifalari (404, 403, ...)
 - O'qish (PDF.js) faqat login bilan; PDF controller orqali himoyalangan stream (yuklab olish YO'Q).
 - Self-registration YO'Q — login/parolni admin beradi. Band qilish/profil/reyting YO'Q.
 
+## Xavfsizlik (MAJBURIY — loyiha qattiq qo'riqlanadi)
+
+Bu loyiha kutubxona tizimi — xavfsizlikка **juda katta e'tibor**. Har bir kod yozilганда quyidagilar shart:
+
+- **Validatsiya:** har bir kirish (input) FormRequest orqali tekshiriladi. Ishonchsiz ma'lumot to'g'ridan-to'g'ri ishlatilmaydi.
+- **Mass-assignment:** modelда `$fillable` aniq belgilanadi (`$guarded=[]` ishlatma). Faqat kerakli maydonlar.
+- **Avtorizatsiya:** har bir admin amali `middleware`/`Policy`/`Gate` bilan himoyalanadi. Kutubxonachi-only maydonlar (inventar, narx, aktlar) server tomonda tekshiriladi — faqat Blade'да yashirish YETARLI EMAS.
+- **SQL injection:** faqat Eloquent/Query Builder (bindings). Xom SQL string konkatenatsiya YO'Q.
+- **XSS:** Blade `{{ }}` avtomatik escape qiladi. `{!! !!}` faqat ishonchli, tozalangan ma'lumotда.
+- **CSRF:** barcha formalarда `@csrf`. State o'zgartiruvchi so'rovlar POST/PUT/DELETE.
+- **Fayl yuklash:** mime-type, hajm, kengaytma tekshiriladi. Fayllar `storage/app` (public EMAS), controller orqali beriladi.
+- **PDF/media himoyasi:** elektron kitob/audio va aktlar to'g'ridan-to'g'ri URL bilan berilmaydi — faqat auth + policy tekshiruvidan o'tган controller stream orqali. Yuklab olish yo'q.
+- **Parol:** `Hash::make` (bcrypt/argon). Login'да rate limiting (`throttle`).
+- **Kutubxonachi hujjatlari** (kirish/chiqish aktlari) — mijoz saytda MUTLAQO ko'rinmaydi.
+
+## Ishlash va interaktivlik (performance — loyiha qotmasligi kerak)
+
+Loyiha tez va uzluksiz ishlashi shart:
+
+- **Server-render (Blade)** — kontent sahifalar (katalog, kitob sahifasi) SEO va tezlik uchun.
+- **JS/AJAX** — interaktiv joylarда (live search, filtr, autocomplete, "ko'proq yuklash") **yengil JSON endpoint + Alpine.js `fetch`** ishlatiladi. Butun sahifa qayta yuklanmaydi. Livewire YO'Q.
+- **N+1 oldini olish:** har doim `with()` (eager loading). Ro'yxatlarда `paginate()`.
+- **Indekslar:** qidiriladigan/filtrlanadigan ustunларга (masalan `title`, FK'lar, `status`) DB indeks. Qidiruv uchun FULLTEXT.
+- **Og'ir JS** faqat kerak sahifада (masalan ApexCharts dashboardда), umumiy bundle'ni shishirma.
+- **Keshlash** kerak bo'lganda (kategoriyalar daraxti kabi kam o'zgaradigan ma'lumot).
+
+## Testlash (MAJBURIY)
+
+- Backend kod (Service, Repository, Controller, migration, model) yozilgandan **so'ng ishlashini tekshirish SHART**. Claude o'zi yozgan kodni o'zi test qiladi — xatoni foydalanuvchiga yetkazishdan oldin topadi.
+- Foydalanuvchi ham qo'lda test qiladi, lekin bu Claude'ning o'z-o'zini tekshirish majburiyatini bekor qilmaydi.
+- Minimal tekshiruv: `php -l` (sintaksis), `php artisan migrate` o'tishi, `php artisan route:list`, `tinker` bilan model/relation/enum yuklanishi, sahifa render bo'lishi (`php artisan view:cache` yoki HTTP so'rov). Iloji bo'lsa avtomatik test (Pest/PHPUnit).
+- Xato topilsa — tuzatiladi va qayta tekshiriladi.
+
 ## Buyruqlar
 
 - `npm run dev` — Vite (CSS/JS jonli kompilyatsiya, hot reload). Saytни ko'rsatmaydi.

@@ -21,3 +21,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Vaqtinchalik TailAdmin manba (port tugagach o'chiriladi)
+/_tailadmin

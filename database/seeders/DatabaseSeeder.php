@@ -22,5 +22,16 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
+
+        // Lookup jadvallar (avval), so'ng kategoriya, oxirida kitoblar
+        $this->call([
+            BookTypeSeeder::class,
+            LanguageSeeder::class,
+            PublisherSeeder::class,
+            LocationSeeder::class,
+            AuthorSeeder::class,
+            CategorySeeder::class,
+            BookSeeder::class,
+        ]);
     }
 }

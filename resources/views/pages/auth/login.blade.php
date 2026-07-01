@@ -3,76 +3,102 @@
 @section('title', __('Tizimga kirish'))
 
 @section('content')
-    <div class="flex min-h-full">
-        {{-- Chap tomon: brend paneli (faqat katta ekranlarda) --}}
-        <div class="relative hidden w-1/2 flex-col justify-between bg-gradient-to-br from-indigo-600 to-indigo-800 p-12 text-white lg:flex">
-            <div class="flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-xl font-bold">📚</div>
-                <span class="text-lg font-semibold">{{ config('app.name') }}</span>
-            </div>
-
-            <div class="max-w-md">
-                <h1 class="text-3xl font-bold leading-tight">{{ __('Elektron kutubxona boshqaruv tizimi') }}</h1>
-                <p class="mt-4 text-indigo-100">
-                    {{ __('Kitoblar, kategoriyalar va foydalanuvchilarni boshqaring. Tizimga kirish uchun administrator bergan ma\'lumotlardan foydalaning.') }}
-                </p>
-            </div>
-
-            <p class="text-sm text-indigo-200">
-                &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('Barcha huquqlar himoyalangan.') }}
-            </p>
-        </div>
-
-        {{-- O'ng tomon: login formasi --}}
-        <div class="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-16">
-            <div class="mx-auto w-full max-w-sm">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900">{{ __('Tizimga kirish') }}</h2>
-                    <p class="mt-2 text-sm text-gray-500">{{ __('Admin panelga kirish uchun ma\'lumotlarni kiriting.') }}</p>
-                </div>
-
-                @if ($errors->any())
-                    <x-alert type="error" class="mb-5">{{ $errors->first() }}</x-alert>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}" x-data="{ showPassword: false }" class="space-y-5">
-                    @csrf
-
-                    <div>
-                        <label for="email" class="mb-1.5 block text-sm font-medium text-gray-700">{{ __('Email') }}</label>
-                        <input
-                            id="email" name="email" type="email" value="{{ old('email') }}"
-                            required autofocus autocomplete="username" placeholder="admin@samvet.uz"
-                            class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none @error('email') border-red-400 @enderror"
-                        >
+    <div class="relative z-1 bg-white p-6 dark:bg-gray-900 sm:p-0">
+        <div class="relative flex h-screen w-full flex-col justify-center dark:bg-gray-900 sm:p-0 lg:flex-row">
+            {{-- Chap: forma --}}
+            <div class="flex w-full flex-1 flex-col lg:w-1/2">
+                <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+                    <div class="mb-5 sm:mb-8">
+                        <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
+                            {{ __('Tizimga kirish') }}
+                        </h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ __('Kirish uchun email va parolingizni kiriting.') }}
+                        </p>
                     </div>
 
-                    <div>
-                        <label for="password" class="mb-1.5 block text-sm font-medium text-gray-700">{{ __('Parol') }}</label>
-                        <div class="relative">
-                            <input
-                                id="password" name="password" :type="showPassword ? 'text' : 'password'"
-                                required autocomplete="current-password" placeholder="••••••••"
-                                class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pr-11 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none @error('password') border-red-400 @enderror"
-                            >
-                            <button type="button" @click="showPassword = !showPassword"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600" tabindex="-1">
-                                <span x-show="!showPassword" class="text-sm">👁</span>
-                                <span x-show="showPassword" class="text-sm" x-cloak>🙈</span>
+                    @if ($errors->any())
+                        <div class="border-error-500 bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500 mb-5 rounded-lg border px-4 py-3 text-sm">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <div class="space-y-5">
+                            {{-- Email --}}
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    {{ __('Email') }}<span class="text-error-500">*</span>
+                                </label>
+                                <input type="email" name="email" value="{{ old('email') }}" required autofocus
+                                    autocomplete="username" placeholder="admin@samvet.uz"
+                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('email') border-error-500 @enderror" />
+                            </div>
+
+                            {{-- Parol --}}
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    {{ __('Parol') }}<span class="text-error-500">*</span>
+                                </label>
+                                <div x-data="{ showPassword: false }" class="relative">
+                                    <input :type="showPassword ? 'text' : 'password'" name="password" required
+                                        autocomplete="current-password" placeholder="{{ __('Parolingizni kiriting') }}"
+                                        class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-4 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                                    <span @click="showPassword = !showPassword"
+                                        class="absolute right-4 top-1/2 z-30 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400">
+                                        <svg x-show="!showPassword" class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M10.0002 13.8619C7.23361 13.8619 4.86803 12.1372 3.92328 9.70241C4.86804 7.26761 7.23361 5.54297 10.0002 5.54297C12.7667 5.54297 15.1323 7.26762 16.0771 9.70243C15.1323 12.1372 12.7667 13.8619 10.0002 13.8619ZM10.0002 4.04297C6.48191 4.04297 3.49489 6.30917 2.4155 9.4593C2.3615 9.61687 2.3615 9.78794 2.41549 9.94552C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C13.5184 15.3619 16.5055 13.0957 17.5849 9.94555C17.6389 9.78797 17.6389 9.6169 17.5849 9.45932C16.5055 6.30919 13.5184 4.04297 10.0002 4.04297ZM9.99151 7.84413C8.96527 7.84413 8.13333 8.67606 8.13333 9.70231C8.13333 10.7286 8.96527 11.5605 9.99151 11.5605H10.0064C11.0326 11.5605 11.8646 10.7286 11.8646 9.70231C11.8646 8.67606 11.0326 7.84413 10.0064 7.84413H9.99151Z" fill="#98A2B3" />
+                                        </svg>
+                                        <svg x-show="showPassword" x-cloak class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.63803 3.57709C4.34513 3.2842 3.87026 3.2842 3.57737 3.57709C3.28447 3.86999 3.28447 4.34486 3.57737 4.63775L4.85323 5.91362C3.74609 6.84199 2.89363 8.06395 2.4155 9.45936C2.3615 9.61694 2.3615 9.78801 2.41549 9.94558C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C11.255 15.3619 12.4422 15.0737 13.4994 14.5598L15.3625 16.4229C15.6554 16.7158 16.1302 16.7158 16.4231 16.4229C16.716 16.13 16.716 15.6551 16.4231 15.3622L4.63803 3.57709ZM12.3608 13.4212L10.4475 11.5079C10.3061 11.5423 10.1584 11.5606 10.0064 11.5606H9.99151C8.96527 11.5606 8.13333 10.7286 8.13333 9.70237C8.13333 9.5461 8.15262 9.39434 8.18895 9.24933L5.91885 6.97923C5.03505 7.69015 4.34057 8.62704 3.92328 9.70247C4.86803 12.1373 7.23361 13.8619 10.0002 13.8619C10.8326 13.8619 11.6287 13.7058 12.3608 13.4212ZM16.0771 9.70249C15.7843 10.4569 15.3552 11.1432 14.8199 11.7311L15.8813 12.7925C16.6329 11.9813 17.2187 11.0143 17.5849 9.94561C17.6389 9.78803 17.6389 9.61696 17.5849 9.45938C16.5055 6.30925 13.5184 4.04303 10.0002 4.04303C9.13525 4.04303 8.30244 4.17999 7.52218 4.43338L8.75139 5.66259C9.1556 5.58413 9.57311 5.54303 10.0002 5.54303C12.7667 5.54303 15.1323 7.26768 16.0771 9.70249Z" fill="#98A2B3" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Eslab qolish --}}
+                            <div class="flex items-center">
+                                <label class="flex cursor-pointer select-none items-center text-sm font-normal text-gray-700 dark:text-gray-400">
+                                    <input type="checkbox" name="remember" class="mr-3 h-5 w-5 rounded-md border-gray-300 text-brand-500 focus:ring-brand-500/20 dark:border-gray-700" />
+                                    {{ __('Meni eslab qol') }}
+                                </label>
+                            </div>
+
+                            {{-- Kirish tugmasi --}}
+                            <button type="submit"
+                                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-medium text-white transition">
+                                {{ __('Kirish') }}
                             </button>
                         </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- O'ng: brend paneli --}}
+            <div class="bg-brand-950 relative hidden h-full w-full items-center dark:bg-white/5 lg:grid lg:w-1/2">
+                <div class="z-1 flex items-center justify-center">
+                    <div class="flex max-w-xs flex-col items-center">
+                        <span class="mb-4 text-6xl">📚</span>
+                        <h2 class="mb-2 text-2xl font-bold text-white">{{ config('app.name') }}</h2>
+                        <p class="text-center text-gray-400 dark:text-white/60">
+                            {{ __('Samarqand veterinariya universiteti elektron kutubxonasi') }}
+                        </p>
                     </div>
+                </div>
+            </div>
 
-                    <label class="flex items-center gap-2 text-sm text-gray-600">
-                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/30">
-                        {{ __('Meni eslab qol') }}
-                    </label>
-
-                    <button type="submit"
-                            class="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500/40 focus:outline-none">
-                        {{ __('Kirish') }}
-                    </button>
-                </form>
+            {{-- Dark mode toggle --}}
+            <div class="fixed bottom-6 right-6 z-50 hidden sm:block">
+                <button class="bg-brand-500 hover:bg-brand-600 inline-flex size-14 items-center justify-center rounded-full text-white transition-colors"
+                    @click.prevent="darkMode = !darkMode" aria-label="{{ __('Tungi rejim') }}">
+                    <svg class="hidden fill-current dark:block" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M9.99998 1.5415C10.4142 1.5415 10.75 1.87729 10.75 2.2915V3.5415C10.75 3.95572 10.4142 4.2915 9.99998 4.2915C9.58577 4.2915 9.24998 3.95572 9.24998 3.5415V2.2915C9.24998 1.87729 9.58577 1.5415 9.99998 1.5415ZM10.0009 6.79327C8.22978 6.79327 6.79402 8.22904 6.79402 10.0001C6.79402 11.7712 8.22978 13.207 10.0009 13.207C11.772 13.207 13.2078 11.7712 13.2078 10.0001C13.2078 8.22904 11.772 6.79327 10.0009 6.79327ZM5.29402 10.0001C5.29402 7.40061 7.40135 5.29327 10.0009 5.29327C12.6004 5.29327 14.7078 7.40061 14.7078 10.0001C14.7078 12.5997 12.6004 14.707 10.0009 14.707C7.40135 14.707 5.29402 12.5997 5.29402 10.0001Z" fill="currentColor" />
+                    </svg>
+                    <svg class="fill-current dark:hidden" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.4547 11.97L18.1799 12.1611C18.265 11.8383 18.1265 11.4982 17.8401 11.3266C17.5538 11.1551 17.1885 11.1934 16.944 11.4207L17.4547 11.97ZM8.0306 2.5459L8.57989 3.05657C8.80718 2.81209 8.84554 2.44682 8.67398 2.16046C8.50243 1.8741 8.16227 1.73559 7.83948 1.82066L8.0306 2.5459ZM12.9154 13.0035C9.64678 13.0035 6.99707 10.3538 6.99707 7.08524H5.49707C5.49707 11.1823 8.81835 14.5035 12.9154 14.5035V13.0035ZM16.944 11.4207C15.8869 12.4035 14.4721 13.0035 12.9154 13.0035V14.5035C14.8657 14.5035 16.6418 13.7499 17.9654 12.5193L16.944 11.4207ZM16.7295 11.7789C15.9437 14.7607 13.2277 16.9586 10.0003 16.9586V18.4586C13.9257 18.4586 17.2249 15.7853 18.1799 12.1611L16.7295 11.7789ZM10.0003 16.9586C6.15734 16.9586 3.04199 13.8433 3.04199 10.0003H1.54199C1.54199 14.6717 5.32892 18.4586 10.0003 18.4586V16.9586ZM3.04199 10.0003C3.04199 6.77289 5.23988 4.05695 8.22173 3.27114L7.83948 1.82066C4.21532 2.77574 1.54199 6.07486 1.54199 10.0003H3.04199Z" fill="currentColor" />
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
