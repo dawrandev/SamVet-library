@@ -25,7 +25,6 @@ class BookData
         public readonly ?string $isbn,
         public readonly ?int $print_run,
         public readonly ?string $annotation,
-        public readonly bool $has_continuation,
         /** @var int[] */
         public readonly array $author_ids,
         /** @var int[] */
@@ -56,7 +55,6 @@ class BookData
             isbn: $request->input('isbn'),
             print_run: $request->integer('print_run') ?: null,
             annotation: $request->input('annotation'),
-            has_continuation: $request->boolean('has_continuation'),
             author_ids: $request->input('author_ids', []),
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
@@ -85,7 +83,6 @@ class BookData
             'isbn' => $this->isbn,
             'print_run' => $this->print_run,
             'annotation' => $this->annotation,
-            'has_continuation' => $this->has_continuation,
         ];
     }
 }

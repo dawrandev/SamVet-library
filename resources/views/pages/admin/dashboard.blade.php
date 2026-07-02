@@ -11,7 +11,21 @@
                 <x-admin.metric-card :label="__('Jami kitoblar')" value="0" icon="📕" :trend="null" />
                 <x-admin.metric-card :label="__('Kategoriyalar')" value="0" icon="🗂️" :trend="null" />
                 <x-admin.metric-card :label="__('Foydalanuvchilar')" value="0" icon="👥" :trend="null" />
-                <x-admin.metric-card :label="__('Jami ko‘rishlar')" value="0" icon="👁️" :trend="null" />
+
+                {{-- Muddati o'tgan berilgan kitoblar (bildirishnoma) --}}
+                <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}" class="block">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-error-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/40 md:p-6">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 text-2xl text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                            ⏰
+                        </div>
+                        <div class="mt-5 flex items-end justify-between">
+                            <div>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Muddati o‘tgan') }}</span>
+                                <h4 class="mt-2 text-title-sm font-bold text-error-600 dark:text-error-500">{{ $overdueLoansCount ?? 0 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
 
             {{-- Bar chart: oylik ko'rishlar --}}

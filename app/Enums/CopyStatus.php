@@ -9,6 +9,7 @@ namespace App\Enums;
 enum CopyStatus: string
 {
     case Available = 'available';
+    case Borrowed = 'borrowed';
     case Lost = 'lost';
     case WrittenOff = 'written_off';
 
@@ -16,6 +17,7 @@ enum CopyStatus: string
     {
         return match ($this) {
             self::Available => __('Mavjud'),
+            self::Borrowed => __('Berilgan'),
             self::Lost => __('Yo‘qotilgan'),
             self::WrittenOff => __('Hisobdan chiqarilgan'),
         };

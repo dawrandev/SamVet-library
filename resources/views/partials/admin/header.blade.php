@@ -59,6 +59,22 @@
             class="shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none"
         >
             <div class="flex items-center gap-2 2xsm:gap-3">
+                {{-- Muddati o'tgan kitoblar bildirishnomasi (qo'ng'iroq) --}}
+                <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}"
+                   title="{{ __('Muddati o‘tgan kitoblar') }}: {{ $overdueLoansCount ?? 0 }}"
+                   class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">
+                    <span class="sr-only">{{ __('Muddati o‘tgan kitoblar') }}</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3a6 6 0 0 0-6 6c0 3.09-.79 5.02-1.5 6.13-.36.56.04 1.37.71 1.37h13.58c.67 0 1.07-.81.71-1.37C18.79 14.02 18 12.09 18 9a6 6 0 0 0-6-6ZM10 19a2 2 0 0 0 4 0"
+                              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    @if (($overdueLoansCount ?? 0) > 0)
+                        <span class="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-error-500 px-1 text-[10px] font-semibold text-white">
+                            {{ $overdueLoansCount > 99 ? '99+' : $overdueLoansCount }}
+                        </span>
+                    @endif
+                </a>
+
                 {{-- Dark mode toggle --}}
                 <button
                     class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"

@@ -24,3 +24,6 @@ yarn-error.log
 
 # Vaqtinchalik TailAdmin manba (port tugagach o'chiriladi)
 /_tailadmin
+
+# Import manba fayllari (Excel) — git'ga kirmaydi
+/_import

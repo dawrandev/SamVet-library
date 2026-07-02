@@ -37,4 +37,15 @@ class BookCopy extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    public function loans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    /** Hozir berilgan (qaytarilmagan) loan. */
+    public function currentLoan(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Loan::class)->where('status', \App\Enums\LoanStatus::OnLoan->value);
+    }
 }

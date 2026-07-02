@@ -21,7 +21,7 @@ class Book extends Model
         'book_type_id', 'language_id', 'publisher_id', 'work_id',
         'publication_year', 'publication_place', 'pages', 'isbn', 'print_run', 'annotation',
         'cover_image', 'electronic_file', 'audio_file',
-        'has_continuation', 'views_count',
+        'views_count',
     ];
 
     /** Faqat nashriyot joyi tarjima qilinadi (title/annotation — bitta til). */
@@ -30,7 +30,6 @@ class Book extends Model
     protected function casts(): array
     {
         return [
-            'has_continuation' => 'boolean',
             'views_count' => 'integer',
             'publication_year' => 'integer',
             'pages' => 'integer',

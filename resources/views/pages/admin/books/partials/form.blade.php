@@ -96,11 +96,6 @@
                     <x-admin.form.translatable-input name="publication_place" :label="__('Nashriyot joyi')"
                         :value="$editing ? $book->getTranslations('publication_place') : []"
                         :placeholders="['uz' => 'masalan: Toshkent', 'ru' => 'например: Ташкент', 'kk' => 'mısalı: Tashkent']" />
-
-                    <div class="border-t border-gray-100 pt-5 dark:border-gray-800">
-                        <x-admin.form.switch name="has_continuation" :label="__('Davomi bor')" :checked="$book?->has_continuation ?? false"
-                            :help="__('Ko‘p jildlik yoki davomi bo‘lgan kitob')" />
-                    </div>
                 </div>
             </x-admin.form.section>
 

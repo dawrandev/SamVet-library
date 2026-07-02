@@ -38,7 +38,6 @@ return new class extends Migration
             $table->string('electronic_file')->nullable();  // Elektron (PDF)
             $table->string('audio_file')->nullable();       // Audio (mp3)
 
-            $table->boolean('has_continuation')->default(false); // Davomi bor
             $table->unsignedBigInteger('views_count')->default(0);
 
             $table->timestamps();

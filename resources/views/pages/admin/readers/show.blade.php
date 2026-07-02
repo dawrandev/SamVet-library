@@ -1,0 +1,648 @@
+@extends('layouts.admin')
+
+@section('title', $reader->full_name)
+
+@section('content')
+    @php
+        $isStudent = $reader->type->isStudent();
+
+        $statusColor = [
+            'active' => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
+            'blocked' => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',
+            'left' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+            'suspended' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500',
+        ];
+
+        // Mansublik yorliqlari — talaba/xodimga qarab
+        $affiliation = array_filter([
+            ($isStudent ? __('O‘qish joyi') : __('Ish joyi')) => $reader->affiliation_place,
+            ($isStudent ? __('Mutaxassisligi') : __('Bo‘limi')) => $reader->affiliation_unit,
+            ($isStudent ? __('Guruhi') : __('Lavozimi')) => $reader->affiliation_group,
+        ], fn ($v) => filled($v));
+
+        $personal = array_filter([
+            __('Millati') => $reader->nationality,
+            __('Tug‘ilgan sana') => $reader->birth_date?->format('d.m.Y'),
+            __('Jinsi') => $reader->gender?->label(),
+            __('Passport') => $reader->passport,
+            __('JSHSHIR (PINFL)') => $reader->pinfl,
+            __('Tuman') => $reader->district,
+            __('Manzil') => $reader->address,
+            __('Telefon') => $reader->phone,
+            __('A‘zolik yili') => $reader->member_year,
+        ], fn ($v) => filled($v));
+
+        $additional = array_filter([
+            __('ID raqami') => $reader->id_number,
+            __('Ro‘yxat raqami') => $reader->registration_number,
+            __('Berilgan sana') => $reader->issued_date?->format('d.m.Y'),
+            __('Boshqa kutubxona a‘zosi') => $reader->other_library_member,
+        ], fn ($v) => filled($v));
+    @endphp
+
+    @php
+        $isActiveOrSuspended = in_array($reader->status, [\App\Enums\ReaderStatus::Active, \App\Enums\ReaderStatus::Suspended], true);
+        $warningCount = $reader->warnings->count();
+    @endphp
+
+    {{-- Header --}}
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" x-data="{ blockOpen: {{ $errors->has('blocked_until') || $errors->has('block_reason') ? 'true' : 'false' }} }">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.readers.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $reader->full_name }}</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('admin.readers.edit', $reader) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Tahrirlash') }}</a>
+
+            @if ($isActiveOrSuspended)
+                {{-- Bloklash (modal: butunlay yoki sanagacha + sabab) --}}
+                <button type="button" @click="blockOpen = true"
+                        class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('Bloklash') }}</button>
+
+                {{-- Foydalanishni tugatish (bitirgan / ishdan bo'shagan) --}}
+                <button type="button"
+                        @click="$store.confirm.ask('{{ route('admin.readers.finish', $reader) }}', '{{ __('Kutubxonadan foydalanishni tugatishni tasdiqlaysizmi? Foydalanuvchi ro‘yxatdan olib tashlanadi.') }}', 'PATCH')"
+                        class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Foydalanishni tugatish') }}</button>
+            @else
+                {{-- Tiklash (bloklangan / ketgan) --}}
+                <button type="button"
+                        @click="$store.confirm.ask('{{ route('admin.readers.restore', $reader) }}', '{{ __('Foydalanuvchini tiklashni tasdiqlaysizmi?') }}', 'PATCH')"
+                        class="rounded-lg border border-success-200 px-4 py-2 text-sm font-medium text-success-600 hover:bg-success-50 dark:border-success-500/30 dark:text-success-500 dark:hover:bg-success-500/10">{{ __('Foydalanuvchini tiklash') }}</button>
+            @endif
+
+            {{-- Bloklash modali --}}
+            <template x-teleport="body">
+                <div x-show="blockOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-gray-900/50" @click="blockOpen = false"></div>
+                    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="blockOpen = false">
+                        <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchini bloklash') }}</h4>
+
+                        <form action="{{ route('admin.readers.block', $reader) }}" method="POST" class="space-y-4" x-data="{ mode: '{{ old('blocked_until') ? 'until' : 'permanent' }}' }">
+                            @csrf
+                            @method('PATCH')
+
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <input type="radio" name="block_mode" value="permanent" x-model="mode" class="text-brand-500" />
+                                    {{ __('Butunlay bloklash') }}
+                                </label>
+                                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <input type="radio" name="block_mode" value="until" x-model="mode" class="text-brand-500" />
+                                    {{ __('Muddatli (sanagacha)') }}
+                                </label>
+                            </div>
+
+                            <div x-show="mode === 'until'" x-cloak>
+                                <x-admin.form.input
+                                    type="date"
+                                    name="blocked_until"
+                                    :label="__('Qaysi sanagacha')"
+                                    :value="old('blocked_until')"
+                                    x-bind:disabled="mode !== 'until'"
+                                />
+                            </div>
+
+                            <x-admin.form.textarea
+                                name="block_reason"
+                                :label="__('Bloklash sababi')"
+                                :value="old('block_reason')"
+                                :rows="3"
+                            />
+
+                            <div class="flex justify-end gap-2 pt-2">
+                                <button type="button" @click="blockOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                                <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('Bloklash') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </template>
+
+            <button type="button"
+                    @click="$store.confirm.ask('{{ route('admin.readers.destroy', $reader) }}', '{{ __('Foydalanuvchini o‘chirishni tasdiqlaysizmi?') }}')"
+                    class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+        </div>
+    </div>
+
+    @if (session('success'))
+        <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
+    @endif
+
+    <div class="grid grid-cols-12 gap-6">
+        {{-- Chap: rasm + asosiy --}}
+        <div class="col-span-12 space-y-6 xl:col-span-4">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-brand-50 text-4xl font-semibold text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                    @if ($reader->photo)
+                        <img src="{{ asset('storage/' . $reader->photo) }}" alt="" class="h-full w-full object-cover" />
+                    @else
+                        {{ mb_strtoupper(mb_substr($reader->full_name, 0, 1)) ?: '👤' }}
+                    @endif
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ $reader->full_name }}</h3>
+                <div class="mt-3 flex flex-wrap justify-center gap-2">
+                    <span class="text-theme-xs rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->label() }}</span>
+                    <span class="text-theme-xs rounded-full px-3 py-1 font-medium {{ $statusColor[$reader->status->value] ?? '' }}">{{ $reader->status->label() }}</span>
+                </div>
+                @if ($reader->id_number)
+                    <p class="text-theme-sm mt-3 text-gray-500 dark:text-gray-400">{{ __('ID raqami') }}: {{ $reader->id_number }}</p>
+                @endif
+
+                {{-- Kitobxon guvohnomasini yuklab olish (ID-karta PDF) --}}
+                <a href="{{ route('admin.readers.card', $reader) }}" target="_blank"
+                   class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
+                    <span class="text-base leading-none">🪪</span> {{ __('Kitobxon guvohnomasini yuklab olish') }}
+                </a>
+
+                {{-- Blok ko'rsatkichi --}}
+                @if ($reader->status === \App\Enums\ReaderStatus::Blocked)
+                    <div class="mt-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-left text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                        @if ($reader->blocked_until)
+                            <p class="font-medium">{{ __('Cheklangan') }}: {{ $reader->blocked_until->format('d.m.Y') }} {{ __('gacha') }}</p>
+                        @else
+                            <p class="font-medium">{{ __('Butunlay bloklangan') }}</p>
+                        @endif
+                        @if ($reader->block_reason)
+                            <p class="mt-1">{{ $reader->block_reason }}</p>
+                        @endif
+                    </div>
+                @endif
+            </div>
+
+            {{-- Mansublik --}}
+            @if ($affiliation)
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                    <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ $isStudent ? __('O‘qish ma’lumotlari') : __('Ish ma’lumotlari') }}</h3>
+                    <dl class="space-y-3">
+                        @foreach ($affiliation as $label => $value)
+                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            @endif
+        </div>
+
+        {{-- O'ng: shaxsiy + qo'shimcha + izoh --}}
+        <div class="col-span-12 space-y-6 xl:col-span-8">
+            @if ($personal)
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Shaxsiy ma’lumotlar') }}</h3>
+                    <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                        @foreach ($personal as $label => $value)
+                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            @endif
+
+            @if ($additional)
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qo‘shimcha ma’lumotlar') }}</h3>
+                    <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                        @foreach ($additional as $label => $value)
+                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            @endif
+
+            @if ($reader->note)
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                    <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Izoh') }}</h3>
+                    <p class="text-theme-sm leading-relaxed text-gray-600 dark:text-gray-400">{{ $reader->note }}</p>
+                </div>
+            @endif
+
+            {{-- Ogohlantirishlar (qizil qoidalar) --}}
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6"
+                 x-data="{ warnOpen: {{ $errors->has('reason') || $errors->has('note') ? 'true' : 'false' }} }">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Ogohlantirishlar') }}</h3>
+                        <p class="text-theme-sm mt-0.5 {{ $warningCount >= 3 ? 'font-medium text-error-600 dark:text-error-500' : 'text-gray-500 dark:text-gray-400' }}">
+                            {{ $warningCount }} / 3 {{ __('ogohlantirish') }}
+                        </p>
+                    </div>
+                    <button type="button" @click="warnOpen = true"
+                            class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('Ogohlantirish berish') }}</button>
+                </div>
+
+                @if ($warningCount >= 3)
+                    <div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm font-medium text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                        {{ __('3+ ogohlantirish — foydalanuvchini bloklashni ko‘rib chiqing.') }}
+                    </div>
+                @endif
+
+                @if ($reader->warnings->isEmpty())
+                    <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Ogohlantirishlar yo‘q.') }}</p>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-left text-theme-sm">
+                            <thead>
+                                <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                    <th class="px-3 py-2 font-medium">{{ __('Sana') }}</th>
+                                    <th class="px-3 py-2 font-medium">{{ __('Sababi') }}</th>
+                                    <th class="px-3 py-2 font-medium">{{ __('Izoh') }}</th>
+                                    <th class="px-3 py-2 font-medium">{{ __('Kim bergan') }}</th>
+                                    <th class="px-3 py-2 font-medium"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($reader->warnings as $warning)
+                                    <tr class="border-b border-gray-50 dark:border-gray-800/50">
+                                        <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $warning->warned_at?->format('d.m.Y') }}</td>
+                                        <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $warning->reason->label() }}</td>
+                                        <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $warning->note ?: '—' }}</td>
+                                        <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $warning->author?->name ?? '—' }}</td>
+                                        <td class="px-3 py-2 text-right">
+                                            <button type="button"
+                                                    @click="$store.confirm.ask('{{ route('admin.readers.warnings.destroy', [$reader, $warning]) }}', '{{ __('Ogohlantirishni o‘chirishni tasdiqlaysizmi?') }}')"
+                                                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                {{-- Ogohlantirish berish modali --}}
+                <template x-teleport="body">
+                    <div x-show="warnOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                        <div class="fixed inset-0 bg-gray-900/50" @click="warnOpen = false"></div>
+                        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="warnOpen = false">
+                            <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Ogohlantirish berish') }}</h4>
+
+                            <form action="{{ route('admin.readers.warnings.store', $reader) }}" method="POST" class="space-y-4">
+                                @csrf
+
+                                @php $baseInput = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90'; @endphp
+                                <div>
+                                    <label for="reason" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Sababi') }}<span class="text-error-500">*</span></label>
+                                    <select name="reason" id="reason" required class="{{ $baseInput }} {{ $errors->has('reason') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                        @foreach (\App\Enums\WarningReason::cases() as $reason)
+                                            <option value="{{ $reason->value }}" @selected(old('reason') === $reason->value)>{{ $reason->label() }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('reason')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                                </div>
+
+                                <x-admin.form.textarea
+                                    name="note"
+                                    :label="__('Izoh')"
+                                    :rows="3"
+                                />
+
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" @click="warnOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                                    <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Berish') }}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    {{-- O'qigan kitoblari (oldi-berdi) --}}
+    @php
+        $defaultDue = now()->addDays(15)->format('Y-m-d');
+    @endphp
+
+    <div class="mt-6" x-data="{
+        issueOpen: {{ $errors->has('inventory_number') || $errors->has('due_at') ? 'true' : 'false' }},
+        lookupState: 'idle', {{-- idle | loading | found | missing --}}
+        lookup: {},
+        init() {
+            @if (old('inventory_number'))
+                this.check(@js(old('inventory_number')));
+            @endif
+        },
+        async check(inventory) {
+            const value = (inventory || '').trim();
+            if (value === '') { this.lookupState = 'idle'; this.lookup = {}; return; }
+            this.lookupState = 'loading';
+            try {
+                const url = '{{ route('admin.copies.lookup') }}?inventory=' + encodeURIComponent(value);
+                const res = await fetch(url, { headers: { Accept: 'application/json' } });
+                const body = await res.json();
+                if (body.found) { this.lookup = body; this.lookupState = 'found'; }
+                else { this.lookup = {}; this.lookupState = 'missing'; }
+            } catch (e) {
+                this.lookup = {}; this.lookupState = 'missing';
+            }
+        }
+    }">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('O‘qigan kitoblari') }}</h3>
+                <button type="button"
+                        @click="issueOpen = true"
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Kitob berish') }}</button>
+            </div>
+
+            @if ($reader->loans->isEmpty())
+                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha kitob berilmagan.') }}</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-theme-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                <th class="px-3 py-2 font-medium">{{ __('Olgan sana') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Muddat') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Inventar') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('UO‘K') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Muallif') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Sarlavha') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Yil') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Qaytargan sana') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Holat') }}</th>
+                                <th class="px-3 py-2 font-medium"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($reader->loans as $loan)
+                                @php $overdue = $loan->isOverdue(); @endphp
+                                <tr class="border-b border-gray-50 dark:border-gray-800/50 {{ $overdue ? 'bg-error-50 dark:bg-error-500/10' : '' }}">
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->issued_at?->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 {{ $overdue ? 'font-medium text-error-600 dark:text-error-500' : 'text-gray-700 dark:text-gray-300' }}">{{ $loan->due_at?->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->inventory_number }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->udc }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->authors->pluck('name')->implode(', ') }}</td>
+                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $loan->copy?->book?->title }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->publication_year }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->returned_at?->format('d.m.Y') ?: '—' }}</td>
+                                    <td class="px-3 py-2">
+                                        <span class="text-theme-xs rounded-full px-2.5 py-1 font-medium {{ $loan->status === \App\Enums\LoanStatus::Returned ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500' : ($loan->status === \App\Enums\LoanStatus::Lost ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' : ($overdue ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500' : 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500')) }}">{{ $loan->status->label() }}</span>
+                                    </td>
+                                    <td class="px-3 py-2 text-right">
+                                        @if ($loan->status === \App\Enums\LoanStatus::OnLoan)
+                                            <button type="button"
+                                                    @click="$store.confirm.ask('{{ route('admin.loans.return', $loan) }}', '{{ __('Kitob qaytarilganini tasdiqlaysizmi?') }}', 'PATCH')"
+                                                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Qaytardi') }}</button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        {{-- Kitob berish modali --}}
+        <template x-teleport="body">
+            <div x-show="issueOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-gray-900/50" @click="issueOpen = false"></div>
+                <div class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Kitob berish') }}</h4>
+
+                    <form action="{{ route('admin.readers.loans.store', $reader) }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        <x-admin.form.input
+                            name="inventory_number"
+                            :label="__('Inventar raqami')"
+                            :required="true"
+                            @blur="check($event.target.value)"
+                            @keydown.enter.prevent="check($event.target.value)"
+                            autocomplete="off"
+                        />
+
+                        {{-- Nusxa/kitob ma'lumoti (avtomatik chiqadi) --}}
+                        <div x-show="lookupState === 'loading'" class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Qidirilmoqda...') }}</div>
+
+                        <div x-show="lookupState === 'missing'" x-cloak class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                            {{ __('Bunday inventar raqamli nusxa topilmadi.') }}
+                        </div>
+
+                        <div x-show="lookupState === 'found'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="font-medium text-gray-800 dark:text-white/90" x-text="lookup.book?.title"></p>
+                            <p class="text-theme-sm text-gray-500 dark:text-gray-400" x-text="lookup.book?.authors"></p>
+                            <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-theme-xs text-gray-500 dark:text-gray-400">
+                                <span x-show="lookup.book?.udc">{{ __('UO‘K') }}: <span x-text="lookup.book?.udc"></span></span>
+                                <span x-show="lookup.book?.year">{{ __('Yil') }}: <span x-text="lookup.book?.year"></span></span>
+                                <span :class="lookup.available ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'" x-text="lookup.status"></span>
+                            </div>
+                        </div>
+
+                        <x-admin.form.input
+                            type="date"
+                            name="due_at"
+                            :label="__('Qaytarish muddati')"
+                            :value="old('due_at', $defaultDue)"
+                            :required="true"
+                        />
+
+                        <x-admin.form.textarea
+                            name="note"
+                            :label="__('Izoh')"
+                            :rows="2"
+                        />
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="issueOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Berish') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    {{-- Qatnashgan tadbir va tanlovlar --}}
+    <div class="mt-6" x-data="{ eventOpen: {{ $errors->has('date') || $errors->has('name') || $errors->has('type') || $errors->has('role') ? 'true' : 'false' }} }">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qatnashgan tadbir va tanlovlar') }}</h3>
+                <button type="button" @click="eventOpen = true"
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">+ {{ __('Qo‘shish') }}</button>
+            </div>
+
+            @if ($reader->events->isEmpty())
+                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha tadbirlar yo‘q.') }}</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-theme-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                <th class="px-3 py-2 font-medium">{{ __('Sanasi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Joyi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Nomi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Turi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Maqsadi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Havola') }}</th>
+                                <th class="px-3 py-2 font-medium"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($reader->events as $event)
+                                <tr class="border-b border-gray-50 dark:border-gray-800/50">
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->date?->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->place ?: '—' }}</td>
+                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $event->name }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->type?->label() }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->role?->label() }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                        @if ($event->link)
+                                            <a href="{{ $event->link }}" target="_blank" rel="noopener noreferrer"
+                                               class="font-medium text-brand-500 hover:text-brand-600">{{ __('Havola') }}</a>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-right">
+                                        <button type="button"
+                                                @click="$store.confirm.ask('{{ route('admin.readers.events.destroy', [$reader, $event]) }}', '{{ __('Tadbirni o‘chirishni tasdiqlaysizmi?') }}', 'DELETE')"
+                                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        {{-- Tadbir qo'shish modali --}}
+        <template x-teleport="body">
+            <div x-show="eventOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-gray-900/50" @click="eventOpen = false"></div>
+                <div class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="eventOpen = false">
+                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Tadbir qo‘shish') }}</h4>
+
+                    <form action="{{ route('admin.readers.events.store', $reader) }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        @php $eventInput = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90'; @endphp
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <x-admin.form.input type="date" name="date" :label="__('Sanasi')" :required="true" :value="old('date')" />
+                            <x-admin.form.input name="place" :label="__('Joyi')" :value="old('place')" />
+                        </div>
+
+                        <x-admin.form.input name="name" :label="__('Nomi')" :required="true" :value="old('name')" />
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}<span class="text-error-500">*</span></label>
+                                <select name="type" id="type" required class="{{ $eventInput }} {{ $errors->has('type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                    @foreach (\App\Enums\EventType::cases() as $type)
+                                        <option value="{{ $type->value }}" @selected(old('type') === $type->value)>{{ $type->label() }}</option>
+                                    @endforeach
+                                </select>
+                                @error('type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="role" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Maqsadi') }}<span class="text-error-500">*</span></label>
+                                <select name="role" id="role" required class="{{ $eventInput }} {{ $errors->has('role') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                    @foreach (\App\Enums\EventRole::cases() as $role)
+                                        <option value="{{ $role->value }}" @selected(old('role') === $role->value)>{{ $role->label() }}</option>
+                                    @endforeach
+                                </select>
+                                @error('role')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        <x-admin.form.input name="link" :label="__('Havola')" :value="old('link')" placeholder="https://" />
+
+                        <x-admin.form.textarea name="note" :label="__('Izoh')" :rows="2" />
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="eventOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Qo‘shish') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    {{-- Kompyuterdan foydalanish --}}
+    <div class="mt-6" x-data="{ computerOpen: {{ $errors->has('issued_time') || $errors->has('returned_time') || $errors->has('computer_number') || $errors->has('location') || $errors->has('purpose') ? 'true' : 'false' }} }">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterdan foydalanish') }}</h3>
+                <button type="button" @click="computerOpen = true"
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">+ {{ __('Qo‘shish') }}</button>
+            </div>
+
+            @if ($reader->computerSessions->isEmpty())
+                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha yozuvlar yo‘q.') }}</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-theme-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                <th class="px-3 py-2 font-medium">{{ __('Sanasi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Berilgan vaqti') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Kompyuter raqami') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Joylashuv') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Maqsadi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Topshirish vaqti') }}</th>
+                                <th class="px-3 py-2 font-medium"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($reader->computerSessions as $session)
+                                <tr class="border-b border-gray-50 dark:border-gray-800/50">
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->date?->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->issued_time ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->computer_number ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->location ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->purpose ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->returned_time ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-right">
+                                        <button type="button"
+                                                @click="$store.confirm.ask('{{ route('admin.readers.computer-sessions.destroy', [$reader, $session]) }}', '{{ __('Yozuvni o‘chirishni tasdiqlaysizmi?') }}', 'DELETE')"
+                                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        {{-- Kompyuterdan foydalanish qo'shish modali --}}
+        <template x-teleport="body">
+            <div x-show="computerOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-gray-900/50" @click="computerOpen = false"></div>
+                <div class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="computerOpen = false">
+                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterdan foydalanish') }}</h4>
+
+                    <form action="{{ route('admin.readers.computer-sessions.store', $reader) }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <x-admin.form.input type="date" name="date" :label="__('Sanasi')" :required="true" :value="old('date')" />
+                            <x-admin.form.input type="time" name="issued_time" :label="__('Berilgan vaqti')" :value="old('issued_time')" />
+                            <x-admin.form.input name="computer_number" :label="__('Kompyuter raqami')" :value="old('computer_number')" />
+                            <x-admin.form.input name="location" :label="__('Joylashuv')" :value="old('location')" />
+                            <x-admin.form.input name="purpose" :label="__('Maqsadi')" :value="old('purpose')" />
+                            <x-admin.form.input type="time" name="returned_time" :label="__('Topshirish vaqti')" :value="old('returned_time')" />
+                        </div>
+
+                        <x-admin.form.textarea name="note" :label="__('Izoh')" :rows="2" />
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="computerOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Qo‘shish') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+    </div>
+@endsection

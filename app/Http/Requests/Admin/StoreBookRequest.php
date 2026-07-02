@@ -35,7 +35,6 @@ class StoreBookRequest extends FormRequest
             'pages' => ['nullable', 'integer', 'min:1'],
             'print_run' => ['nullable', 'integer', 'min:1'],
             'annotation' => ['nullable', 'string'],
-            'has_continuation' => ['boolean'],
 
             'translation_of' => ['nullable', 'integer', 'exists:books,id'],
 

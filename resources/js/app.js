@@ -3,6 +3,7 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import persist from '@alpinejs/persist';
 import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 
 import { initCharts } from './admin/charts';
 import lookupTable from './admin/lookup-table';
@@ -19,9 +20,11 @@ Alpine.store('confirm', {
     open: false,
     action: '',
     message: '',
-    ask(action, message) {
+    method: 'DELETE',
+    ask(action, message, method = 'DELETE') {
         this.action = action;
         this.message = message || '';
+        this.method = method || 'DELETE';
         this.open = true;
     },
     close() {

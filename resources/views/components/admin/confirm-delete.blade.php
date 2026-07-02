@@ -15,20 +15,20 @@
             </svg>
         </div>
 
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('O‘chirishni tasdiqlang') }}</h3>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Tasdiqlang') }}</h3>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400"
            x-text="$store.confirm.message || '{{ __('Bu amalni ortga qaytarib bo‘lmaydi.') }}'"></p>
 
         <form :action="$store.confirm.action" method="POST" class="mt-6 flex gap-3">
             @csrf
-            @method('DELETE')
+            <input type="hidden" name="_method" :value="$store.confirm.method">
             <button type="button" @click="$store.confirm.close()"
                     class="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800">
                 {{ __('Bekor qilish') }}
             </button>
             <button type="submit"
                     class="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700">
-                {{ __('O‘chirish') }}
+                {{ __('Tasdiqlash') }}
             </button>
         </form>
     </div>

@@ -46,6 +46,34 @@
                         </a>
                     </li>
 
+                    {{-- Foydalanuvchilar (kutubxona a'zolari) --}}
+                    <li>
+                        <a href="{{ route('admin.readers.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.readers.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.readers.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4.5C10.4812 4.5 9.25 5.73122 9.25 7.25C9.25 8.76878 10.4812 10 12 10C13.5188 10 14.75 8.76878 14.75 7.25C14.75 5.73122 13.5188 4.5 12 4.5ZM7.75 7.25C7.75 4.90279 9.65279 3 12 3C14.3472 3 16.25 4.90279 16.25 7.25C16.25 9.59721 14.3472 11.5 12 11.5C9.65279 11.5 7.75 9.59721 7.75 7.25ZM7.5 15.25C6.5335 15.25 5.75 16.0335 5.75 17V19.25C5.75 19.6642 5.41421 20 5 20C4.58579 20 4.25 19.6642 4.25 19.25V17C4.25 15.2051 5.70508 13.75 7.5 13.75H16.5C18.2949 13.75 19.75 15.2051 19.75 17V19.25C19.75 19.6642 19.4142 20 19 20C18.5858 20 18.25 19.6642 18.25 19.25V17C18.25 16.0335 17.4665 15.25 16.5 15.25H7.5Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Foydalanuvchilar') }}</span>
+                        </a>
+                    </li>
+
+                    {{-- Berilgan kitoblar (muddat nazorati) --}}
+                    <li>
+                        <a href="{{ route('admin.loans.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.loans.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.loans.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.25C7.16751 3.25 3.25 7.16751 3.25 12C3.25 16.8325 7.16751 20.75 12 20.75C16.8325 20.75 20.75 16.8325 20.75 12C20.75 7.16751 16.8325 3.25 12 3.25ZM4.75 12C4.75 7.99594 7.99594 4.75 12 4.75C16.0041 4.75 19.25 7.99594 19.25 12C19.25 16.0041 16.0041 19.25 12 19.25C7.99594 19.25 4.75 16.0041 4.75 12ZM12.75 7.5C12.75 7.08579 12.4142 6.75 12 6.75C11.5858 6.75 11.25 7.08579 11.25 7.5V12C11.25 12.2508 11.3753 12.485 11.5839 12.6241L14.5839 14.6241C14.9285 14.8539 15.3941 14.7607 15.6239 14.4161C15.8537 14.0715 15.7605 13.6059 15.4159 13.3761L12.75 11.5986V7.5Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Berilgan kitoblar') }}</span>
+                            @if (($overdueLoansCount ?? 0) > 0)
+                                <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-error-500 px-1 text-[10px] font-semibold text-white"
+                                      :class="sidebarToggle ? 'lg:hidden' : ''">
+                                    {{ $overdueLoansCount > 99 ? '99+' : $overdueLoansCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
+
                     {{-- Ma'lumotnomalar (ochiladigan guruh) --}}
                     <li x-data="{ open: {{ request()->routeIs('admin.lookups.*') ? 'true' : 'false' }} }">
                         <button type="button" @click="open = !open"
