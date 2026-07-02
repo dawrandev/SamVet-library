@@ -1,6 +1,17 @@
 @php
     $book = $book ?? null;
     $editing = ! is_null($book);
+    $sourceBook = $sourceBook ?? null;
+    // Tarjima yaratish rejimi: yangi kitob, lekin manbadan umumiy maydonlar ko'chiriladi
+    $translating = ! $editing && ! is_null($sourceBook);
+
+    // Umumiy maydonlar uchun prefill qiymatlari (old() ustuvor, so'ng manba)
+    $preAuthorIds = $translating ? old('author_ids', $sourceBook->authors->pluck('id')->all()) : ($editing ? $book->authors->pluck('id')->all() : []);
+    $preCategoryIds = $translating ? old('category_ids', $sourceBook->categories->pluck('id')->all()) : ($editing ? $book->categories->pluck('id')->all() : []);
+    $preBookTypeId = $translating ? old('book_type_id', $sourceBook->book_type_id) : $book?->book_type_id;
+    $prePublisherId = $translating ? old('publisher_id', $sourceBook->publisher_id) : $book?->publisher_id;
+    $prePublicationYear = $translating ? old('publication_year', $sourceBook->publication_year) : $book?->publication_year;
+
     $authorOptions = $authors->map(fn ($a) => ['id' => $a->id, 'label' => $a->name])->all();
     $categoryOptions = $categories->map(fn ($c) => [
         'id' => $c->id,
@@ -15,13 +26,23 @@
 >
     @csrf
     @if ($editing) @method('PUT') @endif
+    @if ($translating)
+        <input type="hidden" name="translation_of" value="{{ $sourceBook->id }}">
+    @endif
+
+    {{-- Tarjima rejimi banneri --}}
+    @if ($translating)
+        <x-alert type="info" class="mb-6">
+            {{ __('«:title» asariga boshqa tildagi nashr qo‘shyapsiz. Umumiy ma’lumotlar ko‘chirildi — til, sarlavha va boshqa maydonlarni to‘ldiring.', ['title' => $sourceBook->title]) }}
+        </x-alert>
+    @endif
 
     {{-- Sarlavha + amallar (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.books.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                {{ $editing ? __('Kitobni tahrirlash') : __('Yangi kitob') }}
+                {{ $editing ? __('Kitobni tahrirlash') : ($translating ? __('Yangi tarjima nashri') : __('Yangi kitob')) }}
             </h2>
         </div>
         <div class="flex items-center gap-2">
@@ -43,15 +64,15 @@
                     <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$book?->title" required :placeholder="__('Kitob nomi')" />
 
                     <x-admin.form.multiselect name="author_ids" :label="__('Mualliflar')" :options="$authorOptions"
-                        :selected="$editing ? $book->authors->pluck('id')->all() : []" :placeholder="__('Muallif(lar)ni tanlang')"
+                        :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
                         creatable create-type="author" :create-label="__('Yangi muallif...')" />
 
                     <div class="grid gap-5 sm:grid-cols-3">
-                        <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$book?->book_type_id" :placeholder="__('Tanlang')"
-                            creatable create-type="book_type" :create-label="__('Yangi tur')" />
+                        <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
+                            creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
                         <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
-                            creatable create-type="language" :create-label="__('Yangi til')" />
-                        <x-admin.form.select name="publisher_id" :label="__('Nashriyoti')" :options="$publishers" :selected="$book?->publisher_id" :placeholder="__('Tanlang')"
+                            creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
+                        <x-admin.form.select name="publisher_id" :label="__('Nashriyoti')" :options="$publishers" :selected="$prePublisherId" :placeholder="__('Tanlang')"
                             creatable create-type="publisher" :create-label="__('Yangi nashriyot')" />
                     </div>
                 </div>
@@ -65,11 +86,20 @@
                     </div>
                     <div class="grid gap-5 sm:grid-cols-3">
                         <x-admin.form.input name="isbn" :label="__('ISBN')" :value="$book?->isbn" />
-                        <x-admin.form.input name="publication_year" type="number" :label="__('Nashr yili')" :value="$book?->publication_year" placeholder="2024" />
+                        <x-admin.form.input name="publication_year" type="number" :label="__('Nashr yili')" :value="$prePublicationYear" placeholder="2024" />
                         <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" :value="$book?->pages" />
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.input name="print_run" type="number" :label="__('Tiraj')" :value="$book?->print_run" />
+                    </div>
+
+                    <x-admin.form.translatable-input name="publication_place" :label="__('Nashriyot joyi')"
+                        :value="$editing ? $book->getTranslations('publication_place') : []"
+                        :placeholders="['uz' => 'masalan: Toshkent', 'ru' => 'например: Ташкент', 'kk' => 'mısalı: Tashkent']" />
+
+                    <div class="border-t border-gray-100 pt-5 dark:border-gray-800">
+                        <x-admin.form.switch name="has_continuation" :label="__('Davomi bor')" :checked="$book?->has_continuation ?? false"
+                            :help="__('Ko‘p jildlik yoki davomi bo‘lgan kitob')" />
                     </div>
                 </div>
             </x-admin.form.section>
@@ -80,12 +110,13 @@
 
             <x-admin.form.section :title="__('Kategoriyalar')" :description="__('Kitob tegishli bo‘lgan mavzu(lar)')">
                 <x-admin.form.multiselect name="category_ids" :options="$categoryOptions"
-                    :selected="$editing ? $book->categories->pluck('id')->all() : []" :placeholder="__('Kategoriya(lar)ni tanlang')"
-                    creatable create-type="category" :create-label="__('Yangi kategoriya...')" />
+                    :selected="$preCategoryIds" :placeholder="__('Kategoriya(lar)ni tanlang')"
+                    creatable create-translatable create-with-parent :create-parents="$categoryOptions"
+                    create-type="category" :create-label="__('Yangi kategoriya')" />
             </x-admin.form.section>
         </div>
 
-        {{-- O'NG: fayllar + sozlamalar --}}
+        {{-- O'NG: muqova + fayllar --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <x-admin.form.section :title="__('Muqova rasmi')">
                 <x-admin.form.file name="cover" :image="true" accept="image/*"
@@ -100,11 +131,6 @@
                     <x-admin.form.file name="audio_file" :label="__('Audio (mp3)')" accept="audio/*"
                         :currentName="$book?->audio_file ? basename($book->audio_file) : null" :help="__('MP3, 100 MB gacha')" />
                 </div>
-            </x-admin.form.section>
-
-            <x-admin.form.section :title="__('Sozlamalar')">
-                <x-admin.form.switch name="has_continuation" :label="__('Davomi bor')" :checked="$book?->has_continuation ?? false"
-                    :help="__('Ko‘p jildlik yoki davomi bo‘lgan kitob')" />
             </x-admin.form.section>
         </div>
     </div>

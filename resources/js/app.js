@@ -14,6 +14,21 @@ window.Alpine = Alpine;
 // Ma'lumotnoma boshqaruv jadvali (qo'shish/tahrirlash modali)
 Alpine.data('lookupTable', lookupTable);
 
+// O'chirishni tasdiqlash uchun umumiy modal (native confirm o'rniga)
+Alpine.store('confirm', {
+    open: false,
+    action: '',
+    message: '',
+    ask(action, message) {
+        this.action = action;
+        this.message = message || '';
+        this.open = true;
+    },
+    close() {
+        this.open = false;
+    },
+});
+
 Alpine.start();
 
 // Sana tanlash (dashboard filtri)
@@ -29,7 +44,12 @@ document.addEventListener('DOMContentLoaded', initCharts);
 
 /**
  * Lookup (tur, til, nashriyot, muallif, kategoriya) "shu zahoti" yaratish.
- * Admin formalarida <x-admin.form.select creatable> ishlatadi.
+ * Admin formalaridagi modal quick-create ishlatadi.
+ *
+ * @param {string} type   LookupService turi (masalan 'book_type')
+ * @param {object|string} name  Tarjimali: {uz, ru, kk}; oddiy: string
+ * @param {object} extra  Qo'shimcha (masalan {parent_id})
+ * @returns {Promise<{id: number, name: string}>}
  */
 window.lookupCreate = async (type, name, extra = {}) => {
     const token = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -45,7 +65,19 @@ window.lookupCreate = async (type, name, extra = {}) => {
     });
 
     if (!res.ok) {
-        throw new Error('lookup create failed');
+        // 422 validatsiya xatolarini chaqiruvchiga yetkazamiz
+        let message = 'lookup create failed';
+        try {
+            const body = await res.json();
+            if (body?.errors) {
+                message = Object.values(body.errors).flat().join(' ');
+            } else if (body?.message) {
+                message = body.message;
+            }
+        } catch (e) {
+            // JSON emas — umumiy xabar qoladi
+        }
+        throw new Error(message);
     }
 
     return res.json(); // { id, name }

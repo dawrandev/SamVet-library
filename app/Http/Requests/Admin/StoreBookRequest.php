@@ -28,10 +28,16 @@ class StoreBookRequest extends FormRequest
             'language_id' => ['nullable', 'exists:languages,id'],
             'publisher_id' => ['nullable', 'exists:publishers,id'],
             'publication_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
+            'publication_place' => ['nullable', 'array'],
+            'publication_place.uz' => ['nullable', 'string', 'max:255'],
+            'publication_place.ru' => ['nullable', 'string', 'max:255'],
+            'publication_place.kk' => ['nullable', 'string', 'max:255'],
             'pages' => ['nullable', 'integer', 'min:1'],
             'print_run' => ['nullable', 'integer', 'min:1'],
             'annotation' => ['nullable', 'string'],
             'has_continuation' => ['boolean'],
+
+            'translation_of' => ['nullable', 'integer', 'exists:books,id'],
 
             'author_ids' => ['array'],
             'author_ids.*' => ['integer', 'exists:authors,id'],

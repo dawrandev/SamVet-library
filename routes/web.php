@@ -40,6 +40,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Kitoblar CRUD
+    Route::get('books/{book}/translations/create', [BookController::class, 'createTranslation'])->name('books.translations.create');
     Route::resource('books', BookController::class);
 
     // Kitob nusxalari (kitob show sahifasida modal)

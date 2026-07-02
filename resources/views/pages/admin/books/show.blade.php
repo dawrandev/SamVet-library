@@ -50,11 +50,11 @@
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $book->title }}</h2>
         </div>
         <div class="flex items-center gap-2">
+            <a href="{{ route('admin.books.translations.create', $book) }}" class="rounded-lg border border-brand-200 px-4 py-2 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-500/30 dark:text-brand-400 dark:hover:bg-brand-500/10">+ {{ __('Tarjima qo‘shish') }}</a>
             <a href="{{ route('admin.books.edit', $book) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Tahrirlash') }}</a>
-            <form method="POST" action="{{ route('admin.books.destroy', $book) }}" onsubmit="return confirm('{{ __('Kitobni o‘chirishni tasdiqlaysizmi?') }}')">
-                @csrf @method('DELETE')
-                <button type="submit" class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
-            </form>
+            <button type="button"
+                    @click="$store.confirm.ask('{{ route('admin.books.destroy', $book) }}', '{{ __('Kitobni o‘chirishni tasdiqlaysizmi?') }}')"
+                    class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
         </div>
     </div>
 
@@ -85,6 +85,29 @@
                     <span class="rounded-full bg-success-50 px-2.5 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">{{ $available }}/{{ $total }} {{ __('mavjud') }}</span>
                 </div>
             </div>
+
+            {{-- Boshqa tildagi nashrlar (asar guruhi) --}}
+            @php
+                $otherEditions = $book->work
+                    ? $book->work->editions->where('id', '!=', $book->id)
+                    : collect();
+            @endphp
+            @if ($otherEditions->isNotEmpty())
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                    <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Boshqa tildagi nashrlar') }}</h3>
+                    <ul class="space-y-2">
+                        @foreach ($otherEditions as $edition)
+                            <li>
+                                <a href="{{ route('admin.books.show', $edition) }}"
+                                   class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.03]">
+                                    <span class="font-medium text-gray-800 dark:text-white/90">{{ $edition->title }}</span>
+                                    <span class="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-theme-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $edition->language?->name ?? '—' }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             {{-- Raqamli fayllar --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -197,12 +220,9 @@
                                         <div class="flex items-center justify-end gap-2">
                                             <button type="button" @click="editId = {{ $copy->id }}"
                                                     class="rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800">{{ __('Tahrirlash') }}</button>
-                                            <form method="POST" action="{{ route('admin.books.copies.destroy', [$book, $copy]) }}"
-                                                  onsubmit="return confirm('{{ __('Nusxani o‘chirishni tasdiqlaysizmi?') }}')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit"
-                                                        class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
-                                            </form>
+                                            <button type="button"
+                                                    @click="$store.confirm.ask('{{ route('admin.books.copies.destroy', [$book, $copy]) }}', '{{ __('Nusxani o‘chirishni tasdiqlaysizmi?') }}')"
+                                                    class="rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
                                         </div>
                                     </td>
                                 </tr>

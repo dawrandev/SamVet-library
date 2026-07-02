@@ -19,6 +19,8 @@ class BookData
         public readonly ?int $language_id,
         public readonly ?int $publisher_id,
         public readonly ?int $publication_year,
+        /** @var array<string, string>|null Nashriyot joyi (tarjima: uz/ru/kk) */
+        public readonly ?array $publication_place,
         public readonly ?int $pages,
         public readonly ?string $isbn,
         public readonly ?int $print_run,
@@ -35,6 +37,12 @@ class BookData
 
     public static function fromRequest(Request $request): self
     {
+        // Nashriyot joyi: {uz,ru,kk} — bo'sh qiymatlar tashlanadi, hammasi bo'sh bo'lsa null
+        $place = array_filter(
+            array_map('trim', (array) $request->input('publication_place', [])),
+            static fn (string $v): bool => $v !== '',
+        );
+
         return new self(
             title: $request->string('title')->toString(),
             udc: $request->input('udc'),
@@ -43,6 +51,7 @@ class BookData
             language_id: $request->integer('language_id') ?: null,
             publisher_id: $request->integer('publisher_id') ?: null,
             publication_year: $request->integer('publication_year') ?: null,
+            publication_place: $place ?: null,
             pages: $request->integer('pages') ?: null,
             isbn: $request->input('isbn'),
             print_run: $request->integer('print_run') ?: null,
@@ -71,6 +80,7 @@ class BookData
             'language_id' => $this->language_id,
             'publisher_id' => $this->publisher_id,
             'publication_year' => $this->publication_year,
+            'publication_place' => $this->publication_place,
             'pages' => $this->pages,
             'isbn' => $this->isbn,
             'print_run' => $this->print_run,

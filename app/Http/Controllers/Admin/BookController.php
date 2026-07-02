@@ -31,7 +31,7 @@ class BookController extends Controller
 
     public function show(Book $book): View
     {
-        $book->load(['type', 'language', 'publisher', 'authors', 'categories.parent', 'copies.location', 'work']);
+        $book->load(['type', 'language', 'publisher', 'authors', 'categories.parent', 'copies.location', 'work.editions.language']);
 
         return view('pages.admin.books.show', ['book' => $book]);
     }
@@ -41,9 +41,21 @@ class BookController extends Controller
         return view('pages.admin.books.create', $this->bookService->formOptions());
     }
 
+    public function createTranslation(Book $book): View
+    {
+        $book->load(['authors', 'categories']);
+
+        return view('pages.admin.books.create', array_merge(
+            $this->bookService->formOptions(),
+            ['sourceBook' => $book],
+        ));
+    }
+
     public function store(StoreBookRequest $request): RedirectResponse
     {
-        $book = $this->bookService->create(BookData::fromRequest($request));
+        $translationOf = $request->integer('translation_of') ?: null;
+
+        $book = $this->bookService->create(BookData::fromRequest($request), $translationOf);
 
         return redirect()
             ->route('admin.books.show', $book)

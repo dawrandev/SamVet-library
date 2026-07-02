@@ -26,6 +26,13 @@ class LookupService
     ];
 
     /**
+     * Tarjimali (spatie HasTranslations) lookup turlari — 3 tilli nom saqlaydi.
+     *
+     * @var list<string>
+     */
+    private const TRANSLATABLE = ['book_type', 'language', 'category', 'location'];
+
+    /**
      * @return list<string>
      */
     public static function types(): array
@@ -33,8 +40,13 @@ class LookupService
         return array_keys(self::MAP);
     }
 
+    public static function isTranslatable(string $type): bool
+    {
+        return in_array($type, self::TRANSLATABLE, true);
+    }
+
     /**
-     * @param  array{name: string, parent_id?: int|null}  $data
+     * @param  array{name: array<string, string>|string, parent_id?: int|null}  $data
      * @return array{id: int, name: string}
      */
     public function create(string $type, array $data): array
@@ -42,7 +54,15 @@ class LookupService
         /** @var class-string<\Illuminate\Database\Eloquent\Model> $model */
         $model = self::MAP[$type];
 
-        $attributes = ['name' => trim($data['name'])];
+        if (self::isTranslatable($type)) {
+            // spatie'da name ustuniga ['uz'=>, 'ru'=>, 'kk'=>] massivini uzatamiz
+            $attributes = ['name' => array_map(
+                static fn (string $v): string => trim($v),
+                (array) $data['name'],
+            )];
+        } else {
+            $attributes = ['name' => trim((string) $data['name'])];
+        }
 
         // Faqat kategoriya ota-ona qabul qiladi
         if ($type === 'category' && ! empty($data['parent_id'])) {
@@ -51,6 +71,7 @@ class LookupService
 
         $record = $model::create($attributes);
 
-        return ['id' => $record->id, 'name' => $record->name];
+        // Tarjimali turda joriy locale bo'yicha label qaytaramiz (getAttribute avtomatik)
+        return ['id' => $record->id, 'name' => (string) $record->name];
     }
 }

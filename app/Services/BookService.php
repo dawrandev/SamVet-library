@@ -9,6 +9,7 @@ use App\Models\BookType;
 use App\Models\Category;
 use App\Models\Language;
 use App\Models\Publisher;
+use App\Models\Work;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -60,9 +61,9 @@ class BookService
         ];
     }
 
-    public function create(BookData $data): Book
+    public function create(BookData $data, ?int $translationOfId = null): Book
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $translationOfId) {
             $attributes = $data->toAttributes();
 
             // Fayllar (muqova — ochiq; elektron/audio — himoyalangan)
@@ -76,6 +77,11 @@ class BookService
                 $attributes['audio_file'] = $this->storeProtected($data->audio_file, 'books/audio');
             }
 
+            // Tarjima nashri bo'lsa — manba bilan bir xil asar (work) guruhiga bog'la
+            if ($translationOfId) {
+                $attributes['work_id'] = $this->resolveWorkId($translationOfId);
+            }
+
             $book = $this->books->create($attributes); // slug — Observer
 
             $book->authors()->sync($data->author_ids);
@@ -83,6 +89,22 @@ class BookService
 
             return $book;
         });
+    }
+
+    /**
+     * Manba kitobning asar (work) guruhini aniqlaydi: yo'q bo'lsa yangi Work yasab manbaga tayinlaydi.
+     */
+    private function resolveWorkId(int $sourceBookId): int
+    {
+        $source = Book::findOrFail($sourceBookId);
+
+        if ($source->work_id === null) {
+            $work = Work::create();
+            $source->work_id = $work->id;
+            $source->save();
+        }
+
+        return $source->work_id;
     }
 
     public function update(Book $book, BookData $data): Book

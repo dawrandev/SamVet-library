@@ -28,6 +28,9 @@
                 </div>
             </main>
         </div>
+
+        {{-- O'chirishni tasdiqlash modali (barcha delete tugmalari uchun) --}}
+        <x-admin.confirm-delete />
     </div>
 </body>
 </html>
