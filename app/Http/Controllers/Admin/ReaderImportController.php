@@ -47,13 +47,13 @@ class ReaderImportController extends Controller
     /**
      * Xizmat qaytargan statistikани sahifа uchun yig'ib beradi.
      *
-     * @param  array<string, array{imported:int, updated:int, skipped:int, type:string}>  $stats
-     * @return array{sheets: array<int, array{sheet:string, type:string, imported:int, updated:int, skipped:int}>, total: array{imported:int, updated:int, skipped:int}}
+     * @param  array<string, array{imported:int, updated:int, skipped:int, photos:int, type:?string}>  $stats
+     * @return array{sheets: array<int, array{sheet:string, type:string, imported:int, updated:int, skipped:int, photos:int}>, total: array{imported:int, updated:int, skipped:int, photos:int}}
      */
     private function summarize(array $stats): array
     {
         $sheets = [];
-        $total = ['imported' => 0, 'updated' => 0, 'skipped' => 0];
+        $total = ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0];
 
         foreach ($stats as $sheet => $stat) {
             $sheets[] = [
@@ -62,10 +62,12 @@ class ReaderImportController extends Controller
                 'imported' => $stat['imported'],
                 'updated' => $stat['updated'],
                 'skipped' => $stat['skipped'],
+                'photos' => $stat['photos'] ?? 0,
             ];
             $total['imported'] += $stat['imported'];
             $total['updated'] += $stat['updated'];
             $total['skipped'] += $stat['skipped'];
+            $total['photos'] += $stat['photos'] ?? 0;
         }
 
         return ['sheets' => $sheets, 'total' => $total];

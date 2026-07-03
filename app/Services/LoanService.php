@@ -10,11 +10,15 @@ use App\Models\Loan;
 use App\Models\Reader;
 use App\Repositories\Contracts\LoanRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class LoanService
 {
+    /** Muddati o'tgan kitoblar soni keshi (navbar/sidebar bildirishnomasi). */
+    public const OVERDUE_CACHE_KEY = 'overdue_loans_count';
+
     public function __construct(
         private readonly LoanRepositoryInterface $loans,
     ) {}
@@ -62,7 +66,7 @@ class LoanService
             throw new RuntimeException(__('Nusxa mavjud emas (berilgan/yo‘qotilgan).'));
         }
 
-        return DB::transaction(function () use ($reader, $copy, $dueAt, $note) {
+        $loan = DB::transaction(function () use ($reader, $copy, $dueAt, $note) {
             $loan = $this->loans->create([
                 'reader_id' => $reader->id,
                 'book_copy_id' => $copy->id,
@@ -76,6 +80,10 @@ class LoanService
 
             return $loan;
         });
+
+        $this->forgetOverdueCache();
+
+        return $loan;
     }
 
     /**
@@ -88,7 +96,7 @@ class LoanService
             return $loan;
         }
 
-        return DB::transaction(function () use ($loan) {
+        $loan = DB::transaction(function () use ($loan) {
             $this->loans->update($loan, [
                 'returned_at' => now(),
                 'status' => LoanStatus::Returned,
@@ -98,6 +106,10 @@ class LoanService
 
             return $loan;
         });
+
+        $this->forgetOverdueCache();
+
+        return $loan;
     }
 
     /**
@@ -109,7 +121,7 @@ class LoanService
             return $loan;
         }
 
-        return DB::transaction(function () use ($loan) {
+        $loan = DB::transaction(function () use ($loan) {
             $this->loans->update($loan, [
                 'status' => LoanStatus::Lost,
             ]);
@@ -118,5 +130,18 @@ class LoanService
 
             return $loan;
         });
+
+        $this->forgetOverdueCache();
+
+        return $loan;
+    }
+
+    /**
+     * Muddati o'tgan kitoblar keshini bekor qiladi — oldi-berdi holati o'zgargach
+     * navbar/sidebar bildirishnomasi darhol yangilanishi uchun.
+     */
+    private function forgetOverdueCache(): void
+    {
+        Cache::forget(self::OVERDUE_CACHE_KEY);
     }
 }

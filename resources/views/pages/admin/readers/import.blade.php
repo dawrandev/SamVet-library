@@ -133,7 +133,8 @@
                             <th class="py-2.5 pr-4 font-medium">{{ __('Turi') }}</th>
                             <th class="py-2.5 pr-4 font-medium text-right">{{ __('Yangi') }}</th>
                             <th class="py-2.5 pr-4 font-medium text-right">{{ __('Yangilandi') }}</th>
-                            <th class="py-2.5 font-medium text-right">{{ __('O‘tkazildi') }}</th>
+                            <th class="py-2.5 pr-4 font-medium text-right">{{ __('O‘tkazildi') }}</th>
+                            <th class="py-2.5 font-medium text-right">{{ __('Rasm') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -143,7 +144,8 @@
                                 <td class="py-2.5 pr-4">{{ $row['type'] }}</td>
                                 <td class="py-2.5 pr-4 text-right text-success-600 dark:text-success-500">{{ $row['imported'] }}</td>
                                 <td class="py-2.5 pr-4 text-right text-brand-600 dark:text-brand-400">{{ $row['updated'] }}</td>
-                                <td class="py-2.5 text-right text-gray-400">{{ $row['skipped'] }}</td>
+                                <td class="py-2.5 pr-4 text-right text-gray-400">{{ $row['skipped'] }}</td>
+                                <td class="py-2.5 text-right text-gray-600 dark:text-gray-300">{{ $row['photos'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -152,7 +154,8 @@
                             <td class="py-3 pr-4" colspan="2">{{ __('JAMI') }}</td>
                             <td class="py-3 pr-4 text-right text-success-600 dark:text-success-500">{{ $stats['total']['imported'] }}</td>
                             <td class="py-3 pr-4 text-right text-brand-600 dark:text-brand-400">{{ $stats['total']['updated'] }}</td>
-                            <td class="py-3 text-right text-gray-400">{{ $stats['total']['skipped'] }}</td>
+                            <td class="py-3 pr-4 text-right text-gray-400">{{ $stats['total']['skipped'] }}</td>
+                            <td class="py-3 text-right text-gray-600 dark:text-gray-300">{{ $stats['total']['photos'] }}</td>
                         </tr>
                     </tfoot>
                 </table>

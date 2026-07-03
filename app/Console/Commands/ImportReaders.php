@@ -43,7 +43,7 @@ class ImportReaders extends Command
     }
 
     /**
-     * @param  array<string, array{imported:int, updated:int, skipped:int, type:?string}>  $stats
+     * @param  array<string, array{imported:int, updated:int, skipped:int, photos:int, type:?string}>  $stats
      */
     private function renderSummary(array $stats): void
     {
@@ -51,6 +51,7 @@ class ImportReaders extends Command
         $totalImported = 0;
         $totalUpdated = 0;
         $totalSkipped = 0;
+        $totalPhotos = 0;
 
         foreach ($stats as $sheet => $stat) {
             $rows[] = [
@@ -59,17 +60,19 @@ class ImportReaders extends Command
                 $stat['imported'],
                 $stat['updated'],
                 $stat['skipped'],
+                $stat['photos'] ?? 0,
             ];
             $totalImported += $stat['imported'];
             $totalUpdated += $stat['updated'];
             $totalSkipped += $stat['skipped'];
+            $totalPhotos += $stat['photos'] ?? 0;
         }
 
-        $rows[] = ['—', '—', '—', '—', '—'];
-        $rows[] = ['JAMI', '', $totalImported, $totalUpdated, $totalSkipped];
+        $rows[] = ['—', '—', '—', '—', '—', '—'];
+        $rows[] = ['JAMI', '', $totalImported, $totalUpdated, $totalSkipped, $totalPhotos];
 
         $this->table(
-            ['Varaq', 'Type', 'Yangi', 'Yangilandi', 'Skip'],
+            ['Varaq', 'Type', 'Yangi', 'Yangilandi', 'Skip', 'Rasm'],
             $rows,
         );
     }

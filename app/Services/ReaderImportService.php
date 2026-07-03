@@ -7,9 +7,9 @@ use App\Enums\ReaderStatus;
 use App\Enums\ReaderType;
 use App\Models\Reader;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
  * Katta ko'p varaqli Excel'dan kutubxona a'zolarini (readers) import qilish.
@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * Har varaq alohida yuklanadi (76MB butun yuklamaslik uchun), rasm o'qilmaydi.
  * Idempotent: id_number yoki pinfl bo'yicha updateOrCreate.
  *
- * @phpstan-type SheetStat array{imported:int, updated:int, skipped:int, type:?string}
+ * @phpstan-type SheetStat array{imported:int, updated:int, skipped:int, photos:int, type:?string}
  */
 class ReaderImportService
 {
@@ -105,6 +105,10 @@ class ReaderImportService
     /** @var callable|null Progress callback: fn(string $sheet, string $message): void */
     private $onSheet = null;
 
+    public function __construct(
+        private readonly ReaderPhotoExtractor $photos = new ReaderPhotoExtractor(),
+    ) {}
+
     public function onSheet(callable $callback): self
     {
         $this->onSheet = $callback;
@@ -158,7 +162,7 @@ class ReaderImportService
                 $stats[$sheetName] = $this->importSheet($path, $sheetName, $context);
             } catch (\Throwable $e) {
                 Log::error("readers:import — '{$sheetName}' varag'i o'qishda xato: {$e->getMessage()}");
-                $stats[$sheetName] = ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'type' => 'XATO'];
+                $stats[$sheetName] = ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => 'XATO'];
             }
         }
 
@@ -205,6 +209,7 @@ class ReaderImportService
         $imported = 0;
         $updated = 0;
         $skipped = 0;
+        $photoCount = 0;
 
         $rows = $sheet->toArray(null, true, false, false);
 
@@ -213,7 +218,7 @@ class ReaderImportService
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
 
-            return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'type' => $context['type']?->value];
+            return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => $context['type']?->value];
         }
 
         // ST — pozitsion; boshqalar — sarlavha xaritasi.
@@ -221,12 +226,18 @@ class ReaderImportService
             ? self::ST_POSITIONS
             : $this->buildHeaderMap($rows[0]);
 
+        // Varaqdagi rasmlar: absolut qator indeksi (0-based) => rasm.
+        $sheetPhotos = $this->photos->photosForSheet($path, $sheetName);
+
         // Sarlavha qatorini o'tkazib yuboramiz.
         $dataRows = array_slice($rows, 1);
 
         foreach ($dataRows as $index => $row) {
+            // dataRows[$index] = rows[$index + 1] (absolut indeks) — rasm anchori bilan mos.
+            $photo = $sheetPhotos[$index + 1] ?? null;
+
             try {
-                $result = $this->importRow($row, $columnMap, $context);
+                $result = $this->importRow($row, $columnMap, $context, $photo);
             } catch (\Throwable $e) {
                 $rowNo = $index + 2; // 1-based + header
                 Log::warning("readers:import — '{$sheetName}' {$rowNo}-qator xato: {$e->getMessage()}");
@@ -238,12 +249,16 @@ class ReaderImportService
                 'updated' => $updated++,
                 default => $skipped++,
             };
+
+            if ($photo !== null && $result !== 'skipped') {
+                $photoCount++;
+            }
         }
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        return ['imported' => $imported, 'updated' => $updated, 'skipped' => $skipped, 'type' => $context['type']?->value];
+        return ['imported' => $imported, 'updated' => $updated, 'skipped' => $skipped, 'photos' => $photoCount, 'type' => $context['type']?->value];
     }
 
     /**
@@ -331,9 +346,10 @@ class ReaderImportService
      * @param  array<int, mixed>  $row
      * @param  array<string, int>  $columnMap  field => 0-based ustun indeksi
      * @param  array{mode:string, type:?ReaderType, status:ReaderStatus}  $context
+     * @param  array{bytes:string, ext:string}|null  $photo  shu qatorga biriktirilgan rasm
      * @return 'imported'|'updated'|'skipped'
      */
-    private function importRow(array $row, array $columnMap, array $context): string
+    private function importRow(array $row, array $columnMap, array $context, ?array $photo = null): string
     {
         $get = function (string $field) use ($row, $columnMap): ?string {
             if (! isset($columnMap[$field])) {
@@ -393,25 +409,48 @@ class ReaderImportService
         // id_number bo'lsa u kalit, aks holda pinfl.
         if ($idNumber !== null) {
             $attributes['id_number'] = $idNumber;
-            $wasRecentlyCreated = $this->upsert(['id_number' => $idNumber], $attributes);
+            $reader = $this->upsert(['id_number' => $idNumber], $attributes);
+            $key = $idNumber;
         } else {
             $attributes['pinfl'] = $pinfl;
-            $wasRecentlyCreated = $this->upsert(['pinfl' => $pinfl], $attributes);
+            $reader = $this->upsert(['pinfl' => $pinfl], $attributes);
+            $key = (string) $pinfl;
         }
 
-        return $wasRecentlyCreated ? 'imported' : 'updated';
+        if ($photo !== null) {
+            $this->attachPhoto($reader, $key, $photo);
+        }
+
+        return $reader->wasRecentlyCreated ? 'imported' : 'updated';
     }
 
     /**
      * @param  array<string, mixed>  $keys
      * @param  array<string, mixed>  $attributes
-     * @return bool  yangi yaratildimi (true) yoki yangilandimi (false)
      */
-    private function upsert(array $keys, array $attributes): bool
+    private function upsert(array $keys, array $attributes): Reader
     {
-        $reader = Reader::updateOrCreate($keys, $attributes);
+        return Reader::updateOrCreate($keys, $attributes);
+    }
 
-        return $reader->wasRecentlyCreated;
+    /**
+     * Rasmni public diskка saqlab, reader.photo ni o'rnatadi.
+     * Fayl nomi deterministik (kalit bo'yicha) — qayta import ustiga yozadi, orphan qoldirmaydi.
+     *
+     * @param  array{bytes:string, ext:string}  $photo
+     */
+    private function attachPhoto(Reader $reader, string $key, array $photo): void
+    {
+        $safe = preg_replace('/[^A-Za-z0-9_-]+/', '', $key);
+        $safe = $safe !== '' ? $safe : (string) $reader->id;
+
+        $path = 'readers/photos/' . $safe . '.' . $photo['ext'];
+
+        Storage::disk('public')->put($path, $photo['bytes']);
+
+        if ($reader->photo !== $path) {
+            $reader->forceFill(['photo' => $path])->save();
+        }
     }
 
     /**
