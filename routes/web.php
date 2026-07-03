@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ComputerSessionController;
 use App\Http\Controllers\Admin\CopyController;
 use App\Http\Controllers\Admin\CopyLookupController;
@@ -47,6 +48,10 @@ Route::middleware('guest')->group(function () {
 */
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Kitoblarni Excel orqali import qilish (resource'dan OLDIN — `books/{book}` bilan to'qnashmasin)
+    Route::get('books/import', [BookImportController::class, 'create'])->name('books.import.create');
+    Route::post('books/import', [BookImportController::class, 'store'])->name('books.import.store');
 
     // Kitoblar CRUD
     Route::get('books/{book}/translations/create', [BookController::class, 'createTranslation'])->name('books.translations.create');
