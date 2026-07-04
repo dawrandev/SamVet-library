@@ -46,6 +46,17 @@
                         </a>
                     </li>
 
+                    {{-- Jurnallar --}}
+                    <li>
+                        <a href="{{ route('admin.journals.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.journals.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.journals.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5C19.7426 20.75 20.75 19.7426 20.75 18.5V5.5C20.75 4.25736 19.7426 3.25 18.5 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5C18.9142 4.75 19.25 5.08579 19.25 5.5V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM7 7.75C6.58579 7.75 6.25 8.08579 6.25 8.5C6.25 8.91421 6.58579 9.25 7 9.25H17C17.4142 9.25 17.75 8.91421 17.75 8.5C17.75 8.08579 17.4142 7.75 17 7.75H7ZM6.25 12C6.25 11.5858 6.58579 11.25 7 11.25H17C17.4142 11.25 17.75 11.5858 17.75 12C17.75 12.4142 17.4142 12.75 17 12.75H7C6.58579 12.75 6.25 12.4142 6.25 12ZM7 14.75C6.58579 14.75 6.25 15.0858 6.25 15.5C6.25 15.9142 6.58579 16.25 7 16.25H13C13.4142 16.25 13.75 15.9142 13.75 15.5C13.75 15.0858 13.4142 14.75 13 14.75H7Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Jurnallar') }}</span>
+                        </a>
+                    </li>
+
                     {{-- Foydalanuvchilar (kutubxona a'zolari) --}}
                     <li>
                         <a href="{{ route('admin.readers.index') }}"
@@ -95,6 +106,7 @@
                                     $lookupLinks = [
                                         'categories' => __('Kategoriyalar'),
                                         'book-types' => __('Kitob turlari'),
+                                        'journal-types' => __('Jurnal turlari'),
                                         'languages' => __('Tillar'),
                                         'locations' => __('Joylashuvlar'),
                                         'publishers' => __('Nashriyotlar'),
@@ -111,6 +123,17 @@
                                 @endforeach
                             </ul>
                         </div>
+                    </li>
+
+                    {{-- Sayt menyusi (client navbar navigatsiyasi) --}}
+                    <li>
+                        <a href="{{ route('admin.menu-items.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.menu-items.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.menu-items.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M3.25 6.5C3.25 6.08579 3.58579 5.75 4 5.75H20C20.4142 5.75 20.75 6.08579 20.75 6.5C20.75 6.91421 20.4142 7.25 20 7.25H4C3.58579 7.25 3.25 6.91421 3.25 6.5ZM3.25 12C3.25 11.5858 3.58579 11.25 4 11.25H20C20.4142 11.25 20.75 11.5858 20.75 12C20.75 12.4142 20.4142 12.75 20 12.75H4C3.58579 12.75 3.25 12.4142 3.25 12ZM4 16.75C3.58579 16.75 3.25 17.0858 3.25 17.5C3.25 17.9142 3.58579 18.25 4 18.25H20C20.4142 18.25 20.75 17.9142 20.75 17.5C20.75 17.0858 20.4142 16.75 20 16.75H4Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Sayt menyusi') }}</span>
+                        </a>
                     </li>
                 </ul>
             </div>

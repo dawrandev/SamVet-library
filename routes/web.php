@@ -7,8 +7,12 @@ use App\Http\Controllers\Admin\CopyController;
 use App\Http\Controllers\Admin\CopyLookupController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\JournalController;
+use App\Http\Controllers\Admin\JournalCopyController;
+use App\Http\Controllers\Admin\JournalIssueController;
 use App\Http\Controllers\Admin\LoanController;
 use App\Http\Controllers\Admin\LookupController;
+use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\ReaderCardController;
 use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
@@ -17,6 +21,7 @@ use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
+use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
 use App\Http\Controllers\Admin\Lookups\PublisherController;
@@ -60,6 +65,17 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Kitob nusxalari (kitob show sahifasida modal)
     Route::resource('books.copies', CopyController::class)->only(['store', 'update', 'destroy']);
 
+    // Jurnallar CRUD (nom darajasi)
+    Route::resource('journals', JournalController::class);
+
+    // Jurnal sonlari (jurnal show sahifasida modal + son sahifasi)
+    Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);
+
+    // Jurnal nusxalari (son show sahifasida modal)
+    Route::resource('journal-issues.copies', JournalCopyController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->parameters(['journal-issues' => 'journalIssue', 'copies' => 'copy']);
+
     // Foydalanuvchilarni Excel orqali import qilish (resource'dan OLDIN — `readers/{reader}` bilan to'qnashmasin)
     Route::get('readers/import', [ReaderImportController::class, 'create'])->name('readers.import.create');
     Route::post('readers/import', [ReaderImportController::class, 'store'])->name('readers.import.store');
@@ -93,6 +109,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('readers/{reader}/loans', [LoanController::class, 'store'])->name('readers.loans.store');
     Route::patch('loans/{loan}/return', [LoanController::class, 'return'])->name('loans.return');
 
+    // Sayt menyusi (client navbar navigatsiyasi) — daraxtsimon CRUD
+    Route::resource('menu-items', MenuItemController::class)->except(['show']);
+
     // Lookup "shu zahoti" qo'shish (AJAX, kitob formasida)
     Route::post('lookups', [LookupController::class, 'store'])->name('lookups.store');
 
@@ -100,6 +119,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('lookups')->name('lookups.')->group(function () {
         Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('book-types', BookTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['book-types' => 'bookType']);
+        Route::resource('journal-types', JournalTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['journal-types' => 'journalType']);
         Route::resource('languages', LanguageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('locations', LocationController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('publishers', PublisherController::class)->only(['index', 'store', 'update', 'destroy']);

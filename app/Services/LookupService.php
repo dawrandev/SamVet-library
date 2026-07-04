@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Author;
 use App\Models\BookType;
 use App\Models\Category;
+use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
 use App\Models\Publisher;
@@ -18,6 +19,7 @@ class LookupService
     /** @var array<string, class-string> */
     private const MAP = [
         'book_type' => BookType::class,
+        'journal_type' => JournalType::class,
         'language' => Language::class,
         'publisher' => Publisher::class,
         'author' => Author::class,
@@ -30,7 +32,7 @@ class LookupService
      *
      * @var list<string>
      */
-    private const TRANSLATABLE = ['book_type', 'language', 'category', 'location'];
+    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location'];
 
     /**
      * @return list<string>

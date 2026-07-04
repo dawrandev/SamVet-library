@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             AuthorSeeder::class,
             CategorySeeder::class,
             BookSeeder::class,
+            MenuSeeder::class,
         ]);
     }
 }
