@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SamVet Library — Admin panel qo'llanmasi</title>
+<style>
+  :root {
+    --brand: #465fff;
+    --brand-soft: #eaeeff;
+    --ink: #131a2b;
+    --body: #3b4457;
+    --muted: #6b7590;
+    --paper: #f6f8fd;
+    --surface: #ffffff;
+    --border: #e4e9f4;
+    --border-strong: #d3dbec;
+    --ok: #12996b;
+    --ok-soft: #e7f6ef;
+    --warn: #c77700;
+    --warn-soft: #fbf1de;
+    --bad: #d63a3a;
+    --bad-soft: #fbe9e9;
+    --chip-bg: #eef1f8;
+    --shadow: 0 1px 2px rgba(19,26,43,.04), 0 8px 24px rgba(19,26,43,.05);
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --brand: #7f93ff;
+      --brand-soft: #1c2340;
+      --ink: #eef1fa;
+      --body: #c3cadd;
+      --muted: #8a93ac;
+      --paper: #0c1020;
+      --surface: #141a2c;
+      --border: #232c45;
+      --border-strong: #2f3a58;
+      --ok: #3fce97;
+      --ok-soft: #12261e;
+      --warn: #e6a03a;
+      --warn-soft: #2a2110;
+      --bad: #f0736f;
+      --bad-soft: #2c1516;
+      --chip-bg: #1c2338;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --brand:#465fff; --brand-soft:#eaeeff; --ink:#131a2b; --body:#3b4457; --muted:#6b7590;
+    --paper:#f6f8fd; --surface:#fff; --border:#e4e9f4; --border-strong:#d3dbec;
+    --ok:#12996b; --ok-soft:#e7f6ef; --warn:#c77700; --warn-soft:#fbf1de; --bad:#d63a3a; --bad-soft:#fbe9e9;
+    --chip-bg:#eef1f8; --shadow:0 1px 2px rgba(19,26,43,.04),0 8px 24px rgba(19,26,43,.05);
+  }
+  :root[data-theme="dark"] {
+    --brand:#7f93ff; --brand-soft:#1c2340; --ink:#eef1fa; --body:#c3cadd; --muted:#8a93ac;
+    --paper:#0c1020; --surface:#141a2c; --border:#232c45; --border-strong:#2f3a58;
+    --ok:#3fce97; --ok-soft:#12261e; --warn:#e6a03a; --warn-soft:#2a2110; --bad:#f0736f; --bad-soft:#2c1516;
+    --chip-bg:#1c2338; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .wrap {
+    background: var(--paper);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 20px 80px;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+
+  /* --- Header --- */
+  header.hero {
+    padding: 56px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--brand);
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.08;
+    letter-spacing: -.02em;
+    color: var(--ink);
+    margin: 14px 0 12px;
+    text-wrap: balance;
+    font-weight: 800;
+  }
+  .hero p.lead { font-size: 18px; color: var(--muted); margin: 0; max-width: 62ch; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .tag {
+    font-family: var(--mono); font-size: 12.5px; color: var(--body);
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 5px 11px; border-radius: 999px;
+  }
+  .tag b { color: var(--ink); }
+
+  /* --- Section index --- */
+  nav.toc {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    margin: 0 -20px 40px; padding: 12px 20px;
+  }
+  nav.toc .inner { max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 6px 4px; }
+  nav.toc a {
+    font-size: 13.5px; color: var(--muted); text-decoration: none;
+    padding: 5px 10px; border-radius: 7px; white-space: nowrap;
+  }
+  nav.toc a:hover { color: var(--ink); background: var(--chip-bg); }
+  nav.toc a .n { font-family: var(--mono); font-size: 11px; color: var(--brand); margin-right: 5px; }
+
+  /* --- Sections --- */
+  section { padding: 20px 0 40px; scroll-margin-top: 64px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .sec-num {
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--brand); background: var(--brand-soft);
+    padding: 3px 9px; border-radius: 7px; flex: none;
+  }
+  h2 {
+    font-size: clamp(23px, 3.2vw, 30px); color: var(--ink); letter-spacing: -.015em;
+    margin: 0; font-weight: 750; text-wrap: balance;
+  }
+  .sec-sub { color: var(--muted); margin: 6px 0 22px; font-size: 16.5px; }
+  h3 {
+    font-size: 18px; color: var(--ink); margin: 30px 0 10px; font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  h3 .mk { font-family: var(--mono); font-size: 12px; color: var(--brand); margin-right: 8px; font-weight: 600; }
+  p { margin: 0 0 14px; max-width: 68ch; }
+  a { color: var(--brand); }
+  strong { color: var(--ink); font-weight: 650; }
+
+  /* --- Cards / callouts --- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 24px; box-shadow: var(--shadow); margin: 18px 0;
+  }
+  .callout {
+    border-radius: 12px; padding: 15px 18px; margin: 18px 0;
+    border: 1px solid var(--border); border-left-width: 3px;
+    background: var(--surface); font-size: 15.5px;
+  }
+  .callout .clabel { font-weight: 700; color: var(--ink); display:block; margin-bottom: 3px; }
+  .callout.info { border-left-color: var(--brand); background: var(--brand-soft); }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout.ok   { border-left-color: var(--ok); background: var(--ok-soft); }
+  .callout.bad  { border-left-color: var(--bad); background: var(--bad-soft); }
+  .callout p { margin: 0; max-width: none; }
+
+  /* --- Tables --- */
+  .table-scroll { overflow-x: auto; margin: 16px 0; border: 1px solid var(--border); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 460px; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--muted); font-weight: 600; background: var(--paper); position: sticky; top: 0;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td b { color: var(--ink); }
+  code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--chip-bg);
+    color: var(--ink); padding: 2px 6px; border-radius: 5px; white-space: nowrap;
+  }
+
+  /* --- Step list --- */
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; }
+  ol.steps li {
+    position: relative; padding: 3px 0 14px 44px; margin: 0;
+    border-left: 1.5px solid var(--border); margin-left: 14px;
+  }
+  ol.steps li:last-child { border-left-color: transparent; }
+  ol.steps li::before {
+    counter-increment: s; content: counter(s);
+    position: absolute; left: -14px; top: 0;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand); color: #fff; font-family: var(--mono); font-size: 13px; font-weight: 600;
+    display: grid; place-items: center;
+  }
+  ol.steps li b { color: var(--ink); }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin: 6px 0; }
+
+  /* --- Status pills --- */
+  .pill { display:inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.mut { background: var(--chip-bg); color: var(--muted); }
+
+  /* --- Checklist --- */
+  .check { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .check:last-child { border-bottom: none; }
+  .box { flex: none; width: 20px; height: 20px; border: 2px solid var(--border-strong); border-radius: 6px; margin-top: 2px; }
+  .check div { font-size: 15px; }
+  .check div span { display:block; color: var(--muted); font-size: 13.5px; }
+
+  footer { border-top: 1px solid var(--border); margin-top: 30px; padding-top: 24px; color: var(--muted); font-size: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">SamVet Library · Admin qo'llanma</div>
+    <h1>Kutubxona admin paneli: kitoblar va foydalanuvchilar tizimi</h1>
+    <p class="lead">Samarqand veterinariya universiteti elektron kutubxonasi. Bu qo'llanma admin panelda bajariladigan har bir amalni — kitob, foydalanuvchi, kitob aylanmasi va intizom — bosqichma-bosqich tushuntiradi.</p>
+    <div class="meta-row">
+      <span class="tag">Til: <b>faqat o'zbekcha</b></span>
+      <span class="tag">Kirish: <b>admin@samvet.uz</b></span>
+      <span class="tag">5 ta asosiy bo'lim</span>
+      <span class="tag">Rejim: <b>yorug' / qorong'i</b></span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="inner">
+      <a href="#orient"><span class="n">00</span>Orientatsiya</a>
+      <a href="#dashboard"><span class="n">01</span>Bosh sahifa</a>
+      <a href="#books"><span class="n">02</span>Kitoblar</a>
+      <a href="#readers"><span class="n">03</span>Foydalanuvchilar</a>
+      <a href="#loans"><span class="n">04</span>Kitob aylanmasi</a>
+      <a href="#discipline"><span class="n">05</span>Intizom</a>
+      <a href="#lookups"><span class="n">06</span>Ma'lumotnomalar</a>
+      <a href="#security"><span class="n">07</span>Xavfsizlik</a>
+      <a href="#checklist"><span class="n">08</span>Test-ro'yxat</a>
+    </div>
+  </nav>
+
+  <!-- 00 -->
+  <section id="orient">
+    <div class="sec-head"><span class="sec-num">00</span><h2>Orientatsiya — panel qanday tuzilgan</h2></div>
+    <p class="sec-sub">Chap tomonda menyu, tepada qidiruv va bildirishnomalar. Panel butunlay o'zbek tilida ishlaydi.</p>
+
+    <p>Kirgach chap menyuda 5 ta asosiy bo'lim turadi. Har biri bu qo'llanmada alohida bo'lim sifatida yoritilgan.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Menyu</th><th>Nima uchun</th><th>Bo'lim</th></tr></thead>
+        <tbody>
+          <tr><td><b>Bosh sahifa</b></td><td>Umumiy ko'rsatkichlar, muddati o'tgan kitoblar bildirishnomasi</td><td>01</td></tr>
+          <tr><td><b>Kitoblar</b></td><td>Kitob va nusxalarni boshqarish, Exceldan import</td><td>02</td></tr>
+          <tr><td><b>Foydalanuvchilar</b></td><td>Kitobxonlar (talaba/xodim), profil, guvohnoma, import</td><td>03</td></tr>
+          <tr><td><b>Berilgan kitoblar</b></td><td>Berilgan kitoblar, muddat nazorati, qaytarish</td><td>04</td></tr>
+          <tr><td><b>Ma'lumotnomalar</b></td><td>Kitob turi, kategoriya, til, nashriyot, joylashuv, muallif</td><td>06</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="clabel">Tepa panel</span>
+      <p>O'ng tepada <b>🔔 qo'ng'iroq</b> — muddati o'tgan kitoblar soni (qizil belgi). Yonida <b>oy/quyosh</b> — yorug'/qorong'i rejim. Undan keyin admin nomi va <b>Chiqish</b>.</p>
+    </div>
+  </section>
+
+  <!-- 01 -->
+  <section id="dashboard">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Bosh sahifa</h2></div>
+    <p class="sec-sub">Kutubxona holatining umumiy ko'rinishi.</p>
+    <ul class="plain">
+      <li><strong>Ko'rsatkich kartalari</strong> — jami kitoblar, kategoriyalar, foydalanuvchilar soni.</li>
+      <li><strong>Muddati o'tgan</strong> kartasi (⏰, qizil) — ustiga bossangiz muddati o'tgan berilgan kitoblar ro'yxatiga o'tadi.</li>
+      <li><strong>Grafiklar</strong> — oylik ko'rishlar va statistika dinamikasi.</li>
+    </ul>
+    <div class="callout info"><p>Muddati o'tgan kitoblar soni <b>3 joyda</b> bir vaqtda ko'rinadi: bosh sahifa kartasi, tepadagi qo'ng'iroq va menyudagi "Berilgan kitoblar" yonidagi qizil belgi. Kitob qaytarilishi bilan hamma joyda <b>darhol</b> yangilanadi.</p></div>
+  </section>
+
+  <!-- 02 -->
+  <section id="books">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Kitoblar</h2></div>
+    <p class="sec-sub">Kitob — bibliografik yozuv (sarlavha, muallif, til…). Har bir kitobning bir yoki bir nechta <strong>nusxasi</strong> (inventar raqamli jismoniy dona) bo'ladi.</p>
+
+    <h3><span class="mk">2.1</span>Ro'yxat va qidiruv</h3>
+    <p>Kitoblar sahifasida qidiruv (sarlavha bo'yicha), kategoriya va til bo'yicha filtr, sahifalash mavjud. Har bir qatorda <b>Ko'rish</b>, <b>Tahrirlash</b>, <b>O'chirish</b>.</p>
+
+    <h3><span class="mk">2.2</span>Yangi kitob qo'shish</h3>
+    <p>"+ Yangi kitob" tugmasi orqali forma ochiladi. Maydonlar:</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Maydon</th><th>Izoh</th></tr></thead>
+        <tbody>
+          <tr><td><b>Sarlavha</b> *</td><td>Kitob nomi (majburiy)</td></tr>
+          <tr><td>UDK, Muallif belgisi</td><td>Kutubxona tasnifi kodlari</td></tr>
+          <tr><td>ISBN</td><td>Xalqaro raqam (bo'lmasa — bo'sh)</td></tr>
+          <tr><td>Kitob turi, Til, Nashriyot</td><td>Ma'lumotnomadan tanlanadi (yo'q bo'lsa qo'shiladi)</td></tr>
+          <tr><td>Nashr joyi</td><td>3 tilda (uz/ru/kk) kiritiladi</td></tr>
+          <tr><td>Nashr yili, Sahifa, Adadi</td><td>Raqamlar</td></tr>
+          <tr><td>Annotatsiya</td><td>Qisqa mazmun</td></tr>
+          <tr><td>Mualliflar, Kategoriyalar</td><td>Bir nechta tanlanadi</td></tr>
+          <tr><td>Muqova rasmi</td><td>Katalog uchun (ochiq)</td></tr>
+          <tr><td>Elektron fayl (PDF), Audio</td><td>Onlayn o'qish/tinglash uchun — <b>himoyalangan</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><span class="mk">2.3</span>Kitob sahifasi va nusxalar</h3>
+    <p>Kitobni ochsangiz — barcha ma'lumot va <strong>nusxalar</strong> jadvali. Nusxa qo'shish/tahrirlash/o'chirish shu yerda (modal orqali). Nusxa maydonlari:</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Maydon</th><th>Qiymatlar</th></tr></thead>
+        <tbody>
+          <tr><td><b>Inventar raqami</b> *</td><td>Noyob (takrorlanmaydi)</td></tr>
+          <tr><td>Format</td><td>Bosma · Elektron · Brayl</td></tr>
+          <tr><td>Holati</td><td>Yangi · Eski · Yirtilgan · Tuzatilgan · Chizilgan</td></tr>
+          <tr><td>Mavjudlik</td><td><span class="pill ok">available</span> <span class="pill warn">borrowed</span> <span class="pill mut">lost / written_off</span></td></tr>
+          <tr><td>Joylashuvi, Narxi</td><td>Ma'lumotnoma / son</td></tr>
+          <tr><td>Kirim / chiqim akti</td><td>PDF — <b>faqat kutubxonachi</b>, himoyalangan</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><span class="mk">2.4</span>Exceldan import</h3>
+    <p>Kitoblar ro'yxatidagi <strong>"⬆ Exceldan import"</strong> tugmasi orqali katta ro'yxatni bir yo'la yuklaysiz.</p>
+    <ol class="steps">
+      <li><b>Faylni tanlang</b> (.xlsx) — sudrab tashlang yoki bosib tanlang.</li>
+      <li><b>Import qilish</b> — indikator chiqadi, kutasiz.</li>
+      <li><b>Natija</b>: yangi kitoblar, qo'shilgan nusxalar va avtomatik yaratilgan ma'lumotnomalar soni.</li>
+    </ol>
+    <ul class="plain">
+      <li>Har qator = bitta nusxa. Bir xil kitobning nusxalari <b>bitta kitobga guruhlanadi</b>.</li>
+      <li>Turi, til, nashriyot, joylashuv, muallif <b>yo'q bo'lsa avtomatik yaratiladi</b>.</li>
+      <li>Bo'sh qatorlar sanalmaydi; takror inventar qo'shilmaydi (qayta import xavfsiz).</li>
+      <li>Matn qanday bo'lsa (kirill/lotin) shundayligicha saqlanadi — keyin tahrirlab tozalaysiz.</li>
+    </ul>
+    <div class="callout warn"><p>Bu faylda <b>kategoriya, narx va elektron fayl yo'q</b> — ular importdan keyin qo'lda beriladi.</p></div>
+
+    <h3><span class="mk">2.5</span>Tarjima nashri</h3>
+    <p>Kitob sahifasidan tarjima nashrini bog'lash mumkin — asl kitob bilan bir "asar" guruhida bog'lanadi (masalan bir kitobning o'zbekcha va ruscha nashri).</p>
+  </section>
+
+  <!-- 03 -->
+  <section id="readers">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Foydalanuvchilar</h2></div>
+    <p class="sec-sub">Kutubxona a'zolari — talabalar (bakalavr/magistr/doktorant/texnikum) va xodimlar (professor, filial/texnikum xodimi). Ro'yxatdan o'tish yo'q — hisobni admin yaratadi.</p>
+
+    <h3><span class="mk">3.1</span>Ro'yxat va qidiruv</h3>
+    <p>Qidiruv F.I.Sh, ID raqami yoki JSHSHIR bo'yicha; <b>Turi</b> va <b>Holati</b> bo'yicha filtr.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Holat</th><th>Ma'nosi</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill ok">Faol</span></td><td>Kitob olishi mumkin</td></tr>
+          <tr><td><span class="pill warn">Cheklangan</span></td><td>Vaqtincha (ogohlantirishlar bilan)</td></tr>
+          <tr><td><span class="pill bad">Bloklangan</span></td><td>Kitob ololmaydi</td></tr>
+          <tr><td><span class="pill mut">Ketgan</span></td><td>Foydalanish tugatilgan — asosiy ro'yxatda ko'rinmaydi</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info"><p><b>Ketgan</b> foydalanuvchini topish uchun: Holati filtrida <b>"Ketgan"</b> ni tanlang.</p></div>
+
+    <h3><span class="mk">3.2</span>Profil sahifasi</h3>
+    <p>Foydalanuvchini ochsangiz to'liq profil — quyidagi bo'limlar bilan:</p>
+    <ul class="plain">
+      <li><strong>Shaxsiy ma'lumotlar</strong> — barcha maydonlar, rasm (import qilingan bo'lsa).</li>
+      <li><strong>🪪 Kitobxon guvohnomasini yuklab olish</strong> — ID-karta PDF (chop etish uchun).</li>
+      <li><strong>O'qigan kitoblari</strong> — berilgan kitoblar jadvali + "Kitob berish" va "Qaytardi".</li>
+      <li><strong>Ogohlantirishlar</strong> — intizom yozuvlari (3 tadan keyin bloklash ogohi).</li>
+      <li><strong>Qatnashgan tadbir va tanlovlar</strong> — tadbir yozuvlari.</li>
+      <li><strong>Kompyuterdan foydalanish</strong> — sessiya yozuvlari.</li>
+    </ul>
+
+    <h3><span class="mk">3.3</span>Exceldan import (rasmlar bilan)</h3>
+    <ol class="steps">
+      <li><b>"⬆ Exceldan import"</b> → Kitobxon guvohnomasi faylini yuklang.</li>
+      <li>Har varaq (BT, PO, FX…) mos foydalanuvchi turiga bog'lanadi.</li>
+      <li><b>Rasmlar</b> avtomatik ajratilib, to'g'ri foydalanuvchiga biriktiriladi — profil va guvohnomada ko'rinadi.</li>
+    </ol>
+    <div class="callout info"><p>ID raqami yoki JSHSHIR bo'yicha takror yozuvlar yangilanadi (dublikat yaratilmaydi). «Ketkenler» varag'i — foydalanish tugatilgan sifatida saqlanadi.</p></div>
+  </section>
+
+  <!-- 04 -->
+  <section id="loans">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Kitob aylanmasi</h2></div>
+    <p class="sec-sub">Kitob berish, qaytarish va muddat nazorati.</p>
+
+    <h3><span class="mk">4.1</span>Kitob berish</h3>
+    <ol class="steps">
+      <li>Foydalanuvchi profilida <b>"Kitob berish"</b> tugmasini bosing.</li>
+      <li><b>Inventar raqamini</b> kiriting — tizim kitobni <b>avtomatik topib</b> ko'rsatadi (sarlavha, muallif, UDK, yil, mavjudligi).</li>
+      <li><b>Qaytarish muddatini</b> belgilang (standart — 15 kun).</li>
+      <li><b>Berish</b> — kitob foydalanuvchiga biriktiriladi, nusxa "berilgan" bo'ladi.</li>
+    </ol>
+    <div class="callout bad"><span class="clabel">Faqat faol foydalanuvchi</span><p>Bloklangan, vaqtincha cheklangan yoki foydalanishi tugatilgan (ketgan) kishiga kitob berilmaydi — tizim aniq xabar bilan to'xtatadi.</p></div>
+
+    <h3><span class="mk">4.2</span>Qaytarish</h3>
+    <p>Foydalanuvchi profilida yoki <b>Berilgan kitoblar</b> sahifasida <b>"Qaytardi"</b> tugmasi. Nusxa yana "mavjud" bo'ladi, muddat bildirishnomasi darhol yangilanadi.</p>
+
+    <h3><span class="mk">4.3</span>Muddat nazorati</h3>
+    <p><strong>Berilgan kitoblar</strong> sahifasida uch filtr:</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Filtr</th><th>Nima ko'rsatadi</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill bad">Muddati o'tgan</span></td><td>Qaytarish kuni o'tib ketgan kitoblar (qizil)</td></tr>
+          <tr><td><span class="pill warn">Yaqin 3 kun</span></td><td>3 kun ichida qaytarilishi kerak</td></tr>
+          <tr><td><span class="pill ok">Barcha faol</span></td><td>Hozirda berilgan hamma kitoblar</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="discipline">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Intizom</h2></div>
+    <p class="sec-sub">Qoidabuzarlik, bloklash va foydalanishni tugatish/tiklash — hammasi foydalanuvchi profilida.</p>
+
+    <h3><span class="mk">5.1</span>Ogohlantirish</h3>
+    <p>"Ogohlantirish berish" — sabab (kitobni yo'qotish, buzish, tartibsizlik…) va izoh. Barcha ogohlantirishlar jadvalda ko'rinib turadi. <b>3 ta</b> ogohlantirishdan keyin tizim bloklashni tavsiya qiladi.</p>
+
+    <h3><span class="mk">5.2</span>Bloklash</h3>
+    <p>"Bloklash" — <b>butunlay</b> yoki <b>sanagacha</b> (muddatli) + sabab. Bloklangan foydalanuvchi kitob ololmaydi.</p>
+
+    <h3><span class="mk">5.3</span>Foydalanishni tugatish va tiklash</h3>
+    <div class="callout warn"><p><b>Bitirgan yoki ishdan bo'shagan</b> foydalanuvchi uchun — "Foydalanishni tugatish". U <b>o'chirilmaydi</b>, faqat asosiy ro'yxatdan olib tashlanadi (holati "Ketgan"). Ma'lumotlari saqlanadi.</p></div>
+    <ol class="steps">
+      <li>Tugatish uchun: profilda <b>"Foydalanishni tugatish"</b>.</li>
+      <li>Qaytib kelsa: Holati filtridan <b>"Ketgan"</b> → profilni oching → <b>"Foydalanuvchini tiklash"</b>.</li>
+      <li>Tiklangach holati "Faol" bo'ladi va ma'lumotni <b>Tahrirlash</b> bilan yangilaysiz.</li>
+    </ol>
+  </section>
+
+  <!-- 06 -->
+  <section id="lookups">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Ma'lumotnomalar</h2></div>
+    <p class="sec-sub">Kitob va foydalanuvchi formalarida ishlatiladigan ro'yxatlar. Har biri qo'shish/tahrirlash/o'chirishga ega.</p>
+    <div class="grid2">
+      <div class="card"><h3 style="margin-top:0">Kitob uchun</h3><ul class="plain" style="margin-bottom:0">
+        <li>Kitob turlari</li><li>Kategoriyalar (ierarxik)</li><li>Tillar</li><li>Nashriyotlar</li><li>Joylashuvlar</li><li>Mualliflar</li>
+      </ul></div>
+      <div class="card"><h3 style="margin-top:0">3 tillilik</h3>
+        <p style="margin:0">Turi, kategoriya, til, joylashuv nomlari <b>3 tilda</b> (uz/ru/kk) saqlanadi. Importda faqat <b>uz</b> to'ladi — ru/kk ni shu yerda qo'lda to'ldirasiz. Nashriyot va muallif — bir qiymatli.</p>
+      </div>
+    </div>
+    <div class="callout info"><p>Import avtomatik yaratgan ma'lumotnomalar (masalan kirilcha "ўқув қўлланма") shu yerda ko'rinadi — nomini tuzatish yoki tarjimasini qo'shish uchun oching.</p></div>
+  </section>
+
+  <!-- 07 -->
+  <section id="security">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Xavfsizlik va muhim qoidalar</h2></div>
+    <p class="sec-sub">Adminlarga tushuntirishda alohida ta'kidlash lozim bo'lgan nuqtalar.</p>
+    <ul class="plain">
+      <li>Admin panel <strong>faqat login qilganlar</strong> uchun; til doim o'zbekcha.</li>
+      <li>Elektron kitob (PDF), audio va aktlar <strong>to'g'ridan-to'g'ri yuklab olinmaydi</strong> — faqat himoyalangan ko'rinishda.</li>
+      <li>Kirim/chiqim aktlari — <strong>faqat kutubxonachi</strong> uchun, mijoz saytda mutlaqo ko'rinmaydi.</li>
+      <li><strong>O'chirish qaytmas</strong> — kitob o'chirilsa nusxalari ham o'chadi. Foydalanuvchini o'chirmang, "Foydalanishni tugatish" dan foydalaning.</li>
+      <li>Import manba matnni <strong>o'zgartirmaydi</strong> — transliteratsiya va tarjima adminlar tomonidan panel ichida qilinadi.</li>
+    </ul>
+  </section>
+
+  <!-- 08 -->
+  <section id="checklist">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Test-ro'yxat</h2></div>
+    <p class="sec-sub">Admin panelni tekshirishda shu ketma-ketlikni bosib chiqing — har bir amal ishlashini ko'rasiz.</p>
+    <div class="card">
+      <div class="check"><div class="box"></div><div>Exceldan <b>kitob</b> import qilish<span>Natija: 3 kitob, 39 nusxa, 0 o'tkazildi</span></div></div>
+      <div class="check"><div class="box"></div><div>Exceldan <b>foydalanuvchi</b> import qilish (rasmlar bilan)<span>Profilda rasm chiqishini tekshiring</span></div></div>
+      <div class="check"><div class="box"></div><div>Yangi kitob va unga <b>nusxa</b> qo'shish<span>Inventar raqami noyob bo'lsin</span></div></div>
+      <div class="check"><div class="box"></div><div>Foydalanuvchiga <b>kitob berish</b> (inventar bo'yicha)<span>Kitob avtomatik topilishini ko'ring</span></div></div>
+      <div class="check"><div class="box"></div><div>Kitobni <b>qaytarish</b><span>Bildirishnoma darhol yangilanadi</span></div></div>
+      <div class="check"><div class="box"></div><div>Muddati o'tgan kitob → <b>bildirishnoma</b> (qo'ng'iroq/sidebar/dashboard)</div></div>
+      <div class="check"><div class="box"></div><div><b>Ogohlantirish</b> berish → 3 tadan keyin bloklash ogohi</div></div>
+      <div class="check"><div class="box"></div><div><b>Bloklash</b> → bloklangan kishiga kitob berib ko'ring (rad etilishi kerak)</div></div>
+      <div class="check"><div class="box"></div><div><b>Foydalanishni tugatish</b> → "Ketgan" filtridan topib <b>tiklash</b></div></div>
+      <div class="check"><div class="box"></div><div><b>Kitobxon guvohnomasi</b> PDF ni yuklab olish</div></div>
+      <div class="check"><div class="box"></div><div>Ma'lumotnomada import yaratgan yozuvga <b>ru/kk tarjima</b> qo'shish</div></div>
+      <div class="check"><div class="box"></div><div><b>Yorug'/qorong'i</b> rejimni almashtirish</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>SamVet Library</b> — admin qo'llanma. Test login: <code>admin@samvet.uz</code>. Bu qo'llanma joriy tizim holatiga mos; yangi imkoniyat qo'shilsa yangilanadi.</p>
+  </footer>
+
+</div>
+</div>
+
+</body>
+</html>
