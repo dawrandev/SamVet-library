@@ -8,7 +8,7 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Admin panel bosh sahifasi.
+     * Admin panel home page.
      */
     public function index(): View
     {

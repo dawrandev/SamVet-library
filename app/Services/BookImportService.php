@@ -17,18 +17,18 @@ use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
- * Excel'dan kitoblarni import qiladi.
+ * Imports books from Excel.
  *
- * Har qator = bitta NUSXA (book_copy). Bir xil kitobning bir nechta nusxasi
- * (inventar har xil) bitta Book'ga guruhlanadi. Lookuplar (turi/til/nashriyot/
- * joylashuv/muallif) yo'q bo'lsa avtomatik yaratiladi. Manba matn xom saqlanadi
- * (transliteratsiya yo'q); 3 tilli lookuplarga faqat `uz` yoziladi.
+ * Each row = one COPY (book_copy). Multiple copies of the same book
+ * (with different inventory numbers) are grouped under one Book. Lookups (type/language/publisher/
+ * location/author) are created automatically if missing. Source text is stored raw
+ * (no transliteration); only `uz` is written to the 3-language lookups.
  *
  * @phpstan-type ImportStats array{books:int, copies:int, skipped:int, authors:int, book_types:int, languages:int, publishers:int, locations:int}
  */
 class BookImportService
 {
-    /** Ustun indekslari (0-based) — "Kitob haqida" fayli tuzilmasi. */
+    /** Column indexes (0-based) — structure of the "Kitob haqida" file. */
     private const COL = [
         'udc' => 0,
         'author_mark' => 1,
@@ -48,10 +48,10 @@ class BookImportService
         'condition' => 15,
     ];
 
-    /** @var array<string, int> Import statistikasi */
+    /** @var array<string, int> Import statistics */
     private array $stats;
 
-    /** @var array<string, int|null> Lookup keshi (takroriy so'rovni oldini oladi) */
+    /** @var array<string, int|null> Lookup cache (avoids repeated queries) */
     private array $lookupCache = [];
 
     /** @var callable|null Progress: fn(int $done, int $total): void */
@@ -81,11 +81,11 @@ class BookImportService
         ];
         $this->lookupCache = [];
 
-        $dataRows = array_slice($rows, 1); // sarlavha qatorini tashlaymiz
+        $dataRows = array_slice($rows, 1); // drop the header row
         $total = count($dataRows);
 
         foreach ($dataRows as $index => $row) {
-            // Butunlay bo'sh qatorlarni umuman sanamaymiz (Excelda minglab bo'sh qator bo'ladi).
+            // Do not count fully empty rows at all (Excel can have thousands of blank rows).
             if ($this->isEmptyRow($row)) {
                 continue;
             }
@@ -106,7 +106,7 @@ class BookImportService
     }
 
     /**
-     * Bitta qatorni import qiladi: kitobni topib/yaratib, unga nusxa qo'shadi.
+     * Imports a single row: finds/creates the book and adds a copy to it.
      *
      * @param  array<int, mixed>  $row
      */
@@ -115,7 +115,7 @@ class BookImportService
         $title = $this->clean($row[self::COL['title']] ?? null);
         $inventory = $this->clean($row[self::COL['inventory_number']] ?? null);
 
-        // Sarlavha yoki inventar bo'lmasa — bu haqiqiy nusxa emas.
+        // Without a title or inventory number — this is not a real copy.
         if ($title === null || $inventory === null) {
             $this->stats['skipped']++;
 
@@ -130,14 +130,14 @@ class BookImportService
             if ($this->createCopy($book, $row, $inventory)) {
                 $this->stats['copies']++;
             } else {
-                $this->stats['skipped']++; // bunday inventar allaqachon bor
+                $this->stats['skipped']++; // this inventory number already exists
             }
         });
     }
 
     /**
-     * Kitobni identifikatsiya bo'yicha topadi yoki yaratadi.
-     * Identity: sarlavha + muallif belgisi + UOK + nashr yili.
+     * Finds or creates the book by its identity.
+     * Identity: title + author mark + UDC + publication year.
      *
      * @param  array<int, mixed>  $row
      */
@@ -147,7 +147,7 @@ class BookImportService
         $udc = $this->clean($row[self::COL['udc']] ?? null);
         $year = $this->parseYear($this->clean($row[self::COL['publication_year']] ?? null));
 
-        // where('col', null) Laravel'da avtomatik whereNull bo'ladi — null'lar to'g'ri solishtiriladi.
+        // where('col', null) becomes an automatic whereNull in Laravel — nulls are compared correctly.
         $book = Book::query()
             ->where('title', $title)
             ->where('author_mark', $authorMark)
@@ -179,7 +179,7 @@ class BookImportService
     }
 
     /**
-     * "Muallif1, Muallif2" satrini bo'lib, har birini topib/yaratib kitobga bog'laydi.
+     * Splits a "Author1, Author2" string, finds/creates each one, and links them to the book.
      */
     private function attachAuthors(Book $book, ?string $authorsString): void
     {
@@ -207,7 +207,7 @@ class BookImportService
     }
 
     /**
-     * Nusxa yaratadi. Inventar noyob — allaqachon bo'lsa yaratmaydi (idempotent).
+     * Creates a copy. The inventory number is unique — does not create if it already exists (idempotent).
      *
      * @param  array<int, mixed>  $row
      */
@@ -229,10 +229,10 @@ class BookImportService
         return true;
     }
 
-    // --- Lookup yordamchilari ---
+    // --- Lookup helpers ---
 
     /**
-     * 3 tilli lookup (turi/til/joylashuv): `name->uz` bo'yicha topadi yoki `uz` bilan yaratadi.
+     * 3-language lookup (type/language/location): finds by `name->uz` or creates with `uz`.
      *
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      */
@@ -257,7 +257,7 @@ class BookImportService
     }
 
     /**
-     * Bir qiymatli lookup (nashriyot): oddiy `name` bo'yicha topadi/yaratadi.
+     * Single-value lookup (publisher): finds/creates by plain `name`.
      *
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      */
@@ -280,13 +280,13 @@ class BookImportService
         return $this->lookupCache[$key] = $model->id;
     }
 
-    // --- Xaritalar (enum) ---
+    // --- Maps (enum) ---
 
     private function mapFormat(?string $value): string
     {
         $n = mb_strtolower((string) $value, 'UTF-8');
 
-        // "Bosma" bo'lsa — jismoniy nusxa (garchi "Bosma, Elektron" bo'lsa ham inventarli jismoniy nusxa).
+        // If it is "Bosma" — a physical copy (even "Bosma, Elektron" is still an inventoried physical copy).
         return match (true) {
             str_contains($n, 'bosma') => BookFormat::Print->value,
             str_contains($n, 'elektron') => BookFormat::Electronic->value,
@@ -300,7 +300,7 @@ class BookImportService
         $n = $this->stripApostrophes(mb_strtolower((string) $value, 'UTF-8'));
 
         return match (true) {
-            $n === '' || $n === 'yoq' => null, // "Yo'q" — elektron nusxada holat yo'q
+            $n === '' || $n === 'yoq' => null, // "Yo'q" (none) — an electronic copy has no condition
             str_contains($n, 'eski') => CopyCondition::Old->value,
             str_contains($n, 'yangi') => CopyCondition::New->value,
             str_contains($n, 'yirtil') => CopyCondition::Torn->value,
@@ -310,10 +310,10 @@ class BookImportService
         };
     }
 
-    // --- Tozalash / parslash ---
+    // --- Cleaning / parsing ---
 
     /**
-     * Qator butunlay bo'shmi (barcha kataklar bo'sh).
+     * Whether the row is entirely empty (all cells blank).
      *
      * @param  array<int, mixed>  $row
      */
@@ -358,7 +358,7 @@ class BookImportService
     }
 
     /**
-     * @return array<string, string>|null  {uz: ...} yoki null
+     * @return array<string, string>|null  {uz: ...} or null
      */
     private function placeTranslation(?string $value): ?array
     {
@@ -366,7 +366,7 @@ class BookImportService
     }
 
     /**
-     * ISBN: "Yo'q" (yo'q so'zi) bo'lsa null, aks holda xom qiymat.
+     * ISBN: null if it is "Yo'q" (the word "none"), otherwise the raw value.
      */
     private function cleanIsbn(?string $value): ?string
     {

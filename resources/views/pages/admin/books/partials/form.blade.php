@@ -2,10 +2,10 @@
     $book = $book ?? null;
     $editing = ! is_null($book);
     $sourceBook = $sourceBook ?? null;
-    // Tarjima yaratish rejimi: yangi kitob, lekin manbadan umumiy maydonlar ko'chiriladi
+    // Translation-creation mode: new book, but shared fields are copied from the source
     $translating = ! $editing && ! is_null($sourceBook);
 
-    // Umumiy maydonlar uchun prefill qiymatlari (old() ustuvor, so'ng manba)
+    // Prefill values for shared fields (old() takes priority, then source)
     $preAuthorIds = $translating ? old('author_ids', $sourceBook->authors->pluck('id')->all()) : ($editing ? $book->authors->pluck('id')->all() : []);
     $preCategoryIds = $translating ? old('category_ids', $sourceBook->categories->pluck('id')->all()) : ($editing ? $book->categories->pluck('id')->all() : []);
     $preBookTypeId = $translating ? old('book_type_id', $sourceBook->book_type_id) : $book?->book_type_id;
@@ -30,14 +30,14 @@
         <input type="hidden" name="translation_of" value="{{ $sourceBook->id }}">
     @endif
 
-    {{-- Tarjima rejimi banneri --}}
+    {{-- Translation mode banner --}}
     @if ($translating)
         <x-alert type="info" class="mb-6">
             {{ __('«:title» asariga boshqa tildagi nashr qo‘shyapsiz. Umumiy ma’lumotlar ko‘chirildi — til, sarlavha va boshqa maydonlarni to‘ldiring.', ['title' => $sourceBook->title]) }}
         </x-alert>
     @endif
 
-    {{-- Sarlavha + amallar (sticky) --}}
+    {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.books.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
@@ -51,13 +51,13 @@
         </div>
     </div>
 
-    {{-- Umumiy xato --}}
+    {{-- General error --}}
     @if ($errors->any())
         <x-alert type="error" class="mb-6">{{ __('Iltimos, formadagi xatolarni to‘g‘rilang.') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- CHAP: asosiy --}}
+        {{-- LEFT: main --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
             <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
                 <div class="space-y-5">
@@ -111,7 +111,7 @@
             </x-admin.form.section>
         </div>
 
-        {{-- O'NG: muqova + fayllar --}}
+        {{-- RIGHT: cover + files --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <x-admin.form.section :title="__('Muqova rasmi')">
                 <x-admin.form.file name="cover" :image="true" accept="image/*"
@@ -130,7 +130,7 @@
         </div>
     </div>
 
-    {{-- Pastki saqlash --}}
+    {{-- Bottom save --}}
     <div class="mt-6 flex justify-end gap-2">
         <a href="{{ route('admin.books.index') }}" class="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
         <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>

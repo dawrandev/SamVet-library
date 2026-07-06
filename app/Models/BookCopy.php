@@ -43,7 +43,7 @@ class BookCopy extends Model
         return $this->hasMany(Loan::class);
     }
 
-    /** Hozir berilgan (qaytarilmagan) loan. */
+    /** The currently active (not returned) loan. */
     public function currentLoan(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Loan::class)->where('status', \App\Enums\LoanStatus::OnLoan->value);

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->json('name'); // tarjima: {"uz":..,"ru":..,"kk":..}
-            // Ierarxiya: ota kategoriya (null = yuqori daraja)
+            $table->json('name'); // translated: {"uz":..,"ru":..,"kk":..}
+            // Hierarchy: parent category (null = top level)
             $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->timestamps();
         });

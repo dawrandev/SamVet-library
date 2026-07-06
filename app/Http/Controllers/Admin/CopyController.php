@@ -49,7 +49,7 @@ class CopyController extends Controller
     }
 
     /**
-     * Xavfsizlik: nusxa aynan shu kitobga tegishli bo'lishi shart.
+     * Security: the copy must belong to this specific book.
      */
     private function ensureCopyBelongsToBook(Book $book, BookCopy $copy): void
     {

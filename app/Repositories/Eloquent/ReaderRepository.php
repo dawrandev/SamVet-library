@@ -12,7 +12,7 @@ class ReaderRepository implements ReaderRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return Reader::query()
-            // Qidiruv (F.I.SH, ID raqami, PINFL)
+            // Search (full name, ID number, PINFL)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('full_name', 'like', "%{$search}%")
@@ -26,8 +26,8 @@ class ReaderRepository implements ReaderRepositoryInterface
             ->when($filters['status'] ?? null, function ($query, string $status) {
                 $query->where('status', $status);
             })
-            // Status filtri berilmasa — "Ketgan" (left) a'zolar asosiy ro'yxatda ko'rinmaydi.
-            // (Yozuv saqlanadi; ko'rish uchun status=left filtrini tanlash kerak.)
+            // When no status filter is given, "Left" members are hidden from the main list.
+            // (The record is kept; to view them, select the status=left filter.)
             ->when(empty($filters['status']), function ($query) {
                 $query->where('status', '!=', ReaderStatus::Left->value);
             })

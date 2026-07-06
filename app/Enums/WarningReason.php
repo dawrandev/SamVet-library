@@ -3,16 +3,16 @@
 namespace App\Enums;
 
 /**
- * Ogohlantirish sababi (qizil qoidalar bo'yicha).
+ * Warning reason (per the red rules).
  */
 enum WarningReason: string
 {
-    case LostBook = 'lost_book';         // kitobni yo'qotdi
-    case TornBook = 'torn_book';         // kitobni yirtdi
-    case ScribbledBook = 'scribbled_book'; // kitobni chizdi/sizdi
-    case Disorder = 'disorder';          // o'quv zalida tartibsizlik
-    case Loud = 'loud';                  // baland ovozda gapirdi
-    case Other = 'other';                // boshqa
+    case LostBook = 'lost_book';         // lost the book
+    case TornBook = 'torn_book';         // tore the book
+    case ScribbledBook = 'scribbled_book'; // scribbled/marked the book
+    case Disorder = 'disorder';          // disorderly conduct in the reading room
+    case Loud = 'loud';                  // spoke loudly
+    case Other = 'other';                // other
 
     public function label(): string
     {

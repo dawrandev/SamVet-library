@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        // Status badge ranglari
+        // Status badge colors
         $statusColor = [
             'active' => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
             'blocked' => 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500',

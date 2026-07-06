@@ -5,14 +5,14 @@ namespace App\Http\Requests\Admin\Lookups;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Oddiy (tarjimasiz) lookup'lar (publisher, author) uchun validatsiya.
- * `name` — oddiy string.
+ * Validation for simple (non-translatable) lookups (publisher, author).
+ * `name` — a plain string.
  */
 class SimpleLookupRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // admin `auth` middleware ostida
+        return true; // admin is under the `auth` middleware
     }
 
     /**

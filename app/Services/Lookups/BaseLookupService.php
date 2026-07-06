@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Barcha lookup boshqaruv service'lari uchun umumiy biznes logika (DRY).
+ * Shared business logic for all lookup management services (DRY).
  *
- * Tarjimali entity'da (spatie HasTranslations) `name` massiv
- * (['uz'=>,'ru'=>,'kk'=>]) bo'lib to'g'ridan-to'g'ri saqlanadi —
- * modeldagi `$translatable` uni JSON'ga aylantiradi. Oddiy entity'da
- * `name` — string.
+ * For a translatable entity (spatie HasTranslations) `name` is an array
+ * (['uz'=>,'ru'=>,'kk'=>]) and is stored directly —
+ * the model's `$translatable` converts it to JSON. For a plain entity
+ * `name` is a string.
  */
 abstract class BaseLookupService
 {
@@ -45,7 +45,7 @@ abstract class BaseLookupService
     }
 
     /**
-     * DTO'dan modelga yoziladigan atributlar.
+     * Attributes written to the model from the DTO.
      *
      * @return array<string, mixed>
      */

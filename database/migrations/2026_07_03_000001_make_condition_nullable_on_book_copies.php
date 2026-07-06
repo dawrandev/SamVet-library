@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Elektron nusxаda jismoniy holat (condition) bo'lmaydi — shuning uchun nullable.
+ * An electronic copy has no physical condition — hence nullable.
  */
 return new class extends Migration
 {

@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * "Asar" — bir asarning turli tildagi nashrlarini (books) birlashtiruvchi guruh.
-     * Tarjimasiz kitobларда work_id = null.
+     * "Work" — a group uniting the different-language editions (books) of a single work.
+     * For books without translations, work_id = null.
      */
     public function up(): void
     {

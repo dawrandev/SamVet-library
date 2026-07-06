@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Birinchi admin foydalanuvchi
+        // First admin user
         User::updateOrCreate(
             ['email' => 'admin@samvet.uz'],
             [
@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Lookup jadvallar (avval), so'ng kategoriya, oxirida kitoblar
+        // Lookup tables (first), then categories, and books last
         $this->call([
             BookTypeSeeder::class,
             LanguageSeeder::class,
@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             BookSeeder::class,
             MenuSeeder::class,
+            NewsCategorySeeder::class,
         ]);
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Enums;
 
 /**
- * Nusxaning jismoniy holati.
+ * Physical condition of the copy.
  */
 enum CopyCondition: string
 {

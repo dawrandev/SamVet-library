@@ -19,7 +19,7 @@ class BookSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1-kitob: Iqtisodiyot nazariyasi
+        // Book 1: Iqtisodiyot nazariyasi
         $this->createBook([
             'title' => 'Iqtisodiyot nazariyasi',
             'udc' => '330.1',
@@ -42,7 +42,7 @@ class BookSeeder extends Seeder
             ],
         ]);
 
-        // 2-kitob: Umumiy veterinariya asoslari
+        // Book 2: Umumiy veterinariya asoslari
         $this->createBook([
             'title' => 'Umumiy veterinariya asoslari',
             'udc' => '619',
@@ -85,15 +85,15 @@ class BookSeeder extends Seeder
             ]
         );
 
-        // Mualliflar (many-to-many)
+        // Authors (many-to-many)
         $authorIds = Author::whereIn('name', $data['authors'])->pluck('id');
         $book->authors()->sync($authorIds);
 
-        // Kategoriyalar (many-to-many) — tarjima, uz bo'yicha topamiz
+        // Categories (many-to-many) — translated, matched by uz
         $categoryIds = Category::whereIn('name->uz', $data['categories'])->pluck('id');
         $book->categories()->sync($categoryIds);
 
-        // Jismoniy nusxalar
+        // Physical copies
         foreach ($data['copies'] as $copy) {
             $book->copies()->updateOrCreate(
                 ['inventory_number' => $copy['inventory_number']],

@@ -14,7 +14,7 @@ class StoreReaderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — ReaderPolicy.
+        // Route is under `auth` middleware. If roles are added — ReaderPolicy.
         return true;
     }
 
@@ -54,7 +54,7 @@ class StoreReaderRequest extends FormRequest
     }
 
     /**
-     * ID raqami takrorlanmasligi. Update'da joriy a'zo ignore qilinadi (override).
+     * ID number must be unique. On update the current member is ignored (override).
      */
     protected function idNumberUnique(): Unique
     {

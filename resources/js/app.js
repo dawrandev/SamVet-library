@@ -8,14 +8,39 @@ import 'flatpickr/dist/flatpickr.css';
 import { initCharts } from './admin/charts';
 import lookupTable from './admin/lookup-table';
 
-// Alpine.js (persist plugin — sidebar/dark mode holatini eslab qoladi)
+// Alpine.js (persist plugin — remembers sidebar/dark mode state)
 Alpine.plugin(persist);
 window.Alpine = Alpine;
 
-// Ma'lumotnoma boshqaruv jadvali (qo'shish/tahrirlash modali)
+// Lookup management table (add/edit modal)
 Alpine.data('lookupTable', lookupTable);
 
-// O'chirishni tasdiqlash uchun umumiy modal (native confirm o'rniga)
+// 3-language rich text editor (TinyMCE loaded lazily) — used in news/page forms.
+Alpine.data('richEditor', () => ({
+    active: 'uz',
+    inited: {},
+    init() {
+        this.mount(this.active);
+    },
+    mount(locale) {
+        if (this.inited[locale]) return;
+        const run = () => {
+            this.inited[locale] = true;
+            this.$nextTick(() => window.initTinyEditor(this.$refs['ta_' + locale]));
+        };
+        if (window.initTinyEditor) {
+            run();
+        } else {
+            window.addEventListener('tiny:ready', run, { once: true });
+        }
+    },
+    select(locale) {
+        this.active = locale;
+        this.mount(locale);
+    },
+}));
+
+// Shared modal for confirming deletion (instead of native confirm)
 Alpine.store('confirm', {
     open: false,
     action: '',
@@ -34,7 +59,7 @@ Alpine.store('confirm', {
 
 Alpine.start();
 
-// Sana tanlash (dashboard filtri)
+// Date picker (dashboard filter)
 flatpickr('.datepicker', {
     mode: 'range',
     static: true,
@@ -42,16 +67,23 @@ flatpickr('.datepicker', {
     dateFormat: 'M j',
 });
 
-// Dashboard grafiklari (faqat mos sahifada ishga tushadi)
+// Dashboard charts (only start on the matching page)
 document.addEventListener('DOMContentLoaded', initCharts);
 
+// TinyMCE is heavy (~1MB) — load it dynamically only on pages with a rich editor (code-split).
+if (document.querySelector('[data-rich-editor]')) {
+    import('./admin/editor.js').then(() => {
+        window.dispatchEvent(new Event('tiny:ready'));
+    });
+}
+
 /**
- * Lookup (tur, til, nashriyot, muallif, kategoriya) "shu zahoti" yaratish.
- * Admin formalaridagi modal quick-create ishlatadi.
+ * Instantly create a lookup (type, language, publisher, author, category).
+ * Used by the modal quick-create in admin forms.
  *
- * @param {string} type   LookupService turi (masalan 'book_type')
- * @param {object|string} name  Tarjimali: {uz, ru, kk}; oddiy: string
- * @param {object} extra  Qo'shimcha (masalan {parent_id})
+ * @param {string} type   LookupService type (e.g. 'book_type')
+ * @param {object|string} name  Translatable: {uz, ru, kk}; plain: string
+ * @param {object} extra  Extra data (e.g. {parent_id})
  * @returns {Promise<{id: number, name: string}>}
  */
 window.lookupCreate = async (type, name, extra = {}) => {
@@ -68,7 +100,7 @@ window.lookupCreate = async (type, name, extra = {}) => {
     });
 
     if (!res.ok) {
-        // 422 validatsiya xatolarini chaqiruvchiga yetkazamiz
+        // Pass 422 validation errors back to the caller
         let message = 'lookup create failed';
         try {
             const body = await res.json();
@@ -78,7 +110,7 @@ window.lookupCreate = async (type, name, extra = {}) => {
                 message = body.message;
             }
         } catch (e) {
-            // JSON emas — umumiy xabar qoladi
+            // Not JSON — keep the generic message
         }
         throw new Error(message);
     }

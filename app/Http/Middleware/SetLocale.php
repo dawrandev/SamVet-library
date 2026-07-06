@@ -9,11 +9,11 @@ use Symfony\Component\HttpFoundation\Response;
 class SetLocale
 {
     /**
-     * Sessiyadagi tanlangan tilni o'rnatadi (default — config app.locale).
+     * Sets the language selected in the session (default — config app.locale).
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Admin panel doim o'zbekcha; ko'p tillilik faqat client sayt uchun.
+        // The admin panel is always in Uzbek; multilingualism is only for the client site.
         if ($request->is('admin', 'admin/*')) {
             app()->setLocale('uz');
 

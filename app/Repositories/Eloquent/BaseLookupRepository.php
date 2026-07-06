@@ -7,21 +7,21 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Barcha lookup repozitoriylari uchun umumiy Eloquent baza (DRY).
- * Har bir subclass faqat modelini beradi va (kerak bo'lsa) so'rovni
- * kengaytiradi (masalan eager loading, tartiblash).
+ * Common Eloquent base for all lookup repositories (DRY).
+ * Each subclass only provides its model and (if needed) extends the
+ * query (e.g. eager loading, ordering).
  */
 abstract class BaseLookupRepository implements LookupRepositoryInterface
 {
     /**
-     * Ushbu repozitoriy ishlaydigan model klassi.
+     * The model class this repository operates on.
      *
      * @return class-string<Model>
      */
     abstract protected function model(): string;
 
     /**
-     * Ro'yxat so'rovini boyitish (eager load, tartiblash) uchun ilmoq.
+     * Hook to enrich the list query (eager load, ordering).
      *
      * @param  \Illuminate\Database\Eloquent\Builder<Model>  $query
      * @return \Illuminate\Database\Eloquent\Builder<Model>

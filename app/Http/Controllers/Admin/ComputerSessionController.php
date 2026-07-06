@@ -27,7 +27,7 @@ class ComputerSessionController extends Controller
 
     public function destroy(Reader $reader, ComputerSession $computerSession): RedirectResponse
     {
-        // Xavfsizlik: yozuv shu a'zoga tegishli ekanini tekshiramiz.
+        // Security: verify the record belongs to this member.
         if ($computerSession->reader_id !== $reader->id) {
             throw new NotFoundHttpException();
         }

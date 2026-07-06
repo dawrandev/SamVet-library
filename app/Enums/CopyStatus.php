@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 /**
- * Nusxaning mavjudlik (hayotiy) holati.
- * Kelajakda 'borrowed' (talabada) qo'shilishi mumkin — loans moduli.
+ * Availability (lifecycle) status of the copy.
+ * 'borrowed' (on loan) may be added in the future — loans module.
  */
 enum CopyStatus: string
 {

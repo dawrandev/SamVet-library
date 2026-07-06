@@ -14,20 +14,20 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
 
-            // Bog'lanishlar (lookup)
+            // Relations (lookup)
             $table->foreignId('journal_type_id')->nullable()->constrained('journal_types')->nullOnDelete();
             $table->foreignId('language_id')->nullable()->constrained('languages')->nullOnDelete();
             $table->foreignId('publisher_id')->nullable()->constrained('publishers')->nullOnDelete();
 
-            $table->string('founder')->nullable();          // Muassis
-            $table->json('publication_place')->nullable();   // Nashr joyi (tarjima)
+            $table->string('founder')->nullable();          // Founder
+            $table->json('publication_place')->nullable();   // Place of publication (translated)
             $table->string('issn')->nullable();
-            $table->string('index')->nullable();             // Indeks (raqam)
+            $table->string('index')->nullable();             // Index (number)
             $table->string('periodicity')->nullable();       // App\Enums\JournalPeriodicity
 
             $table->timestamps();
 
-            $table->index('name'); // qidiruv uchun
+            $table->index('name'); // for search
         });
     }
 

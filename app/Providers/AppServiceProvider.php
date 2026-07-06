@@ -21,9 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Admin layout va uning partiallariga (header/sidebar) muddati o'tgan
-        // kitoblar sonini uzatamiz — bildirishnoma badge uchun. Kesh 60s (vaqt
-        // o'tishi uchun), lekin oldi-berdi o'zgarganda LoanService darhol tozalaydi.
+        // Pass the number of overdue books to the admin layout and its
+        // partials (header/sidebar) for the notification badge. Cached for 60s
+        // (to let time pass), but LoanService clears it immediately when a loan changes.
         View::composer('layouts.admin', function ($view) {
             $count = cache()->remember(
                 LoanService::OVERDUE_CACHE_KEY,

@@ -5,8 +5,8 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Validation\Rule;
 
 /**
- * Nusxani tahrirlash validatsiyasi — yaratish bilan bir xil,
- * faqat inventar raqami unikalligida joriy nusxa istisno qilinadi.
+ * Copy update validation — same as create,
+ * only the current copy is excluded from the inventory number uniqueness check.
  */
 class UpdateCopyRequest extends StoreCopyRequest
 {

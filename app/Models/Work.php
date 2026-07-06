@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Asar — bir asarning turli tildagi nashrlari (books) guruhi.
+ * Work — a group of editions (books) of a single work in different languages.
  */
 class Work extends Model
 {
     protected $fillable = [];
 
     /**
-     * Shu asarning barcha nashrlari (turli tilda).
+     * All editions of this work (in different languages).
      */
     public function editions(): HasMany
     {

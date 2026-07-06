@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
-            // Ierarxiya: ota menyu (null = yuqori daraja). Ota o'chsa bolalari ham o'chadi.
+            // Hierarchy: parent menu (null = top level). If the parent is deleted, its children are too.
             $table->foreignId('parent_id')->nullable()->constrained('menu_items')->cascadeOnDelete();
-            $table->json('title'); // tarjima: {"uz":..,"ru":..,"kk":..}
-            $table->string('url', 2048)->nullable(); // erkin havola: tashqi URL, ichki yo'l yoki bo'sh
+            $table->json('title'); // translated: {"uz":..,"ru":..,"kk":..}
+            $table->string('url', 2048)->nullable(); // free link: external URL, internal path, or empty
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('target_blank')->default(false);

@@ -3,13 +3,13 @@
 namespace App\Enums;
 
 /**
- * Kitob berish (oldi-berdi) holati.
+ * Book lending (circulation) status.
  */
 enum LoanStatus: string
 {
-    case OnLoan = 'on_loan';    // berilgan (qaytarilmagan)
-    case Returned = 'returned'; // qaytarilgan
-    case Lost = 'lost';         // yo'qotilgan
+    case OnLoan = 'on_loan';    // on loan (not returned)
+    case Returned = 'returned'; // returned
+    case Lost = 'lost';         // lost
 
     public function label(): string
     {

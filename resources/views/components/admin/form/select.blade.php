@@ -6,10 +6,10 @@
     'required' => false,
     'placeholder' => null,
     'help' => null,
-    'creatable' => false,   // "shu zahoti qo'shish" (modal)
-    'createType' => null,    // LookupService turi (masalan 'book_type')
-    'createLabel' => null,   // modal sarlavhasi / bir tilli input labeli
-    'createTranslatable' => false, // 3 tilli (uz/ru/kk) modal
+    'creatable' => false,   // "add on the fly" (modal)
+    'createType' => null,    // LookupService type (e.g. 'book_type')
+    'createLabel' => null,   // modal title / single-language input label
+    'createTranslatable' => false, // 3-language (uz/ru/kk) modal
 ])
 
 @php
@@ -19,7 +19,7 @@
 @endphp
 
 @if (! $creatable)
-    {{-- Oddiy select --}}
+    {{-- Simple select --}}
     <div>
         @if ($label)
             <label for="{{ $name }}" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -36,7 +36,7 @@
         @if ($help && ! $errors->has($name))<p class="mt-1 text-theme-xs text-gray-400">{{ $help }}</p>@endif
     </div>
 @else
-    {{-- Modal orqali qo'shish bilan (Alpine) --}}
+    {{-- With modal-based creation (Alpine) --}}
     @php
         $optionsArray = collect($options)->map(fn ($o) => ['id' => (string) $o->id, 'name' => $o->name])->values();
         $translatable = (bool) $createTranslatable;

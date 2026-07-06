@@ -22,7 +22,7 @@ class CategoryController extends Controller
 
         return view('pages.admin.lookups.categories.index', [
             'categories' => $categories,
-            // Ota kategoriya select'i uchun (o'ziga o'zi ota bo'lolmasligi bladeда tekshiriladi)
+            // For the parent category select (the check that it cannot be its own parent is done in the blade)
             'parents' => $categories,
         ]);
     }

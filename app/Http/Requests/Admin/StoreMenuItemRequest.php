@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\MenuItemType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreMenuItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — Policy.
+        // Route is under `auth` middleware. If roles are added — Policy.
         return true;
     }
 
@@ -23,6 +25,7 @@ class StoreMenuItemRequest extends FormRequest
             'title.ru' => ['nullable', 'string', 'max:255'],
             'title.kk' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:2048'],
+            'type' => ['required', new Enum(MenuItemType::class)],
             'parent_id' => ['nullable', 'integer', 'exists:menu_items,id'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],

@@ -3,14 +3,14 @@
 namespace App\Enums;
 
 /**
- * Reader tadbirдаги qatnashish maqsadi/roli.
+ * The reader's purpose/role of participation in the event.
  */
 enum EventRole: string
 {
-    case Participant = 'participant'; // Ishtirokchi
-    case Host = 'host';               // Boshlovchi
-    case Spectator = 'spectator';     // Tomoshabin
-    case Jury = 'jury';               // Juri
+    case Participant = 'participant'; // Participant
+    case Host = 'host';               // Host
+    case Spectator = 'spectator';     // Spectator
+    case Jury = 'jury';               // Jury
 
     public function label(): string
     {

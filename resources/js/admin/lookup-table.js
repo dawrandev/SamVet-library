@@ -1,16 +1,16 @@
 /**
- * Ma'lumotnoma (lookup) boshqaruv sahifalari uchun Alpine komponenti.
+ * Alpine component for the lookup management pages.
  *
- * Bitta modal orqali qo'shish ham, tahrirlash ham amalga oshiriladi.
- * Server-render qilingan jadval qatorlari `openEdit(row)` chaqiradi.
+ * A single modal handles both adding and editing.
+ * Server-rendered table rows call `openEdit(row)`.
  *
- * Ishlatilishi (Blade):
+ * Usage (Blade):
  *   x-data="lookupTable({ storeUrl, translatable, hasParent })"
  *
  * @param {object} cfg
- * @param {string} cfg.storeUrl        Yangi yozuv POST manzili
- * @param {boolean} [cfg.translatable] name = {uz,ru,kk} (aks holda oddiy string)
- * @param {boolean} [cfg.hasParent]    Kategoriya (parent_id) uchun
+ * @param {string} cfg.storeUrl        POST URL for a new record
+ * @param {boolean} [cfg.translatable] name = {uz,ru,kk} (otherwise a plain string)
+ * @param {boolean} [cfg.hasParent]    For categories (parent_id)
  */
 export default function lookupTable(cfg = {}) {
     return {
@@ -20,9 +20,9 @@ export default function lookupTable(cfg = {}) {
 
         open: false,
         mode: 'create', // 'create' | 'edit'
-        action: cfg.storeUrl, // forma action (create yoki update url)
+        action: cfg.storeUrl, // form action (create or update url)
 
-        // Forma qiymatlari
+        // Form values
         form: { uz: '', ru: '', kk: '', name: '', parent_id: '' },
         editingId: null,
 

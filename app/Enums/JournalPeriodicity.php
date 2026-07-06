@@ -3,7 +3,7 @@
 namespace App\Enums;
 
 /**
- * Jurnal davriyligi (nashr chastotasi).
+ * Journal periodicity (publication frequency).
  */
 enum JournalPeriodicity: string
 {

@@ -32,7 +32,7 @@ class Loan extends Model
         return $this->belongsTo(BookCopy::class, 'book_copy_id');
     }
 
-    /** Muddati o'tganmi (berilgan, lekin muddat o'tib ketgan). */
+    /** Whether it is overdue (on loan, but past the due date). */
     public function isOverdue(): bool
     {
         return $this->status === LoanStatus::OnLoan

@@ -4,17 +4,17 @@
 ])
 
 <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
-    {{-- Nomi (uz — asosiy) --}}
+    {{-- Name (uz — primary) --}}
     <td class="px-5 py-4">
         <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $row['uz'] ?: '—' }}</p>
     </td>
 
-    {{-- Ota kategoriya (faqat kategoriyada) --}}
+    {{-- Parent category (only for category) --}}
     @if ($hasParent)
         <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $row['parent'] ?? '—' }}</td>
     @endif
 
-    {{-- Tarjima holati --}}
+    {{-- Translation status --}}
     <td class="px-5 py-4">
         @if ($row['incomplete'])
             <span class="text-theme-xs inline-flex items-center gap-1 rounded-full bg-warning-50 px-2.5 py-0.5 font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
@@ -27,7 +27,7 @@
         @endif
     </td>
 
-    {{-- Amallar --}}
+    {{-- Actions --}}
     <td class="px-5 py-4">
         <div class="flex items-center justify-end gap-2">
             <button type="button" @click='openEdit(@json($row))'

@@ -14,7 +14,7 @@ class WarningService
     ) {}
 
     /**
-     * A'zoga ogohlantirish qo'shish (qizil qoidalar bo'yicha).
+     * Add a warning to a reader (per the red rules).
      */
     public function add(Reader $reader, WarningReason|string $reason, ?string $note = null): ReaderWarning
     {

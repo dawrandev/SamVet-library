@@ -6,11 +6,11 @@ use SimpleXMLElement;
 use ZipArchive;
 
 /**
- * Excel (.xlsx) varag'iga joylashtirilgan rasmlarni QATOR bo'yicha ajratib oladi.
+ * Extracts images embedded in an Excel (.xlsx) sheet, keyed by ROW.
  *
- * .xlsx aslida ZIP: rasmlar `xl/media/`da, ularning qatorга biriktirilishi
- * `xl/drawings/drawingN.xml` (anchor: <xdr:from><xdr:row>) va `.rels` (rId -> media) da.
- * PhpSpreadsheet'ni og'ir yuklamasdan, to'g'ridan-to'g'ri parslaymiz.
+ * An .xlsx is really a ZIP: images live in `xl/media/`, their row bindings
+ * are in `xl/drawings/drawingN.xml` (anchor: <xdr:from><xdr:row>) and `.rels` (rId -> media).
+ * We parse it directly, without loading heavy PhpSpreadsheet.
  *
  * @phpstan-type Photo array{bytes:string, ext:string}
  */
@@ -22,8 +22,8 @@ class ReaderPhotoExtractor
     private const MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 
     /**
-     * Varaqdagi rasmlar: 0-based ABSOLUT qator indeksi => rasm.
-     * (toArray(null,true,false,false) bilan bir xil indeks — sarlavha = 0.)
+     * Images in the sheet: 0-based ABSOLUTE row index => image.
+     * (Same index as toArray(null,true,false,false) — header = 0.)
      *
      * @return array<int, Photo>
      */
@@ -48,16 +48,16 @@ class ReaderPhotoExtractor
             $drawRaw = $zip->getFromName('xl/drawings/' . $drawingFile);
             $relsRaw = $zip->getFromName('xl/drawings/_rels/' . $drawingFile . '.rels');
             if ($drawRaw === false || $relsRaw === false) {
-                return []; // bo'sh drawing (rasmsiz)
+                return []; // empty drawing (no images)
             }
 
-            // rId => media fayl nomi
+            // rId => media file name
             $media = [];
             foreach ((new SimpleXMLElement($relsRaw))->Relationship as $rel) {
                 $media[(string) $rel['Id']] = basename((string) $rel['Target']);
             }
 
-            // anchor: qator => rId => media bayt
+            // anchor: row => rId => media bytes
             $photos = [];
             $dx = new SimpleXMLElement($drawRaw);
             foreach (['oneCellAnchor', 'twoCellAnchor'] as $type) {
@@ -84,7 +84,7 @@ class ReaderPhotoExtractor
                     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                     $ext = $ext === 'jpeg' ? 'jpg' : $ext;
 
-                    // Faqat raster rasmlar (png/jpg/gif) — emf/wmf kabilarni tashlaymiz.
+                    // Only raster images (png/jpg/gif) — drop emf/wmf and the like.
                     if (! in_array($ext, ['png', 'jpg', 'gif'], true)) {
                         continue;
                     }
@@ -100,7 +100,7 @@ class ReaderPhotoExtractor
     }
 
     /**
-     * Varaq nomi -> `worksheets/sheetN.xml` yo'li (workbook.xml + rels orqali).
+     * Sheet name -> `worksheets/sheetN.xml` path (via workbook.xml + rels).
      */
     private function resolveSheetTarget(ZipArchive $zip, string $sheetName): ?string
     {
@@ -133,7 +133,7 @@ class ReaderPhotoExtractor
     }
 
     /**
-     * `worksheets/sheetN.xml` -> uning `drawingN.xml` fayli (sheet rels orqali).
+     * `worksheets/sheetN.xml` -> its `drawingN.xml` file (via sheet rels).
      */
     private function resolveDrawingFile(ZipArchive $zip, string $sheetTarget): ?string
     {

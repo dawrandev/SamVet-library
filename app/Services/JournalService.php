@@ -18,7 +18,7 @@ class JournalService
     ) {}
 
     /**
-     * Sahifalangan, filtrlangan ro'yxat.
+     * Paginated, filtered list.
      *
      * @param  array<string, mixed>  $filters
      */
@@ -28,7 +28,7 @@ class JournalService
     }
 
     /**
-     * Ro'yxat sahifasidagi filtr dropdown'lari uchun.
+     * For the filter dropdowns on the list page.
      *
      * @return array<string, mixed>
      */
@@ -40,7 +40,7 @@ class JournalService
     }
 
     /**
-     * Qo'shish/tahrirlash formasi uchun barcha variantlar.
+     * All options for the create/edit form.
      *
      * @return array<string, mixed>
      */

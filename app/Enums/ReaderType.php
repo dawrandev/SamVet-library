@@ -3,18 +3,18 @@
 namespace App\Enums;
 
 /**
- * Kutubxona a'zosi turi. Talaba yoki xodim — isStudent() farqlaydi.
+ * Library member type. Student or staff — distinguished by isStudent().
  */
 enum ReaderType: string
 {
-    case Bachelor = 'bachelor';                 // BT — Bakalavr talabasi
-    case Master = 'master';                     // MT — Magistr talabasi
-    case Doctoral = 'doctoral';                 // DT — Doktorant
-    case TechnicumStudent = 'technicum_student'; // TT — Texnikum talabasi
-    case Professor = 'professor';               // PO — Professor-o'qituvchi
-    case BranchStaff = 'branch_staff';          // FX — Filial xodimi
-    case TechnicumTeacher = 'technicum_teacher'; // TO — Texnikum o'qituvchisi
-    case TechnicumStaff = 'technicum_staff';    // TX — Texnikum xodimi
+    case Bachelor = 'bachelor';                 // BT — Bachelor student
+    case Master = 'master';                     // MT — Master's student
+    case Doctoral = 'doctoral';                 // DT — Doctoral candidate
+    case TechnicumStudent = 'technicum_student'; // TT — Technicum student
+    case Professor = 'professor';               // PO — Professor / teacher
+    case BranchStaff = 'branch_staff';          // FX — Branch staff member
+    case TechnicumTeacher = 'technicum_teacher'; // TO — Technicum teacher
+    case TechnicumStaff = 'technicum_staff';    // TX — Technicum staff member
 
     public function label(): string
     {
@@ -31,7 +31,7 @@ enum ReaderType: string
     }
 
     /**
-     * Talabami (o'qish joyi/mutaxassislik/guruh) yoki xodimmi (ish joyi/bo'lim/lavozim).
+     * Whether a student (place of study/specialty/group) or staff (workplace/department/position).
      */
     public function isStudent(): bool
     {

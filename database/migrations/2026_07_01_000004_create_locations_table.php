@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-            $table->json('name'); // tarjima: {"uz":..,"ru":..,"kk":..}
+            $table->json('name'); // translated: {"uz":..,"ru":..,"kk":..}
             $table->timestamps();
         });
     }

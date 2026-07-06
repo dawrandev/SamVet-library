@@ -13,7 +13,7 @@ class ReaderStatusService
     ) {}
 
     /**
-     * A'zoni bloklash. $blockedUntil null bo'lsa — butunlay bloklash.
+     * Block a reader. If $blockedUntil is null — block permanently.
      */
     public function block(Reader $reader, ?string $blockedUntil = null, ?string $reason = null): Reader
     {
@@ -25,8 +25,8 @@ class ReaderStatusService
     }
 
     /**
-     * Foydalanishni tugatish (bitirgan / ishdan bo'shagan) — status=left.
-     * Yozuv saqlanadi, asosiy ro'yxatda ko'rinmaydi.
+     * End usage (graduated / left employment) — status=left.
+     * The record is kept but does not appear in the main list.
      */
     public function finish(Reader $reader): Reader
     {
@@ -36,7 +36,7 @@ class ReaderStatusService
     }
 
     /**
-     * Foydalanuvchini tiklash — status=active, bloklash tozalanadi.
+     * Restore a reader — status=active, block is cleared.
      */
     public function restore(Reader $reader): Reader
     {

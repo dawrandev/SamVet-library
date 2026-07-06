@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class CopyLookupController extends Controller
 {
     /**
-     * Inventar raqami bo'yicha nusxa/kitob ma'lumotini qaytaradi (kitob berish modali autofill).
+     * Returns copy/book information by inventory number (autofill for the book lending modal).
      */
     public function show(Request $request): JsonResponse
     {

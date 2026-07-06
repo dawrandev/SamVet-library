@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Reader qatnashgan tadbir va tanlovlari.
+     * Events and competitions the reader has participated in.
      */
     public function up(): void
     {
         Schema::create('reader_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
-            $table->date('date');                 // Sanasi
-            $table->string('name');               // Nomi
-            $table->string('place')->nullable();  // Joyi
-            $table->string('type');               // App\Enums\EventType (Tanlov/Tadbir/...)
-            $table->string('role');               // App\Enums\EventRole (Ishtirokchi/...)
-            $table->string('link')->nullable();   // Havola
+            $table->date('date');                 // Date
+            $table->string('name');               // Name
+            $table->string('place')->nullable();  // Place
+            $table->string('type');               // App\Enums\EventType (Competition/Event/...)
+            $table->string('role');               // App\Enums\EventRole (Participant/...)
+            $table->string('link')->nullable();   // Link
             $table->text('note')->nullable();
             $table->timestamps();
 

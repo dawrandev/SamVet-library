@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 class JournalObserver
 {
     /**
-     * Slug avtomatik yasaladi (nomdan), noyob bo'lishi ta'minlanadi.
+     * Slug is generated automatically (from the name) and guaranteed to be unique.
      */
     public function creating(Journal $journal): void
     {

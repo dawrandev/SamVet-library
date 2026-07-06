@@ -23,7 +23,7 @@ class BookService
     ) {}
 
     /**
-     * Sahifalangan, filtrlangan ro'yxat.
+     * Paginated, filtered list.
      *
      * @param  array<string, mixed>  $filters
      */
@@ -33,7 +33,7 @@ class BookService
     }
 
     /**
-     * Ro'yxat sahifasidagi filtr dropdown'lari uchun.
+     * For the filter dropdowns on the list page.
      *
      * @return array<string, mixed>
      */
@@ -46,7 +46,7 @@ class BookService
     }
 
     /**
-     * Qo'shish/tahrirlash formasi uchun barcha variantlar.
+     * All options for the create/edit form.
      *
      * @return array<string, mixed>
      */
@@ -66,7 +66,7 @@ class BookService
         return DB::transaction(function () use ($data, $translationOfId) {
             $attributes = $data->toAttributes();
 
-            // Fayllar (muqova — ochiq; elektron/audio — himoyalangan)
+            // Files (cover — public; electronic/audio — protected)
             if ($data->cover) {
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'covers');
             }
@@ -77,7 +77,7 @@ class BookService
                 $attributes['audio_file'] = $this->storeProtected($data->audio_file, 'books/audio');
             }
 
-            // Tarjima nashri bo'lsa — manba bilan bir xil asar (work) guruhiga bog'la
+            // If it is a translation edition — link it to the same work group as the source
             if ($translationOfId) {
                 $attributes['work_id'] = $this->resolveWorkId($translationOfId);
             }
@@ -92,7 +92,7 @@ class BookService
     }
 
     /**
-     * Manba kitobning asar (work) guruhini aniqlaydi: yo'q bo'lsa yangi Work yasab manbaga tayinlaydi.
+     * Resolves the source book's work group: if none exists, creates a new Work and assigns it to the source.
      */
     private function resolveWorkId(int $sourceBookId): int
     {

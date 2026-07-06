@@ -8,7 +8,7 @@ class StoreJournalIssueRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — Policy.
+        // Route is under `auth` middleware. If roles are added — Policy.
         return true;
     }
 

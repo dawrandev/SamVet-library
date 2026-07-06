@@ -12,13 +12,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('journal_id')->constrained('journals')->cascadeOnDelete();
 
-            $table->unsignedSmallInteger('year');   // Nashr yili
-            $table->string('issue_number');         // Soni (masalan: "2024/3")
+            $table->unsignedSmallInteger('year');   // Publication year
+            $table->string('issue_number');         // Issue number (e.g. "2024/3")
             $table->unsignedInteger('pages')->nullable();
 
-            // Fayllar
-            $table->string('cover_image')->nullable();     // muqova (ochiq)
-            $table->string('electronic_file')->nullable(); // Elektron (PDF, himoyalangan)
+            // Files
+            $table->string('cover_image')->nullable();     // cover (public)
+            $table->string('electronic_file')->nullable(); // Electronic (PDF, protected)
 
             $table->timestamps();
 

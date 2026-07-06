@@ -10,7 +10,7 @@ class StoreLookupRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // admin `auth` middleware ostida
+        return true; // admin is under `auth` middleware
     }
 
     /**
@@ -26,13 +26,13 @@ class StoreLookupRequest extends FormRequest
         ];
 
         if (LookupService::isTranslatable($type)) {
-            // Tarjimali tur: uchala til ham majburiy
+            // Translatable type: all three languages are required
             $rules['name'] = ['required', 'array'];
             $rules['name.uz'] = ['required', 'string', 'max:255'];
             $rules['name.ru'] = ['required', 'string', 'max:255'];
             $rules['name.kk'] = ['required', 'string', 'max:255'];
         } else {
-            // Oddiy tur: bitta nom
+            // Simple type: a single name
             $rules['name'] = ['required', 'string', 'max:255'];
         }
 

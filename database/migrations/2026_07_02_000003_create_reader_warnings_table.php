@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Reader ogohlantirishlari. 3 tadan keyin bloklash tavsiya etiladi.
+     * Reader warnings. After 3, blocking is recommended.
      */
     public function up(): void
     {
@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->string('reason');                 // App\Enums\WarningReason
-            $table->text('note')->nullable();         // batafsil izoh
-            $table->date('warned_at');                // ogohlantirilgan sana
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete(); // qaysi admin
+            $table->text('note')->nullable();         // detailed note
+            $table->date('warned_at');                // date warned
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete(); // which admin
             $table->timestamps();
 
             $table->index('reader_id');

@@ -8,11 +8,12 @@ use App\Models\Category;
 use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
+use App\Models\NewsCategory;
 use App\Models\Publisher;
 
 /**
- * Formadan turib lookup (tur, til, nashriyot, muallif, kategoriya, joylashuv)
- * "shu zahoti" yaratish. Xavfsizlik: faqat whitelist'dagi turlar.
+ * Creates a lookup (type, language, publisher, author, category, location)
+ * "on the fly" from a form. Security: only whitelisted types.
  */
 class LookupService
 {
@@ -25,14 +26,15 @@ class LookupService
         'author' => Author::class,
         'category' => Category::class,
         'location' => Location::class,
+        'news_category' => NewsCategory::class,
     ];
 
     /**
-     * Tarjimali (spatie HasTranslations) lookup turlari — 3 tilli nom saqlaydi.
+     * Translatable (spatie HasTranslations) lookup types — store a 3-language name.
      *
      * @var list<string>
      */
-    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location'];
+    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location', 'news_category'];
 
     /**
      * @return list<string>
@@ -57,7 +59,7 @@ class LookupService
         $model = self::MAP[$type];
 
         if (self::isTranslatable($type)) {
-            // spatie'da name ustuniga ['uz'=>, 'ru'=>, 'kk'=>] massivini uzatamiz
+            // In spatie we pass an ['uz'=>, 'ru'=>, 'kk'=>] array to the name column
             $attributes = ['name' => array_map(
                 static fn (string $v): string => trim($v),
                 (array) $data['name'],
@@ -66,14 +68,14 @@ class LookupService
             $attributes = ['name' => trim((string) $data['name'])];
         }
 
-        // Faqat kategoriya ota-ona qabul qiladi
+        // Only a category accepts a parent
         if ($type === 'category' && ! empty($data['parent_id'])) {
             $attributes['parent_id'] = $data['parent_id'];
         }
 
         $record = $model::create($attributes);
 
-        // Tarjimali turda joriy locale bo'yicha label qaytaramiz (getAttribute avtomatik)
+        // For a translatable type we return the label in the current locale (getAttribute is automatic)
         return ['id' => $record->id, 'name' => (string) $record->name];
     }
 }

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('publishers', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Nashriyot nomi
+            $table->string('name'); // Publisher name
             $table->timestamps();
         });
     }

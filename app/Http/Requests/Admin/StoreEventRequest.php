@@ -11,7 +11,7 @@ class StoreEventRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — ReaderPolicy.
+        // Route is under `auth` middleware. If roles are added — ReaderPolicy.
         return true;
     }
 

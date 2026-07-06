@@ -13,7 +13,7 @@
     @csrf
     @if ($editing) @method('PUT') @endif
 
-    {{-- Sarlavha + amallar (sticky) --}}
+    {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.journals.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
@@ -27,12 +27,12 @@
         </div>
     </div>
 
-    {{-- Umumiy xato --}}
+    {{-- General error --}}
     @if ($errors->any())
         <x-alert type="error" class="mb-6">{{ __('Iltimos, formadagi xatolarni to‘g‘rilang.') }}</x-alert>
     @endif
 
-    {{-- Ikki bo'lim yonma-yon — kenglik to'liq ishlatiladi --}}
+    {{-- Two sections side by side — full width used --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
             <div class="space-y-5">

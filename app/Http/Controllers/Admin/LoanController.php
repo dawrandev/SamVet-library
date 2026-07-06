@@ -19,7 +19,7 @@ class LoanController extends Controller
     ) {}
 
     /**
-     * Berilgan kitoblar ro'yxati (muddat nazorati).
+     * List of lent books (due date monitoring).
      */
     public function index(Request $request): View
     {

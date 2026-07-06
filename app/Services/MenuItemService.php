@@ -15,7 +15,7 @@ class MenuItemService
     ) {}
 
     /**
-     * Admin daraxti (ildizlar + rekursiv bolalar).
+     * Admin tree (roots + recursive children).
      *
      * @return Collection<int, MenuItem>
      */
@@ -38,13 +38,13 @@ class MenuItemService
 
     public function delete(MenuItem $menuItem): void
     {
-        // Bolalari cascade orqali DB darajasida o'chadi.
+        // Children are deleted at the DB level via cascade.
         $this->menuItems->delete($menuItem);
     }
 
     /**
-     * Ota menyu tanlash uchun ierarxik ro'yxat (chuqurlik bo'yicha surilgan).
-     * Tahrirlashda element o'zi va avlodlari chiqarib tashlanadi (sikl bo'lmasin).
+     * Hierarchical list for choosing a parent menu (indented by depth).
+     * When editing, the item itself and its descendants are excluded (to avoid a cycle).
      *
      * @return array<int, array{id: int, label: string}>
      */
@@ -64,7 +64,7 @@ class MenuItemService
     }
 
     /**
-     * Daraxtni "— › —" prefiksli tekis ro'yxatga aylantiradi.
+     * Flattens the tree into a flat list with a "— › —" prefix.
      *
      * @param  Collection<int, MenuItem>  $items
      * @param  array<int, int>  $excludeIds
@@ -88,7 +88,7 @@ class MenuItemService
     }
 
     /**
-     * Sikl himoyasi (Service darajasi): o'zini yoki avlodini ota qilib bo'lmaydi.
+     * Cycle guard (Service level): an item cannot be made a parent of itself or its descendant.
      */
     private function guardAgainstCycle(MenuItem $menuItem, ?int $parentId): void
     {
@@ -104,7 +104,7 @@ class MenuItemService
     }
 
     /**
-     * Berilgan element ostidagi barcha avlod ID'lari.
+     * All descendant IDs under the given item.
      *
      * @return array<int, int>
      */

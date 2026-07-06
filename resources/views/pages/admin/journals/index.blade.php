@@ -3,7 +3,7 @@
 @section('title', __('Jurnallar'))
 
 @section('content')
-    {{-- Sarlavha + Yangi jurnal --}}
+    {{-- Title + New journal --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Jurnallar') }}</h2>
@@ -17,12 +17,12 @@
         </div>
     </div>
 
-    {{-- Muvaffaqiyat xabari --}}
+    {{-- Success message --}}
     @if (session('success'))
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
     @endif
 
-    {{-- Qidiruv / filtr --}}
+    {{-- Search / filter --}}
     <form method="GET" action="{{ route('admin.journals.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
         <div class="flex-1">
@@ -49,7 +49,7 @@
         </div>
     </form>
 
-    {{-- Jadval --}}
+    {{-- Table --}}
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="max-w-full overflow-x-auto">
             <table class="min-w-full">

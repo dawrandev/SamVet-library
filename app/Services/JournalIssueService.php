@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Storage;
 
 class JournalIssueService
 {
-    /** Muqova — ochiq disk (public). */
+    /** Cover — public disk. */
     private const COVERS_DIR = 'journal-covers';
 
-    /** Elektron (PDF) — himoyalangan disk (local, public EMAS). */
+    /** Electronic (PDF) — protected disk (local, NOT public). */
     private const ELECTRONIC_DIR = 'journals/electronic';
 
     public function __construct(

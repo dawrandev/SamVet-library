@@ -6,8 +6,8 @@ use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
 
 /**
- * Client sayt navbar menyusi (mockup asosida). Idempotent: sarlavha(uz)+ota bo'yicha.
- * Havolalar hozircha bo'sh — kontent sahifalar qurilgach to'ldiriladi.
+ * Client site navbar menu (based on the mockup). Idempotent: by title(uz)+parent.
+ * Links are empty for now — filled in once the content pages are built.
  */
 class MenuSeeder extends Seeder
 {

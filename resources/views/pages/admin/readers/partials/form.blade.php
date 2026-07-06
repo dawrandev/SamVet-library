@@ -2,7 +2,7 @@
     $reader = $reader ?? null;
     $editing = ! is_null($reader);
 
-    // Talaba turlari (Alpine yorliqlarni almashtirishi uchun) — ReaderType::isStudent() bilan mos
+    // Student types (so Alpine can swap labels) — matches ReaderType::isStudent()
     $studentTypes = collect($types)->filter(fn ($t) => $t->isStudent())->map(fn ($t) => $t->value)->values()->all();
 
     $curType = old('type', $reader?->type?->value);
@@ -25,7 +25,7 @@
     @csrf
     @if ($editing) @method('PUT') @endif
 
-    {{-- Sarlavha + amallar (sticky) --}}
+    {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.readers.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
@@ -39,20 +39,20 @@
         </div>
     </div>
 
-    {{-- Umumiy xato --}}
+    {{-- General error --}}
     @if ($errors->any())
         <x-alert type="error" class="mb-6">{{ __('Iltimos, formadagi xatolarni to‘g‘rilang.') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- CHAP: asosiy --}}
+        {{-- LEFT: main --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
             <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
                 <div class="space-y-5">
                     <x-admin.form.input name="full_name" :label="__('F.I.SH')" :value="$reader?->full_name" required :placeholder="__('To‘liq ism sharif')" />
 
                     <div class="grid gap-5 sm:grid-cols-2">
-                        {{-- Turi (enum) --}}
+                        {{-- Type (enum) --}}
                         <div>
                             <label for="type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}<span class="text-error-500">*</span></label>
                             <select name="type" id="type" required x-model="type"
@@ -65,7 +65,7 @@
                             @error('type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                         </div>
 
-                        {{-- Holati (enum) --}}
+                        {{-- Status (enum) --}}
                         <div>
                             <label for="status" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Holati') }}<span class="text-error-500">*</span></label>
                             <select name="status" id="status" required
@@ -80,7 +80,7 @@
                 </div>
             </x-admin.form.section>
 
-            {{-- Mansublik — yorliqlar Alpine bilan talaba/xodimga qarab o'zgaradi --}}
+            {{-- Affiliation — labels change via Alpine depending on student/staff --}}
             <x-admin.form.section :title="__('Mansublik')" :description="__('O‘qish yoki ish joyi ma’lumotlari')">
                 <div class="grid gap-5 sm:grid-cols-3">
                     <div>
@@ -107,13 +107,13 @@
                 </div>
             </x-admin.form.section>
 
-            {{-- Shaxsiy --}}
+            {{-- Personal --}}
             <x-admin.form.section :title="__('Shaxsiy ma’lumotlar')">
                 <div class="space-y-5">
                     <div class="grid gap-5 sm:grid-cols-3">
                         <x-admin.form.input name="nationality" :label="__('Millati')" :value="$reader?->nationality" />
                         <x-admin.form.input name="birth_date" type="date" :label="__('Tug‘ilgan sana')" :value="$reader?->birth_date?->format('Y-m-d')" />
-                        {{-- Jinsi (enum) --}}
+                        {{-- Gender (enum) --}}
                         <div>
                             <label for="gender" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Jinsi') }}</label>
                             <select name="gender" id="gender"
@@ -141,7 +141,7 @@
                 </div>
             </x-admin.form.section>
 
-            {{-- Qo'shimcha --}}
+            {{-- Additional --}}
             <x-admin.form.section :title="__('Qo‘shimcha ma’lumotlar')">
                 <div class="space-y-5">
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -157,7 +157,7 @@
             </x-admin.form.section>
         </div>
 
-        {{-- O'NG: rasm --}}
+        {{-- RIGHT: photo --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <x-admin.form.section :title="__('Rasm')">
                 <x-admin.form.file name="photo" :image="true" accept="image/*"
@@ -167,7 +167,7 @@
         </div>
     </div>
 
-    {{-- Pastki saqlash --}}
+    {{-- Bottom save --}}
     <div class="mt-6 flex justify-end gap-2">
         <a href="{{ route('admin.readers.index') }}" class="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
         <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>

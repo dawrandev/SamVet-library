@@ -12,7 +12,7 @@ class CategoryRepository extends BaseLookupRepository
     }
 
     /**
-     * Ierarxiya uchun ota kategoriyani ham yuklaymiz (N+1 oldini olish).
+     * Also load the parent category for the hierarchy (avoid N+1).
      */
     protected function scopeIndex($query)
     {

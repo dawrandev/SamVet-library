@@ -9,8 +9,8 @@ use Illuminate\Support\Collection;
 class MenuItemRepository implements MenuItemRepositoryInterface
 {
     /**
-     * Ixtiyoriy chuqurlikdagi daraxt: `children` relation'i o'zini rekursiv
-     * yuklaydi (children.children...). Bir nechta daraja uchun yetarli.
+     * Arbitrary-depth tree: the `children` relation loads itself recursively
+     * (children.children...). Sufficient for several levels.
      */
     public function treeForAdmin(): Collection
     {

@@ -37,7 +37,7 @@ class Reader extends Model
         ];
     }
 
-    // --- Bog'lanishlar ---
+    // --- Relationships ---
 
     public function loans(): HasMany
     {
@@ -59,9 +59,9 @@ class Reader extends Model
         return $this->hasMany(ComputerSession::class)->latest('date');
     }
 
-    // --- Yordamchilar ---
+    // --- Helpers ---
 
-    /** Hozir qo'lida turgan (qaytarilmagan) kitoblar. */
+    /** Books currently held (not yet returned). */
     public function activeLoans(): HasMany
     {
         return $this->hasMany(Loan::class)->where('status', LoanStatus::OnLoan->value);
@@ -74,8 +74,8 @@ class Reader extends Model
     }
 
     /**
-     * Faqat faol (active) va bloklanmagan foydalanuvchi kitob ola oladi.
-     * Bloklangan / vaqtincha cheklangan / tugatilgan (left) — ololmaydi.
+     * Only an active and non-blocked user can borrow a book.
+     * Blocked / temporarily restricted / left — cannot borrow.
      */
     public function canBorrow(): bool
     {

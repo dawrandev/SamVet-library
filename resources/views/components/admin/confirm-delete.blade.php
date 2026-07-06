@@ -1,4 +1,4 @@
-{{-- O'chirishni tasdiqlash — umumiy modal ($store.confirm orqali chaqiriladi) --}}
+{{-- Delete confirmation — shared modal (invoked via $store.confirm) --}}
 <div x-cloak x-show="$store.confirm.open" class="fixed inset-0 z-999999 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-[2px]" @click="$store.confirm.close()"></div>
 

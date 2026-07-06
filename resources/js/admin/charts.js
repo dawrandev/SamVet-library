@@ -1,7 +1,7 @@
 import ApexCharts from 'apexcharts';
 
 /**
- * Bar chart — oylik statistika (masalan kitob ko'rishlari).
+ * Bar chart — monthly statistics (e.g. book views).
  * Container: #chartOne
  */
 const barChart = () => {
@@ -29,7 +29,7 @@ const barChart = () => {
 };
 
 /**
- * Radial chart — maqsad/progress ko'rsatkichi.
+ * Radial chart — goal/progress indicator.
  * Container: #chartTwo
  */
 const radialChart = () => {
@@ -59,7 +59,7 @@ const radialChart = () => {
 };
 
 /**
- * Area chart — statistika (ko'rishlar / yuklamalar).
+ * Area chart — statistics (views / downloads).
  * Container: #chartThree
  */
 const areaChart = () => {
@@ -92,7 +92,7 @@ const areaChart = () => {
 };
 
 /**
- * Barcha dashboard grafiklarini ishga tushirish.
+ * Initialize all dashboard charts.
  */
 export const initCharts = () => {
     barChart();

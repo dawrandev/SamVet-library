@@ -17,7 +17,7 @@ class BookRepository implements BookRepositoryInterface
                 'copies',
                 'copies as available_copies_count' => fn ($q) => $q->where('status', CopyStatus::Available->value),
             ])
-            // Qidiruv (sarlavha, ISBN, UO'K)
+            // Search (title, ISBN, UDC)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")

@@ -8,7 +8,7 @@ class StoreLoanRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilса — LoanPolicy.
+        // Route is under `auth` middleware. If roles are added — LoanPolicy.
         return true;
     }
 
@@ -37,14 +37,14 @@ class StoreLoanRequest extends FormRequest
     }
 
     /**
-     * Maxsus xabarlar — umumiy tarjima noqulay bo'lgan holatlar uchun.
+     * Custom messages — for cases where the generic translation is awkward.
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            // `after_or_equal:today` umumiy xabarда ":date" o'rniga "today" chiqadi — shu holни tabiiy qilamiz.
+            // `after_or_equal:today` shows "today" instead of ":date" in the generic message — we make this case read naturally.
             'due_at.after_or_equal' => __('Qaytarish muddati bugundan oldingi sana bo‘lmasligi kerak.'),
         ];
     }

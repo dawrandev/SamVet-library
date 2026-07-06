@@ -14,7 +14,7 @@
 @endphp
 
 @section('content')
-    {{-- Sarlavha --}}
+    {{-- Title --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Berilgan kitoblar') }}</h2>
@@ -25,14 +25,14 @@
         </div>
     </div>
 
-    {{-- Muvaffaqiyat xabari --}}
+    {{-- Success message --}}
     @if (session('success'))
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
     @endif
 
-    {{-- Filtr tab tugmalari + qidiruv --}}
+    {{-- Filter tab buttons + search --}}
     <div class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] lg:flex-row lg:items-center lg:justify-between">
-        {{-- Scope tablari --}}
+        {{-- Scope tabs --}}
         <div class="inline-flex w-fit items-center gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900">
             @foreach ($tabs as $key => $label)
                 <a href="{{ route('admin.loans.index', ['scope' => $key, 'search' => $filters['search'] ?? null]) }}"
@@ -46,7 +46,7 @@
             @endforeach
         </div>
 
-        {{-- Qidiruv --}}
+        {{-- Search --}}
         <form method="GET" action="{{ route('admin.loans.index') }}" class="flex gap-2">
             <input type="hidden" name="scope" value="{{ $scope }}" />
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
@@ -59,7 +59,7 @@
         </form>
     </div>
 
-    {{-- Jadval --}}
+    {{-- Table --}}
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="max-w-full overflow-x-auto">
             <table class="min-w-full">
@@ -81,7 +81,7 @@
                             $daysLeft = (! $isOverdue && $loan->due_at !== null) ? $today->diffInDays($loan->due_at) : null;
                         @endphp
                         <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
-                            {{-- Foydalanuvchi --}}
+                            {{-- Reader --}}
                             <td class="px-5 py-4">
                                 @if ($loan->reader)
                                     <a href="{{ route('admin.readers.show', $loan->reader) }}"
@@ -92,16 +92,16 @@
                                     <span class="text-theme-sm text-gray-400">—</span>
                                 @endif
                             </td>
-                            {{-- Kitob --}}
+                            {{-- Book --}}
                             <td class="px-5 py-4">
                                 <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $loan->copy?->book?->title ?? '—' }}</p>
                                 <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ __('Inventar') }}: {{ $loan->copy?->inventory_number ?? '—' }}</p>
                             </td>
-                            {{-- Berilgan sana --}}
+                            {{-- Issued date --}}
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
-                            {{-- Muddat --}}
+                            {{-- Due date --}}
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->due_at?->format('d.m.Y') ?? '—' }}</td>
-                            {{-- Kechikkan --}}
+                            {{-- Overdue --}}
                             <td class="px-5 py-4">
                                 @if ($isOverdue)
                                     <span class="text-theme-xs inline-flex rounded-full bg-error-50 px-2.5 py-0.5 font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
@@ -113,7 +113,7 @@
                                     <span class="text-theme-xs text-gray-400">—</span>
                                 @endif
                             </td>
-                            {{-- Amallar --}}
+                            {{-- Actions --}}
                             <td class="px-5 py-4">
                                 <div class="flex items-center justify-end gap-2">
                                     <button type="button"
@@ -137,7 +137,7 @@
         </div>
     </div>
 
-    {{-- Paginatsiya --}}
+    {{-- Pagination --}}
     <div class="mt-5">
         {{ $loans->links() }}
     </div>

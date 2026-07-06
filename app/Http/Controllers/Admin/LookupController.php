@@ -14,7 +14,7 @@ class LookupController extends Controller
     ) {}
 
     /**
-     * Formadan turib yangi lookup yaratish (AJAX).
+     * Create a new lookup from the form (AJAX).
      */
     public function store(StoreLookupRequest $request): JsonResponse
     {

@@ -2,15 +2,17 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\MenuItemType;
 use App\Models\MenuItem;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateMenuItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — Policy.
+        // Route is under `auth` middleware. If roles are added — Policy.
         return true;
     }
 
@@ -25,6 +27,7 @@ class UpdateMenuItemRequest extends FormRequest
             'title.ru' => ['nullable', 'string', 'max:255'],
             'title.kk' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:2048'],
+            'type' => ['required', new Enum(MenuItemType::class)],
             'parent_id' => ['nullable', 'integer', 'exists:menu_items,id'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['boolean'],
@@ -33,8 +36,8 @@ class UpdateMenuItemRequest extends FormRequest
     }
 
     /**
-     * Cheksiz sikl oldini olish: element o'zini yoki o'z avlodini
-     * ota qilib tanlay olmaydi.
+     * Prevent infinite loops: an item cannot select itself or its descendant
+     * as its parent.
      */
     public function withValidator(Validator $validator): void
     {
@@ -48,14 +51,14 @@ class UpdateMenuItemRequest extends FormRequest
             /** @var MenuItem $menuItem */
             $menuItem = $this->route('menu_item');
 
-            // O'zini ota qilish
+            // Setting itself as parent
             if ($parentId === $menuItem->id) {
                 $validator->errors()->add('parent_id', __('Menyu o‘zini ota sifatida tanlay olmaydi.'));
 
                 return;
             }
 
-            // Avlodini ota qilish (sikl)
+            // Setting a descendant as parent (loop)
             if (in_array($parentId, $this->descendantIds($menuItem), true)) {
                 $validator->errors()->add('parent_id', __('Menyu o‘z ostidagi elementni ota sifatida tanlay olmaydi.'));
             }
@@ -63,7 +66,7 @@ class UpdateMenuItemRequest extends FormRequest
     }
 
     /**
-     * Berilgan element ostidagi barcha avlod ID'lari.
+     * All descendant IDs under the given item.
      *
      * @return array<int, int>
      */

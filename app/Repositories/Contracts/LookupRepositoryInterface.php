@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Lookup (ma'lumotnoma) uchun umumiy repozitoriy shartnomasi.
- * Barcha DB so'rovlari faqat shu qatlamda.
+ * Common repository contract for lookups (reference data).
+ * All DB queries live only in this layer.
  */
 interface LookupRepositoryInterface
 {
     /**
-     * Ro'yxat (index sahifasi uchun).
+     * List (for the index page).
      *
      * @return Collection<int, Model>
      */

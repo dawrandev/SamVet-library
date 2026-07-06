@@ -12,18 +12,18 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 /**
- * Katta ko'p varaqli Excel'dan kutubxona a'zolarini (readers) import qilish.
+ * Import library readers from a large multi-sheet Excel file.
  *
- * Har varaq alohida yuklanadi (76MB butun yuklamaslik uchun), rasm o'qilmaydi.
- * Idempotent: id_number yoki pinfl bo'yicha updateOrCreate.
+ * Each sheet is loaded separately (to avoid loading the full 76MB), images are not read.
+ * Idempotent: updateOrCreate by id_number or pinfl.
  *
  * @phpstan-type SheetStat array{imported:int, updated:int, skipped:int, photos:int, type:?string}
  */
 class ReaderImportService
 {
     /**
-     * Import qilinadigan "oddiy" varaqlar → ReaderType.
-     * Bu varaqlarda status = active.
+     * "Regular" sheets to import → ReaderType.
+     * In these sheets status = active.
      *
      * @var array<string, ReaderType>
      */
@@ -39,18 +39,18 @@ class ReaderImportService
     ];
 
     /**
-     * ST varag'i — ustunlar nomsiz, POZITSIYA bo'yicha map. type=bachelor, dedup=pinfl.
-     * Alohida (SHEET_TYPES'da EMAS) chunki header xaritasi ishlamaydi.
+     * ST sheet — columns are unnamed, mapped by POSITION. type=bachelor, dedup=pinfl.
+     * Separate (NOT in SHEET_TYPES) because the header map does not work.
      */
     private const SHEET_ST = 'ST';
 
     /**
-     * "Ketkenler" varag'i — hammasi import, status=left, type ID prefiksidan.
+     * "Ketkenler" sheet — import all, status=left, type from the ID prefix.
      */
     private const SHEET_LEFT = 'Ketkenler';
 
     /**
-     * Butunlay tashlab yuboriladigan varaqlar.
+     * Sheets to skip entirely.
      *
      * @var list<string>
      */
@@ -67,7 +67,7 @@ class ReaderImportService
     ];
 
     /**
-     * ID prefiksi (masalan "BT" -> Bachelor) — Ketkenler varag'ida type aniqlash uchun.
+     * ID prefix (e.g. "BT" -> Bachelor) — used to determine type in the Ketkenler sheet.
      *
      * @var array<string, ReaderType>
      */
@@ -83,7 +83,7 @@ class ReaderImportService
     ];
 
     /**
-     * ST varag'i pozitsion ustun indekslari (0-based).
+     * ST sheet positional column indexes (0-based).
      *
      * @var array<string, int>
      */
@@ -117,7 +117,7 @@ class ReaderImportService
     }
 
     /**
-     * Progress callback'ini chaqiradi (o'rnatilgan bo'lsa).
+     * Invokes the progress callback (if set).
      */
     private function report(string $sheet, string $message): void
     {
@@ -127,9 +127,9 @@ class ReaderImportService
     }
 
     /**
-     * Butun faylni import qiladi.
+     * Imports the entire file.
      *
-     * @return array<string, SheetStat> Varaq nomi => statistika
+     * @return array<string, SheetStat> Sheet name => stats
      */
     public function import(string $path): array
     {
@@ -138,13 +138,13 @@ class ReaderImportService
         $reader = IOFactory::createReaderForFile($path);
         $reader->setReadDataOnly(true);
 
-        // Butun faylni yuklamasdan varaq nomlarini olamiz.
+        // Get the sheet names without loading the whole file.
         $sheetNames = $reader->listWorksheetNames($path);
 
         $stats = [];
 
         foreach ($sheetNames as $sheetName) {
-            // Varaq nomida ba'zan ortiqcha bo'sh joy bor (masalan "TT ") — mos topish uchun trim
+            // The sheet name sometimes has extra whitespace (e.g. "TT ") — trim to match
             $key = trim($sheetName);
 
             if (in_array($key, self::SKIP_SHEETS, true)) {
@@ -153,7 +153,7 @@ class ReaderImportService
 
             $context = $this->resolveSheet($key);
             if ($context === null) {
-                continue; // import qilinmaydigan / noma'lum varaq
+                continue; // non-importable / unknown sheet
             }
 
             $this->report($sheetName, 'boshlandi');
@@ -170,7 +170,7 @@ class ReaderImportService
     }
 
     /**
-     * Varaq nomidan import konteksti (rejim + default type + status) aniqlanadi.
+     * Determines the import context (mode + default type + status) from the sheet name.
      *
      * @return array{mode:string, type:?ReaderType, status:ReaderStatus}|null
      */
@@ -192,7 +192,7 @@ class ReaderImportService
     }
 
     /**
-     * Bitta varaqni yuklab, qatorlarni import qiladi.
+     * Loads a single sheet and imports its rows.
      *
      * @param  array{mode:string, type:?ReaderType, status:ReaderStatus}  $context
      * @return SheetStat
@@ -213,7 +213,7 @@ class ReaderImportService
 
         $rows = $sheet->toArray(null, true, false, false);
 
-        // Bo'sh varaq
+        // Empty sheet
         if (count($rows) === 0) {
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
@@ -221,19 +221,19 @@ class ReaderImportService
             return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => $context['type']?->value];
         }
 
-        // ST — pozitsion; boshqalar — sarlavha xaritasi.
+        // ST — positional; others — header map.
         $columnMap = $context['mode'] === 'st'
             ? self::ST_POSITIONS
             : $this->buildHeaderMap($rows[0]);
 
-        // Varaqdagi rasmlar: absolut qator indeksi (0-based) => rasm.
+        // Images in the sheet: absolute row index (0-based) => image.
         $sheetPhotos = $this->photos->photosForSheet($path, $sheetName);
 
-        // Sarlavha qatorini o'tkazib yuboramiz.
+        // Skip the header row.
         $dataRows = array_slice($rows, 1);
 
         foreach ($dataRows as $index => $row) {
-            // dataRows[$index] = rows[$index + 1] (absolut indeks) — rasm anchori bilan mos.
+            // dataRows[$index] = rows[$index + 1] (absolute index) — matches the image anchor.
             $photo = $sheetPhotos[$index + 1] ?? null;
 
             try {
@@ -262,15 +262,15 @@ class ReaderImportService
     }
 
     /**
-     * Sarlavha qatoridan header -> ustun indeksi (0-based) xaritasi.
-     * Turli varaqlardagi sarlavha variantlari normalize qilinadi.
+     * Builds a header -> column index (0-based) map from the header row.
+     * Header variants across different sheets are normalized.
      *
      * @param  array<int, mixed>  $headerRow
      * @return array<string, int>
      */
     private function buildHeaderMap(array $headerRow): array
     {
-        // normalize(sarlavha) => field
+        // normalize(header) => field
         $aliases = [
             'idraqam' => 'id_number',
             'registraciyaraqami' => 'registration_number',
@@ -319,34 +319,34 @@ class ReaderImportService
     }
 
     /**
-     * Sarlavhani solishtirish uchun normalize: kichik harf, bo'shliq/tinish belgilarsiz,
-     * o'zbekcha maxsus harflar sodda ko'rinishga (o' -> o, g' -> g, ' -> yo'q).
+     * Normalize a header for comparison: lowercase, no whitespace/punctuation,
+     * Uzbek special letters simplified (o' -> o, g' -> g, ' -> removed).
      */
     private function normalizeHeader(string $value): string
     {
         $value = trim($value);
         $value = mb_strtolower($value, 'UTF-8');
 
-        // o'/o' variantlari va apostroflarni olib tashlash
+        // Remove o'/o' variants and apostrophes
         $value = str_replace(
             ["o‘", "o'", "o`", "g‘", "g'", "g`", '‘', '’', '`', "'"],
             ['o', 'o', 'o', 'g', 'g', 'g', '', '', '', ''],
             $value
         );
 
-        // Harf/raqamdan boshqa hamma narsani (bo'shliq, slash, nuqta) olib tashlash
+        // Remove everything that is not a letter/digit (whitespace, slash, dot)
         $value = preg_replace('/[^\p{L}\p{N}]+/u', '', $value) ?? '';
 
         return $value;
     }
 
     /**
-     * Bitta qatorni tozalab, dedup qilib saqlaydi.
+     * Cleans, dedups, and saves a single row.
      *
      * @param  array<int, mixed>  $row
-     * @param  array<string, int>  $columnMap  field => 0-based ustun indeksi
+     * @param  array<string, int>  $columnMap  field => 0-based column index
      * @param  array{mode:string, type:?ReaderType, status:ReaderStatus}  $context
-     * @param  array{bytes:string, ext:string}|null  $photo  shu qatorga biriktirilgan rasm
+     * @param  array{bytes:string, ext:string}|null  $photo  image attached to this row
      * @return 'imported'|'updated'|'skipped'
      */
     private function importRow(array $row, array $columnMap, array $context, ?array $photo = null): string
@@ -365,22 +365,22 @@ class ReaderImportService
         $passport = $get('passport');
         $pinfl = $this->cleanPinfl($get('pinfl'));
 
-        // Guruh-sarlavha / bo'sh qatorlarni skip qilish.
+        // Skip group-header / empty rows.
         if (! $this->isPersonRow($fullName, $idNumber, $passport, $pinfl)) {
             return 'skipped';
         }
 
-        // Dedup kaliti kerak: id_number yoki pinfl.
+        // A dedup key is required: id_number or pinfl.
         if ($idNumber === null && $pinfl === null) {
             return 'skipped';
         }
 
-        // Type aniqlash: Ketkenler'da ID prefiksidan; aks holda kontekst type.
+        // Determine type: in Ketkenler from the ID prefix; otherwise the context type.
         $type = $context['type'];
         if ($context['mode'] === 'left') {
             $type = $this->typeFromIdNumber($idNumber);
             if ($type === null) {
-                return 'skipped'; // prefiks topilmadi -> tashlaymiz
+                return 'skipped'; // prefix not found -> drop
             }
         }
 
@@ -406,7 +406,7 @@ class ReaderImportService
             'note' => $get('note'),
         ];
 
-        // id_number bo'lsa u kalit, aks holda pinfl.
+        // If id_number exists it is the key, otherwise pinfl.
         if ($idNumber !== null) {
             $attributes['id_number'] = $idNumber;
             $reader = $this->upsert(['id_number' => $idNumber], $attributes);
@@ -434,8 +434,8 @@ class ReaderImportService
     }
 
     /**
-     * Rasmni public diskка saqlab, reader.photo ni o'rnatadi.
-     * Fayl nomi deterministik (kalit bo'yicha) — qayta import ustiga yozadi, orphan qoldirmaydi.
+     * Saves the image to the public disk and sets reader.photo.
+     * The file name is deterministic (by key) — a re-import overwrites it, leaving no orphans.
      *
      * @param  array{bytes:string, ext:string}  $photo
      */
@@ -454,7 +454,7 @@ class ReaderImportService
     }
 
     /**
-     * Qator haqiqiy shaxsmi (guruh-sarlavha yoki bo'sh emas).
+     * Whether the row is a real person (not a group-header or empty).
      */
     private function isPersonRow(?string $fullName, ?string $idNumber, ?string $passport, ?string $pinfl): bool
     {
@@ -462,7 +462,7 @@ class ReaderImportService
             return false;
         }
 
-        // full_name kurs/magistr/doktorant/bosqich kabi guruh sarlavhasi bo'lsa (id/pinfl'siz) — skip.
+        // If full_name is a group header like kurs/magistr/doktorant/bosqich (without id/pinfl) — skip.
         $looksLikeGroupHeader = preg_match('/kurs|magistr|doktorant|bosqich/i', $fullName) === 1;
 
         $hasIdNumber = $idNumber !== null && preg_match('/^[A-Za-z]{2}\d+/', $idNumber) === 1;
@@ -477,7 +477,7 @@ class ReaderImportService
     }
 
     /**
-     * ID raqam prefiksidan (BT, MT, ...) ReaderType.
+     * ReaderType from the ID number prefix (BT, MT, ...).
      */
     private function typeFromIdNumber(?string $idNumber): ?ReaderType
     {
@@ -493,7 +493,7 @@ class ReaderImportService
     }
 
     /**
-     * Xom katak qiymatini (tozalamasdan) oladi — sana parse serial son uchun kerak.
+     * Gets the raw cell value (without cleaning) — needed for date parsing of a serial number.
      *
      * @param  array<int, mixed>  $row
      * @param  array<string, int>  $columnMap
@@ -519,7 +519,7 @@ class ReaderImportService
     }
 
     /**
-     * PINFL: faqat raqamlar; uzunlik 12-14 bo'lsa saqla.
+     * PINFL: digits only; keep if length is 12-14.
      */
     private function cleanPinfl(?string $value): ?string
     {
@@ -534,7 +534,7 @@ class ReaderImportService
     }
 
     /**
-     * Sana: Excel serial (numeric) yoki "dd.mm.yyyy" string. Faqat yil bo'lsa null.
+     * Date: Excel serial (numeric) or a "dd.mm.yyyy" string. Null if it is only a year.
      */
     private function parseDate(mixed $value): ?string
     {
@@ -542,11 +542,11 @@ class ReaderImportService
             return null;
         }
 
-        // Excel serial son
+        // Excel serial number
         if (is_numeric($value)) {
             $num = (float) $value;
 
-            // Faqat yil (masalan 1995) — sana emas.
+            // Only a year (e.g. 1995) — not a date.
             if ($num >= 1000 && $num <= 9999) {
                 return null;
             }
@@ -562,7 +562,7 @@ class ReaderImportService
 
         $str = trim((string) $value);
 
-        // Faqat yil
+        // Only a year
         if (preg_match('/^\d{4}$/', $str) === 1) {
             return null;
         }
@@ -595,7 +595,7 @@ class ReaderImportService
     }
 
     /**
-     * member_year: 4 xonali yilni ajratib int qaytaradi.
+     * member_year: extracts a 4-digit year and returns it as an int.
      */
     private function parseYear(?string $value): ?int
     {

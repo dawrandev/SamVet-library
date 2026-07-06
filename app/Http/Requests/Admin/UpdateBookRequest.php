@@ -3,8 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 /**
- * Tahrirlash validatsiyasi — yaratish bilan bir xil qoidalar.
- * (Fayllar allaqachon nullable — tahrirда majburiy emas.)
+ * Update validation — same rules as create.
+ * (Files are already nullable — not required on update.)
  */
 class UpdateBookRequest extends StoreBookRequest
 {

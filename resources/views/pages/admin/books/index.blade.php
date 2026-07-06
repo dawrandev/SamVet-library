@@ -3,7 +3,7 @@
 @section('title', __('Kitoblar'))
 
 @section('content')
-    {{-- Sarlavha + Yangi kitob --}}
+    {{-- Header + New book --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Kitoblar') }}</h2>
@@ -21,12 +21,12 @@
         </div>
     </div>
 
-    {{-- Muvaffaqiyat xabari --}}
+    {{-- Success message --}}
     @if (session('success'))
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
     @endif
 
-    {{-- Qidiruv / filtr --}}
+    {{-- Search / filter --}}
     <form method="GET" action="{{ route('admin.books.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
         <div class="flex-1">
@@ -63,7 +63,7 @@
         </div>
     </form>
 
-    {{-- Jadval --}}
+    {{-- Table --}}
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="max-w-full overflow-x-auto">
             <table class="min-w-full">
@@ -79,7 +79,7 @@
                 <tbody>
                     @forelse ($books as $book)
                         <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
-                            {{-- Kitob (muqova + sarlavha + mualliflar) --}}
+                            {{-- Book (cover + title + authors) --}}
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-14 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 text-lg dark:bg-gray-800">
@@ -127,7 +127,7 @@
         </div>
     </div>
 
-    {{-- Paginatsiya --}}
+    {{-- Pagination --}}
     <div class="mt-5">
         {{ $books->links() }}
     </div>

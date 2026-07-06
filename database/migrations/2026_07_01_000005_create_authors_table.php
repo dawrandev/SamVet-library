@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('authors', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Muallif to'liq ismi
+            $table->string('name'); // Author full name
             $table->timestamps();
         });
     }

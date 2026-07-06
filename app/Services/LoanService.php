@@ -16,7 +16,7 @@ use RuntimeException;
 
 class LoanService
 {
-    /** Muddati o'tgan kitoblar soni keshi (navbar/sidebar bildirishnomasi). */
+    /** Cache of the overdue books count (navbar/sidebar notification). */
     public const OVERDUE_CACHE_KEY = 'overdue_loans_count';
 
     public function __construct(
@@ -24,7 +24,7 @@ class LoanService
     ) {}
 
     /**
-     * Berilgan kitoblar ro'yxati (muddati o'tgan / yaqin / faol).
+     * List of issued books (overdue / due soon / active).
      *
      * @param  array<string, mixed>  $filters
      */
@@ -34,7 +34,7 @@ class LoanService
     }
 
     /**
-     * Muddati o'tgan kitoblar soni (bildirishnoma uchun).
+     * Count of overdue books (for the notification).
      */
     public function overdueCount(): int
     {
@@ -42,9 +42,9 @@ class LoanService
     }
 
     /**
-     * Inventar raqami bo'yicha kitob nusxasini foydalanuvchiga berish.
+     * Issue a book copy to a reader by inventory number.
      *
-     * @throws RuntimeException  Bloklangan foydalanuvchi / nusxa topilmadi / band bo'lganda.
+     * @throws RuntimeException  When the reader is blocked / the copy is not found / it is unavailable.
      */
     public function issueByInventory(Reader $reader, string $inventoryNumber, string $dueAt, ?string $note): Loan
     {
@@ -87,11 +87,11 @@ class LoanService
     }
 
     /**
-     * Berilgan kitobni qaytarish. Nusxa yana "mavjud" bo'ladi.
+     * Return an issued book. The copy becomes "available" again.
      */
     public function returnLoan(Loan $loan): Loan
     {
-        // Allaqachon qaytarilgan bo'lsa — hech narsa qilmaymiz.
+        // If it has already been returned — do nothing.
         if ($loan->status !== LoanStatus::OnLoan) {
             return $loan;
         }
@@ -113,7 +113,7 @@ class LoanService
     }
 
     /**
-     * Nusxa yo'qolgan deb belgilash (berilgan kitob qaytmasa).
+     * Mark the copy as lost (when an issued book is not returned).
      */
     public function markLost(Loan $loan): Loan
     {
@@ -137,8 +137,8 @@ class LoanService
     }
 
     /**
-     * Muddati o'tgan kitoblar keshini bekor qiladi — oldi-berdi holati o'zgargach
-     * navbar/sidebar bildirishnomasi darhol yangilanishi uchun.
+     * Invalidates the overdue books cache — so the navbar/sidebar notification
+     * updates immediately after a circulation state change.
      */
     private function forgetOverdueCache(): void
     {

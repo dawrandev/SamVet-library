@@ -5,7 +5,7 @@ namespace App\Data;
 use Illuminate\Http\Request;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO (jurnal nusxasi).
+ * DTO for passing data from Controller → Service (journal copy).
  */
 class JournalCopyData
 {
@@ -31,7 +31,7 @@ class JournalCopyData
     }
 
     /**
-     * Faqat journal_copies jadvaliga yoziladigan skalyar maydonlar.
+     * Only the scalar fields written to the journal_copies table.
      *
      * @return array<string, mixed>
      */

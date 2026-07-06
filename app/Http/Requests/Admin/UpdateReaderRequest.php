@@ -6,8 +6,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
 /**
- * Tahrirlash validatsiyasi — yaratish bilan bir xil qoidalar.
- * Farqi: id_number unikallik tekshiruvida joriy a'zo o'tkazib yuboriladi.
+ * Update validation — same rules as create.
+ * Difference: the current member is skipped in the id_number uniqueness check.
  */
 class UpdateReaderRequest extends StoreReaderRequest
 {

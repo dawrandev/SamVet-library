@@ -31,7 +31,7 @@ class WarningController extends Controller
 
     public function destroy(Reader $reader, ReaderWarning $warning): RedirectResponse
     {
-        // Xavfsizlik: ogohlantirish shu a'zoga tegishli ekanini tekshiramiz.
+        // Security: verify the warning belongs to this member.
         if ($warning->reader_id !== $reader->id) {
             throw new NotFoundHttpException();
         }

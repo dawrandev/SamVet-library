@@ -5,7 +5,7 @@
 @section('content')
     @php($stats = session('import_stats'))
 
-    {{-- Sarlavha --}}
+    {{-- Header --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Kitoblarni Exceldan import qilish') }}</h2>
@@ -19,13 +19,13 @@
         </a>
     </div>
 
-    {{-- Import xatosi --}}
+    {{-- Import error --}}
     @if (session('import_error'))
         <x-alert type="error" class="mb-5">{{ session('import_error') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {{-- Yuklash formasi --}}
+        {{-- Upload form --}}
         <div class="lg:col-span-2">
             <form method="POST" action="{{ route('admin.books.import.store') }}" enctype="multipart/form-data"
                   x-data="{
@@ -52,7 +52,7 @@
                   class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
                 @csrf
 
-                {{-- Drag & drop maydon --}}
+                {{-- Drag & drop area --}}
                 <label
                     @dragover.prevent="dragging = true"
                     @dragleave.prevent="dragging = false"
@@ -78,7 +78,7 @@
                     <span>{{ __('Import qilish') }}</span>
                 </button>
 
-                {{-- Import indikatori (to'liq ekran overlay) --}}
+                {{-- Import indicator (full-screen overlay) --}}
                 <template x-teleport="body">
                     <div x-show="loading" x-cloak
                          class="fixed inset-0 z-999999 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
@@ -100,7 +100,7 @@
             </form>
         </div>
 
-        {{-- Yo'riqnoma --}}
+        {{-- Instructions --}}
         <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-white/[0.02]">
             <h3 class="mb-3 text-sm font-semibold text-gray-800 dark:text-white/90">{{ __('Qanday ishlaydi?') }}</h3>
             <ul class="text-theme-sm space-y-2 text-gray-600 dark:text-gray-400">
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    {{-- Import natijasi --}}
+    {{-- Import result --}}
     @if ($stats)
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-5 flex items-center gap-2">
@@ -121,7 +121,7 @@
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Import yakunlandi') }}</h3>
             </div>
 
-            {{-- Asosiy natijalar --}}
+            {{-- Main results --}}
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div class="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.02]">
                     <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ __('Yangi kitoblar') }}</p>
@@ -137,7 +137,7 @@
                 </div>
             </div>
 
-            {{-- Avtomatik yaratilgan ma'lumotnomalar --}}
+            {{-- Automatically created reference records --}}
             <h4 class="mt-6 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Avtomatik yaratilgan ma’lumotnomalar') }}</h4>
             <div class="flex flex-wrap gap-2 text-theme-sm">
                 @foreach ([

@@ -5,18 +5,18 @@ namespace App\Data;
 use Illuminate\Http\Request;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO (lookup boshqaruvi).
+ * DTO for passing data from Controller → Service (lookup management).
  *
- * Ikki xil lookup:
- *  - Tarjimali (category, book_type, language, location): name = ['uz'=>,'ru'=>,'kk'=>]
- *  - Oddiy (publisher, author): name = string
+ * Two kinds of lookup:
+ *  - Translatable (category, book_type, language, location): name = ['uz'=>,'ru'=>,'kk'=>]
+ *  - Plain (publisher, author): name = string
  *
- * Category qo'shimcha `parent_id` qabul qiladi.
+ * Category additionally accepts `parent_id`.
  */
 class LookupData
 {
     /**
-     * @param  string|array<string, string>  $name  Tarjimali uchun massiv, oddiy uchun string
+     * @param  string|array<string, string>  $name  Array for translatable, string for plain
      */
     public function __construct(
         public readonly string|array $name,
@@ -27,7 +27,7 @@ class LookupData
     {
         $name = $request->input('name');
 
-        // Tarjimali entity'da name massiv keladi (name[uz], name[ru], name[kk]).
+        // For a translatable entity the name arrives as an array (name[uz], name[ru], name[kk]).
         if (is_array($name)) {
             $name = [
                 'uz' => trim((string) ($name['uz'] ?? '')),

@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Oldi-berdi — reader'ga berilgan jismoniy nusxa (book_copy).
-     * Kitob ma'lumotlari (UO'K/muallif/sarlavha/yil) nusxa→kitob orqali olinadi (dublikat emas).
+     * Loan — a physical copy (book_copy) issued to a reader.
+     * Book data (UDC/author/title/year) is obtained via copy→book (not duplicated).
      */
     public function up(): void
     {
@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->foreignId('book_copy_id')->constrained('book_copies')->cascadeOnDelete();
 
-            $table->date('issued_at');              // Kitobni olgan sana
-            $table->date('due_at');                 // Qaytarish muddati
-            $table->date('returned_at')->nullable(); // Qaytargan sana
+            $table->date('issued_at');              // Date the book was taken
+            $table->date('due_at');                 // Due date for return
+            $table->date('returned_at')->nullable(); // Date returned
 
             $table->string('status')->default('on_loan'); // App\Enums\LoanStatus
             $table->text('note')->nullable();

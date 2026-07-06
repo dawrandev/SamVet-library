@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 class BookObserver
 {
     /**
-     * Slug avtomatik yasaladi (sarlavhadan), noyob bo'lishi ta'minlanadi.
+     * Slug is generated automatically (from the title) and guaranteed to be unique.
      */
     public function creating(Book $book): void
     {

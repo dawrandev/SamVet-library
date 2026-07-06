@@ -13,7 +13,7 @@ class EventService
     ) {}
 
     /**
-     * A'zoga qatnashgan tadbir/tanlov qo'shish.
+     * Add an attended event/competition to a reader.
      *
      * @param  array<string, mixed>  $data
      */

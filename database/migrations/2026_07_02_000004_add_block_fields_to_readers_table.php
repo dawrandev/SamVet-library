@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Bloklash maydonlari. status=blocked + blocked_until=null → butunlay;
-     * blocked_until=sana → shu sanagacha vaqtincha cheklangan.
+     * Blocking fields. status=blocked + blocked_until=null → permanently;
+     * blocked_until=date → temporarily restricted until that date.
      */
     public function up(): void
     {
         Schema::table('readers', function (Blueprint $table) {
-            $table->date('blocked_until')->nullable()->after('status'); // muddatли blok (null=butunlay/yo'q)
+            $table->date('blocked_until')->nullable()->after('status'); // timed block (null=permanent/none)
             $table->string('block_reason')->nullable()->after('blocked_until');
         });
     }

@@ -15,7 +15,7 @@
             __('Davriyligi') => $journal->periodicity?->label(),
         ], fn ($v) => filled($v));
 
-        // Son formasini server-xatolarda ochiq qoldirish uchun bayroq
+        // Flag to keep the issue form open on server errors
         $openStore = $errors->any() && old('_issue_form') === 'store';
         $openEditId = $errors->any() && old('_issue_form') === 'edit' ? (int) old('_issue_id') : null;
     @endphp
@@ -39,7 +39,7 @@
     @endif
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- Chap: jurnal ma'lumotlari --}}
+        {{-- Left: journal details --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
                 <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jurnal ma’lumotlari') }}</h3>
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        {{-- O'ng: sonlar --}}
+        {{-- Right: issues --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
             <div
                 x-data="{
@@ -117,7 +117,7 @@
                     </table>
                 </div>
 
-                {{-- Qo'shish modali --}}
+                {{-- Add modal --}}
                 <div x-show="showStore" x-cloak
                      class="fixed inset-0 z-99999 flex items-center justify-center p-4"
                      @keydown.escape.window="showStore = false">
@@ -149,7 +149,7 @@
                     </div>
                 </div>
 
-                {{-- Tahrirlash modallari (har son uchun) --}}
+                {{-- Edit modals (one per issue) --}}
                 @foreach ($journal->issues as $issue)
                     @php $isEditing = $openEditId === $issue->id; @endphp
                     <div x-show="editId === {{ $issue->id }}" x-cloak

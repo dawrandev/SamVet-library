@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ReaderCardController extends Controller
 {
-    /** Kitobxon guvohnomasini (ID-karta) PDF sifatida chiqaradi. */
+    /** Outputs the reader's membership card (ID card) as a PDF. */
     public function show(Reader $reader): Response
     {
         $pdf = Pdf::loadView('pages.admin.readers.card', [
@@ -18,13 +18,13 @@ class ReaderCardController extends Controller
             'photo' => $this->photoDataUri($reader),
         ])->setPaper('a5', 'portrait');
 
-        // Brauzerда ochiladi (target=_blank) — foydalanuvchi ko'radi, chop etadi yoki saqlaydi.
+        // Opens in the browser (target=_blank) — the user views, prints, or saves it.
         return $pdf->stream('guvohnoma-'.($reader->id_number ?: $reader->id).'.pdf');
     }
 
     /**
-     * Rasmni dompdf uchun base64 data-URI ga aylantiradi (fayl yo'li muammosini oldini oladi).
-     * Rasm bo'lmasa null qaytaradi.
+     * Converts the image into a base64 data URI for dompdf (avoids file path issues).
+     * Returns null if there is no image.
      */
     private function photoDataUri(Reader $reader): ?string
     {

@@ -11,6 +11,8 @@ use App\Repositories\Contracts\JournalIssueRepositoryInterface;
 use App\Repositories\Contracts\JournalRepositoryInterface;
 use App\Repositories\Contracts\LoanRepositoryInterface;
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
+use App\Repositories\Contracts\NewsRepositoryInterface;
+use App\Repositories\Contracts\PageRepositoryInterface;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\BookRepository;
@@ -22,6 +24,8 @@ use App\Repositories\Eloquent\JournalIssueRepository;
 use App\Repositories\Eloquent\JournalRepository;
 use App\Repositories\Eloquent\LoanRepository;
 use App\Repositories\Eloquent\MenuItemRepository;
+use App\Repositories\Eloquent\NewsRepository;
+use App\Repositories\Eloquent\PageRepository;
 use App\Repositories\Eloquent\ReaderRepository;
 use App\Repositories\Eloquent\WarningRepository;
 use Illuminate\Support\ServiceProvider;
@@ -29,8 +33,8 @@ use Illuminate\Support\ServiceProvider;
 class RepositoryServiceProvider extends ServiceProvider
 {
     /**
-     * Interfeys → implementatsiya bog'lash.
-     * Yangi repozitoriy qo'shilganda shu ro'yxatga qo'shiladi.
+     * Interface → implementation binding.
+     * When a new repository is added, it is registered in this list.
      *
      * @var array<class-string, class-string>
      */
@@ -44,6 +48,8 @@ class RepositoryServiceProvider extends ServiceProvider
         JournalCopyRepositoryInterface::class => JournalCopyRepository::class,
         LoanRepositoryInterface::class => LoanRepository::class,
         MenuItemRepositoryInterface::class => MenuItemRepository::class,
+        NewsRepositoryInterface::class => NewsRepository::class,
+        PageRepositoryInterface::class => PageRepository::class,
         ReaderRepositoryInterface::class => ReaderRepository::class,
         WarningRepositoryInterface::class => WarningRepository::class,
     ];

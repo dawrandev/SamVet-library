@@ -8,8 +8,8 @@ use Illuminate\Support\Collection;
 interface MenuItemRepositoryInterface
 {
     /**
-     * Admin daraxti: barcha ildiz elementlar, bolalari rekursiv eager yuklangan,
-     * sort_order bo'yicha tartiblangan.
+     * Admin tree: all root items, with children eager loaded recursively,
+     * ordered by sort_order.
      *
      * @return Collection<int, MenuItem>
      */

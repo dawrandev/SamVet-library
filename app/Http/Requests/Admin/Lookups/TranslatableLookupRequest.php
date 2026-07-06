@@ -5,14 +5,14 @@ namespace App\Http\Requests\Admin\Lookups;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Tarjimali lookup'lar (book_type, language, location) uchun validatsiya.
- * Boshqaruv panelida 3 til ham MAJBURIY (to'liq tarjima talab qilinadi).
+ * Validation for translatable lookups (book_type, language, location).
+ * In the admin panel all 3 languages are REQUIRED (a full translation is required).
  */
 class TranslatableLookupRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — Policy.
+        // Route is under `auth` middleware. When roles are added — Policy.
         return true;
     }
 

@@ -22,13 +22,13 @@
                 </svg>
             </button>
 
-            {{-- Mobil logo --}}
+            {{-- Mobile logo --}}
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 lg:hidden">
                 <span class="text-2xl">📚</span>
                 <span class="font-bold text-gray-900 dark:text-white">{{ config('app.name') }}</span>
             </a>
 
-            {{-- O'ng menyu tugmasi (mobil) --}}
+            {{-- Right menu button (mobile) --}}
             <button
                 class="z-99999 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
                 :class="menuToggle ? 'bg-gray-100 dark:bg-gray-800' : ''"
@@ -39,7 +39,7 @@
                 </svg>
             </button>
 
-            {{-- Qidiruv --}}
+            {{-- Search --}}
             <div class="hidden lg:block">
                 <div class="relative">
                     <span class="absolute top-1/2 left-4 -translate-y-1/2">
@@ -53,13 +53,13 @@
             </div>
         </div>
 
-        {{-- O'ng blok --}}
+        {{-- Right block --}}
         <div
             :class="menuToggle ? 'flex' : 'hidden'"
             class="shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none"
         >
             <div class="flex items-center gap-2 2xsm:gap-3">
-                {{-- Muddati o'tgan kitoblar bildirishnomasi (qo'ng'iroq) --}}
+                {{-- Overdue books notification (bell) --}}
                 <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}"
                    title="{{ __('Muddati o‘tgan kitoblar') }}: {{ $overdueLoansCount ?? 0 }}"
                    class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">

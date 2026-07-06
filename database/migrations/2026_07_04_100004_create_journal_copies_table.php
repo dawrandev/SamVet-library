@@ -12,18 +12,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('journal_issue_id')->constrained('journal_issues')->cascadeOnDelete();
 
-            $table->string('inventory_number')->unique(); // inventar raqami
+            $table->string('inventory_number')->unique(); // inventory number
 
-            // Jismoniy holat: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
+            // Physical condition: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
             $table->string('condition')->nullable();
 
-            // Mavjudlik: available|borrowed|lost|written_off — App\Enums\CopyStatus
+            // Availability: available|borrowed|lost|written_off — App\Enums\CopyStatus
             $table->string('status')->default('available');
 
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
 
-            $table->date('arrival_date')->nullable();     // kelgan vaqti
-            $table->decimal('price', 12, 2)->nullable();  // narx
+            $table->date('arrival_date')->nullable();     // arrival date
+            $table->decimal('price', 12, 2)->nullable();  // price
 
             $table->timestamps();
 

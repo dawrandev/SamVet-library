@@ -7,19 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Reader kompyuterdan foydalanishi.
+     * A reader's use of a computer.
      */
     public function up(): void
     {
         Schema::create('computer_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
-            $table->date('date');                       // Sanasi
-            $table->time('issued_time')->nullable();    // Berilgan vaqti
-            $table->time('returned_time')->nullable();  // Topshirish vaqti
-            $table->string('computer_number')->nullable(); // Kompyuter raqami
-            $table->string('location')->nullable();     // Joylashuv
-            $table->string('purpose')->nullable();      // Foydalanish maqsadi
+            $table->date('date');                       // Date
+            $table->time('issued_time')->nullable();    // Time issued
+            $table->time('returned_time')->nullable();  // Time returned
+            $table->string('computer_number')->nullable(); // Computer number
+            $table->string('location')->nullable();     // Location
+            $table->string('purpose')->nullable();      // Purpose of use
             $table->text('note')->nullable();
             $table->timestamps();
 

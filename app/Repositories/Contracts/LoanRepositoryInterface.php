@@ -18,14 +18,14 @@ interface LoanRepositoryInterface
     public function update(Loan $loan, array $data): Loan;
 
     /**
-     * Berilgan kitoblar ro'yxati (filtr: scope, search).
+     * List of loaned-out books (filters: scope, search).
      *
      * @param  array<string, mixed>  $filters
      */
     public function paginate(array $filters, int $perPage = 20): LengthAwarePaginator;
 
     /**
-     * Muddati o'tgan (on_loan + due_at < bugun) loanlar soni.
+     * Number of overdue loans (on_loan + due_at < today).
      */
     public function overdueCount(): int;
 }

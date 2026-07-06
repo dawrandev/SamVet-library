@@ -8,7 +8,7 @@ class BlockReaderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — ReaderPolicy.
+        // Route is under `auth` middleware. If roles are added — ReaderPolicy.
         return true;
     }
 
@@ -17,7 +17,7 @@ class BlockReaderRequest extends FormRequest
      */
     public function rules(): array
     {
-        // blocked_until bo'sh bo'lsa — butunlay bloklash (permanent).
+        // If blocked_until is empty — permanent block.
         return [
             'blocked_until' => ['nullable', 'date', 'after:today'],
             'block_reason' => ['nullable', 'string', 'max:1000'],

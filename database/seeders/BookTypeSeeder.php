@@ -9,7 +9,7 @@ class BookTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        // [uz, ru, kk] tarjimalar (kk — namunaviy, keyin aniqlanadi)
+        // [uz, ru, kk] translations (kk — placeholder, to be finalized later)
         $types = [
             ['uz' => 'Darslik', 'ru' => 'Учебник', 'kk' => 'Sabaqlıq'],
             ['uz' => 'O‘quv qo‘llanma', 'ru' => 'Учебное пособие', 'kk' => 'Oqıw qollanba'],

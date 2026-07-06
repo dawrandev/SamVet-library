@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO.
- * Massiv (`$data['x']`) o'rniga tipli obyekt.
+ * DTO for passing data from Controller → Service.
+ * A typed object instead of an array (`$data['x']`).
  */
 class ReaderData
 {
@@ -63,7 +63,7 @@ class ReaderData
     }
 
     /**
-     * Faqat readers jadvaliga yoziladigan skalyar maydonlar (fayl/bog'lanishsiz).
+     * Only the scalar fields written to the readers table (without files/relationships).
      *
      * @return array<string, mixed>
      */

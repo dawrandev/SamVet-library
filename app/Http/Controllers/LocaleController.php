@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 class LocaleController extends Controller
 {
     /**
-     * Tilni almashtirish (sessiyaga saqlanadi).
+     * Switch the language (persisted in the session).
      */
     public function switch(string $locale): RedirectResponse
     {

@@ -22,7 +22,7 @@ class Journal extends Model
         'issn', 'index', 'periodicity',
     ];
 
-    /** Faqat nashr joyi tarjima qilinadi (name — bitta til). */
+    /** Only the publication place is translatable (name — single language). */
     public array $translatable = ['publication_place'];
 
     protected function casts(): array
@@ -32,7 +32,7 @@ class Journal extends Model
         ];
     }
 
-    // --- Bog'lanishlar ---
+    // --- Relationships ---
 
     public function type(): BelongsTo
     {

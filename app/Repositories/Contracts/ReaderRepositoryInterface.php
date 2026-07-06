@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface ReaderRepositoryInterface
 {
     /**
-     * Filtrlangan, sahifalangan a'zolar ro'yxati.
+     * Filtered, paginated list of members.
      *
      * @param  array{search?: string, type?: string, status?: string}  $filters
      */

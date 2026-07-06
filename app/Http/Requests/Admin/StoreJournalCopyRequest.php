@@ -12,7 +12,7 @@ class StoreJournalCopyRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — Policy.
+        // Route is under `auth` middleware. If roles are added — Policy.
         return true;
     }
 
@@ -32,7 +32,7 @@ class StoreJournalCopyRequest extends FormRequest
     }
 
     /**
-     * Inventar raqami unikal (yaratishda cheklovsiz).
+     * Inventory number is unique (unrestricted on create).
      */
     protected function inventoryNumberUniqueRule(): object
     {

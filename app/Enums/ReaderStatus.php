@@ -3,14 +3,14 @@
 namespace App\Enums;
 
 /**
- * A'zoning kutubxonadan foydalanish holati.
+ * Member's library usage status.
  */
 enum ReaderStatus: string
 {
-    case Active = 'active';        // faol
-    case Suspended = 'suspended';  // vaqtincha cheklangan (ogohlantirishlar)
-    case Blocked = 'blocked';      // bloklangan
-    case Left = 'left';            // ketgan / bitirgan (Ketkenler)
+    case Active = 'active';        // active
+    case Suspended = 'suspended';  // temporarily restricted (warnings)
+    case Blocked = 'blocked';      // blocked
+    case Left = 'left';            // left / graduated (Ketkenler)
 
     public function label(): string
     {

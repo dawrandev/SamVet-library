@@ -6,8 +6,8 @@ use App\Services\ReaderImportService;
 use Illuminate\Console\Command;
 
 /**
- * Katta ko'p varaqli Excel'dan kutubxona a'zolarini (readers) import qiladi.
- * Biznes logika ReaderImportService'da — buyruq yupqa.
+ * Imports library members (readers) from a large multi-sheet Excel file.
+ * Business logic lives in ReaderImportService — the command is thin.
  */
 class ImportReaders extends Command
 {

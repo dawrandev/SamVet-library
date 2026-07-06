@@ -1,8 +1,8 @@
 @props([
-    'title' => null,   // Modal sarlavhasi ("Nashriyot")
+    'title' => null,   // Modal title ("Publisher")
 ])
 
-{{-- Oddiy (tarjimasiz) lookup modali — bitta nom inputи --}}
+{{-- Simple (non-translatable) lookup modal — single name input --}}
 <div x-show="open" x-cloak
      class="fixed inset-0 z-50 flex items-center justify-center p-4"
      x-init="@if ($errors->any()) open = true; @endif">

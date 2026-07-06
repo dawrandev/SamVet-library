@@ -1,16 +1,16 @@
 @props([
-    'title' => null,          // Modal sarlavhasi ("Kitob turi")
-    'parents' => null,        // Kategoriya uchun ota select (Collection|null)
+    'title' => null,          // Modal title ("Book type")
+    'parents' => null,        // Parent select for category (Collection|null)
 ])
 
-{{-- Modal (Alpine `lookupTable` state ichida) --}}
+{{-- Modal (inside Alpine `lookupTable` state) --}}
 <div x-show="open" x-cloak
      class="fixed inset-0 z-50 flex items-center justify-center p-4"
      x-init="@if ($errors->any()) open = true; @endif">
-    {{-- Fon --}}
+    {{-- Backdrop --}}
     <div class="fixed inset-0 bg-gray-900/50" @click="close()"></div>
 
-    {{-- Oyna --}}
+    {{-- Window --}}
     <div class="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-5 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
@@ -27,7 +27,7 @@
             </template>
 
             @isset($parents)
-                {{-- Ota kategoriya (ierarxiya) --}}
+                {{-- Parent category (hierarchy) --}}
                 <div>
                     <label for="parent_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Ota kategoriya') }}</label>
                     <select name="parent_id" id="parent_id" x-model="form.parent_id"
@@ -43,7 +43,7 @@
                 </div>
             @endisset
 
-            {{-- 3 til (barchasi majburiy) --}}
+            {{-- 3 languages (all required) --}}
             <div>
                 <label for="name_uz" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                     {{ __('Nomi (o‘zbekcha)') }}<span class="text-error-500">*</span>

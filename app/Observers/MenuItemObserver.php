@@ -7,8 +7,8 @@ use App\Models\MenuItem;
 class MenuItemObserver
 {
     /**
-     * Yangi element yaratilganda tartib raqami avtomatik beriladi:
-     * agar bo'sh/0 bo'lsa, o'sha ota ichidagi max(sort_order)+1 qilinadi.
+     * When a new item is created, the sort order is assigned automatically:
+     * if empty/0, it is set to max(sort_order)+1 within the same parent.
      */
     public function creating(MenuItem $menuItem): void
     {

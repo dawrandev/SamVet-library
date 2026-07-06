@@ -5,7 +5,7 @@
 @section('content')
     <div class="relative z-1 bg-white p-6 dark:bg-gray-900 sm:p-0">
         <div class="relative flex h-screen w-full flex-col justify-center dark:bg-gray-900 sm:p-0 lg:flex-row">
-            {{-- Chap: forma --}}
+            {{-- Left: form --}}
             <div class="flex w-full flex-1 flex-col lg:w-1/2">
                 <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
                     <div class="mb-5 sm:mb-8">
@@ -36,7 +36,7 @@
                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('email') border-error-500 @enderror" />
                             </div>
 
-                            {{-- Parol --}}
+                            {{-- Password --}}
                             <div>
                                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                                     {{ __('Parol') }}<span class="text-error-500">*</span>
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
 
-                            {{-- Eslab qolish --}}
+                            {{-- Remember me --}}
                             <div class="flex items-center">
                                 <label class="flex cursor-pointer select-none items-center text-sm font-normal text-gray-700 dark:text-gray-400">
                                     <input type="checkbox" name="remember" class="mr-3 h-5 w-5 rounded-md border-gray-300 text-brand-500 focus:ring-brand-500/20 dark:border-gray-700" />
@@ -65,7 +65,7 @@
                                 </label>
                             </div>
 
-                            {{-- Kirish tugmasi --}}
+                            {{-- Login button --}}
                             <button type="submit"
                                 class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-medium text-white transition">
                                 {{ __('Kirish') }}
@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            {{-- O'ng: brend paneli --}}
+            {{-- Right: brand panel --}}
             <div class="bg-brand-950 relative hidden h-full w-full items-center dark:bg-white/5 lg:grid lg:w-1/2">
                 <div class="z-1 flex items-center justify-center">
                     <div class="flex max-w-xs flex-col items-center">

@@ -8,7 +8,7 @@ class ImportBooksRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — BookPolicy.
+        // Route is under `auth` middleware. If roles are added — BookPolicy.
         return true;
     }
 

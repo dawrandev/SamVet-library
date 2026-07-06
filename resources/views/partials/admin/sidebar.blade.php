@@ -57,6 +57,17 @@
                         </a>
                     </li>
 
+                    {{-- Yangiliklar --}}
+                    <li>
+                        <a href="{{ route('admin.news.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.news.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.news.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 5.5C4 4.53 4.78 3.75 5.75 3.75H15.25C16.22 3.75 17 4.53 17 5.5V18C17 18.69 17.56 19.25 18.25 19.25C18.94 19.25 19.5 18.69 19.5 18V8.5C19.5 8.09 19.84 7.75 20.25 7.75C20.66 7.75 21 8.09 21 8.5V18C21 19.52 19.77 20.75 18.25 20.75H6C4.9 20.75 4 19.85 4 18.75V5.5ZM5.5 5.5V18.75C5.5 19.02 5.73 19.25 6 19.25H15.7C15.57 18.86 15.5 18.44 15.5 18V5.5C15.5 5.36 15.39 5.25 15.25 5.25H5.75C5.61 5.25 5.5 5.36 5.5 5.5ZM7 8C7 7.59 7.34 7.25 7.75 7.25H13.25C13.66 7.25 14 7.59 14 8C14 8.41 13.66 8.75 13.25 8.75H7.75C7.34 8.75 7 8.41 7 8ZM7.75 10.75C7.34 10.75 7 11.09 7 11.5C7 11.91 7.34 12.25 7.75 12.25H13.25C13.66 12.25 14 11.91 14 11.5C14 11.09 13.66 10.75 13.25 10.75H7.75ZM7 15C7 14.59 7.34 14.25 7.75 14.25H11.25C11.66 14.25 12 14.59 12 15C12 15.41 11.66 15.75 11.25 15.75H7.75C7.34 15.75 7 15.41 7 15Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Yangiliklar') }}</span>
+                        </a>
+                    </li>
+
                     {{-- Foydalanuvchilar (kutubxona a'zolari) --}}
                     <li>
                         <a href="{{ route('admin.readers.index') }}"
@@ -107,6 +118,7 @@
                                         'categories' => __('Kategoriyalar'),
                                         'book-types' => __('Kitob turlari'),
                                         'journal-types' => __('Jurnal turlari'),
+                                        'news-categories' => __('Yangilik kategoriyalari'),
                                         'languages' => __('Tillar'),
                                         'locations' => __('Joylashuvlar'),
                                         'publishers' => __('Nashriyotlar'),

@@ -50,7 +50,7 @@ class JournalCopyController extends Controller
     }
 
     /**
-     * Xavfsizlik: nusxa aynan shu songa tegishli bo'lishi shart.
+     * Security: the copy must belong to this specific issue.
      */
     private function ensureCopyBelongsToIssue(JournalIssue $journalIssue, JournalCopy $copy): void
     {

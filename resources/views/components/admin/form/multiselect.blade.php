@@ -8,9 +8,9 @@
     'creatable' => false,
     'createType' => null,
     'createLabel' => null,
-    'createTranslatable' => false,   // 3 tilli (uz/ru/kk) modal
-    'createWithParent' => false,     // ota kategoriya tanlash (category uchun)
-    'createParents' => [],           // [['id'=>, 'label'=>], ...] — ota tanlash ro'yxati
+    'createTranslatable' => false,   // 3-language (uz/ru/kk) modal
+    'createWithParent' => false,     // select parent category (for category)
+    'createParents' => [],           // [['id'=>, 'label'=>], ...] — parent selection list
 ])
 
 @php
@@ -103,7 +103,7 @@
         <span class="ml-auto text-gray-400">&#9662;</span>
     </button>
 
-    {{-- Yuborish uchun yashirin inputlar --}}
+    {{-- Hidden inputs for submission --}}
     <template x-for="id in selected" :key="'i-' + id">
         <input type="hidden" name="{{ $name }}[]" :value="id" />
     </template>

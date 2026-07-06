@@ -15,19 +15,19 @@ class ReaderImportController extends Controller
         private readonly ReaderImportService $importService,
     ) {}
 
-    /** Import sahifasini (fayl yuklash formasi) ko'rsatadi. */
+    /** Displays the import page (file upload form). */
     public function create(): View
     {
         return view('pages.admin.readers.import');
     }
 
-    /** Yuklangan Excel faylni import qiladi. */
+    /** Imports the uploaded Excel file. */
     public function store(ImportReadersRequest $request): RedirectResponse
     {
-        // Katta fayl (minglab qator + rasmlar) uchun vaqt limitini olib tashlaymiz.
+        // Remove the time limit for large files (thousands of rows + images).
         set_time_limit(0);
 
-        // Fayl public EMAS — storage/app/imports ostiga vaqtincha saqlanadi.
+        // The file is NOT public — it is stored temporarily under storage/app/imports.
         $path = $request->file('file')->store('imports');
         $fullPath = Storage::path($path);
 
@@ -38,14 +38,14 @@ class ReaderImportController extends Controller
 
             return back()->with('import_error', __('Import xatosi: :msg', ['msg' => $e->getMessage()]));
         } finally {
-            Storage::delete($path); // vaqtinchalik faylni tozalash
+            Storage::delete($path); // clean up the temporary file
         }
 
         return back()->with('import_stats', $this->summarize($stats));
     }
 
     /**
-     * Xizmat qaytargan statistikани sahifа uchun yig'ib beradi.
+     * Aggregates the statistics returned by the service for the page.
      *
      * @param  array<string, array{imported:int, updated:int, skipped:int, photos:int, type:?string}>  $stats
      * @return array{sheets: array<int, array{sheet:string, type:string, imported:int, updated:int, skipped:int, photos:int}>, total: array{imported:int, updated:int, skipped:int, photos:int}}

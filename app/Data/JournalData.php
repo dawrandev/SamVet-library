@@ -5,8 +5,8 @@ namespace App\Data;
 use Illuminate\Http\Request;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO (jurnal).
- * Massiv (`$data['x']`) o'rniga tipli obyekt.
+ * DTO for passing data from Controller → Service (journal).
+ * A typed object instead of an array (`$data['x']`).
  */
 class JournalData
 {
@@ -16,7 +16,7 @@ class JournalData
         public readonly ?string $founder,
         public readonly ?int $language_id,
         public readonly ?int $publisher_id,
-        /** @var array<string, string>|null Nashr joyi (tarjima: uz/ru/kk) */
+        /** @var array<string, string>|null Publication place (translation: uz/ru/kk) */
         public readonly ?array $publication_place,
         public readonly ?string $issn,
         public readonly ?string $index,
@@ -25,7 +25,7 @@ class JournalData
 
     public static function fromRequest(Request $request): self
     {
-        // Nashr joyi: {uz,ru,kk} — bo'sh qiymatlar tashlanadi, hammasi bo'sh bo'lsa null
+        // Publication place: {uz,ru,kk} — empty values are dropped, null if all are empty
         $place = array_filter(
             array_map('trim', (array) $request->input('publication_place', [])),
             static fn (string $v): bool => $v !== '',
@@ -45,7 +45,7 @@ class JournalData
     }
 
     /**
-     * Faqat journals jadvaliga yoziladigan skalyar maydonlar.
+     * Only the scalar fields written to the journals table.
      *
      * @return array<string, mixed>
      */

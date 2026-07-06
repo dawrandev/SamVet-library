@@ -13,7 +13,7 @@ class CategoryService extends BaseLookupService
     }
 
     /**
-     * Kategoriya tarjimali + ierarxik (parent_id) bo'ladi.
+     * A category is translatable + hierarchical (parent_id).
      *
      * @return array<string, mixed>
      */

@@ -24,7 +24,7 @@ class Book extends Model
         'views_count',
     ];
 
-    /** Faqat nashriyot joyi tarjima qilinadi (title/annotation — bitta til). */
+    /** Only the publication place is translatable (title/annotation — single language). */
     public array $translatable = ['publication_place'];
 
     protected function casts(): array
@@ -37,7 +37,7 @@ class Book extends Model
         ];
     }
 
-    // --- Bog'lanishlar ---
+    // --- Relationships ---
 
     public function type(): BelongsTo
     {
@@ -54,7 +54,7 @@ class Book extends Model
         return $this->belongsTo(Publisher::class);
     }
 
-    // Asar guruhi (turli tildagi nashrlar)
+    // Work group (editions in different languages)
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);

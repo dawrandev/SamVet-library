@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface JournalRepositoryInterface
 {
     /**
-     * Filtrlangan, sahifalangan jurnallar ro'yxati.
+     * Filtered, paginated list of journals.
      *
      * @param  array{search?: string, journal_type_id?: int}  $filters
      */

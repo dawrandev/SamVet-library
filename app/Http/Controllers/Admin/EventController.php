@@ -27,7 +27,7 @@ class EventController extends Controller
 
     public function destroy(Reader $reader, ReaderEvent $event): RedirectResponse
     {
-        // Xavfsizlik: tadbir shu a'zoga tegishli ekanini tekshiramiz.
+        // Security: verify the event belongs to this member.
         if ($event->reader_id !== $reader->id) {
             throw new NotFoundHttpException();
         }

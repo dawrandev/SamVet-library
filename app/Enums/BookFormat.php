@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 /**
- * Nusxa formati (book_copies uchun).
- * Elektron nusxa — katalog yozuvi; onlayn o'qish PDF'i alohida books.electronic_file'da.
+ * Copy format (for book_copies).
+ * Electronic copy is a catalog record; the online-reading PDF is stored separately in books.electronic_file.
  */
 enum BookFormat: string
 {

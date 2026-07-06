@@ -11,7 +11,7 @@ use Illuminate\View\View;
 class LoginController extends Controller
 {
     /**
-     * Login formasini ko'rsatish.
+     * Display the login form.
      */
     public function show(): View
     {
@@ -19,7 +19,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Login so'rovini qayta ishlash.
+     * Handle the login request.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -43,7 +43,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Tizimdan chiqish.
+     * Log out of the system.
      */
     public function destroy(Request $request): RedirectResponse
     {

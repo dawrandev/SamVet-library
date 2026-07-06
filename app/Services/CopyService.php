@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 class CopyService
 {
     /**
-     * Aktlar (kirish/chiqish) — himoyalangan PDF fayllar papkasi.
+     * Acts (acquisition/disposal) — protected PDF files directory.
      */
     private const ACTS_DIR = 'book-copies/acts';
 
@@ -27,7 +27,7 @@ class CopyService
             $attributes = $data->toAttributes();
             $attributes['book_id'] = $book->id;
 
-            // Aktlar — himoyalangan (local disk, public EMAS)
+            // Acts — protected (local disk, NOT public)
             if ($data->acquisition_act) {
                 $attributes['acquisition_act'] = $this->storeProtected($data->acquisition_act);
             }

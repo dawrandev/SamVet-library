@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO (kitob nusxasi).
- * Massiv (`$data['x']`) o'rniga tipli obyekt.
+ * DTO for passing data from Controller → Service (book copy).
+ * A typed object instead of an array (`$data['x']`).
  */
 class CopyData
 {
@@ -37,7 +37,7 @@ class CopyData
     }
 
     /**
-     * Faqat book_copies jadvaliga yoziladigan skalyar maydonlar (faylsiz).
+     * Only the scalar fields written to the book_copies table (without files).
      *
      * @return array<string, mixed>
      */

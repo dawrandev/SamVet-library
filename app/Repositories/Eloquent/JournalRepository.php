@@ -13,7 +13,7 @@ class JournalRepository implements JournalRepositoryInterface
         return Journal::query()
             ->with(['type', 'language'])
             ->withCount('issues')
-            // Qidiruv (nom, ISSN)
+            // Search (name, ISSN)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

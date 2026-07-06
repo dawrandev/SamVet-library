@@ -13,7 +13,7 @@ class ComputerSessionService
     ) {}
 
     /**
-     * A'zoning kompyuterdan foydalanish yozuvini qo'shish.
+     * Add a computer usage record for a reader.
      *
      * @param  array<string, mixed>  $data
      */

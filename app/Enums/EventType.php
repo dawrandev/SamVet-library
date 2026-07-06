@@ -3,14 +3,14 @@
 namespace App\Enums;
 
 /**
- * Reader qatnashgan tadbir turi.
+ * Type of event the reader attended.
  */
 enum EventType: string
 {
-    case Contest = 'contest';       // Tanlov
-    case Event = 'event';           // Tadbir
-    case Exhibition = 'exhibition'; // Ko'rgazma
-    case Meeting = 'meeting';       // Uchrashuv
+    case Contest = 'contest';       // Contest
+    case Event = 'event';           // Event
+    case Exhibition = 'exhibition'; // Exhibition
+    case Meeting = 'meeting';       // Meeting
 
     public function label(): string
     {

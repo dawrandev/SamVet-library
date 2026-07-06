@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface BookRepositoryInterface
 {
     /**
-     * Filtrlangan, sahifalangan kitoblar ro'yxati.
+     * Filtered, paginated list of books.
      *
      * @param  array{search?: string, category_id?: int, language_id?: int}  $filters
      */

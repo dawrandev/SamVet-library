@@ -36,7 +36,7 @@
             'written_off' => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
         ];
 
-        // Nusxa formasi uchun variantlar (enum'lar + joylashuvlar)
+        // Options for the copy form (enums + locations)
         $formatOptions = \App\Enums\BookFormat::cases();
         $conditionOptions = \App\Enums\CopyCondition::cases();
         $statusOptions = \App\Enums\CopyStatus::cases();
@@ -59,7 +59,7 @@
     </div>
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- Chap: muqova + formatlar + mavjudlik + fayllar --}}
+        {{-- Left: cover + formats + availability + files --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mx-auto flex h-56 w-40 items-center justify-center overflow-hidden rounded-xl bg-gray-100 text-5xl dark:bg-gray-800">
@@ -70,7 +70,7 @@
                     @endif
                 </div>
 
-                {{-- Format badge'lari --}}
+                {{-- Format badges --}}
                 <div class="mt-4 flex flex-wrap justify-center gap-2">
                     @forelse ($formats as $f)
                         <span class="rounded-full bg-brand-50 px-3 py-1 text-theme-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">{{ $f }}</span>
@@ -79,14 +79,14 @@
                     @endforelse
                 </div>
 
-                {{-- Ko'rishlar + mavjudlik --}}
+                {{-- Views + availability --}}
                 <div class="mt-4 flex items-center justify-center gap-4 border-t border-gray-100 pt-4 text-sm dark:border-gray-800">
                     <span class="text-gray-500 dark:text-gray-400">👁️ {{ $book->views_count }} {{ __('Ko‘rishlar') }}</span>
                     <span class="rounded-full bg-success-50 px-2.5 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">{{ $available }}/{{ $total }} {{ __('mavjud') }}</span>
                 </div>
             </div>
 
-            {{-- Boshqa tildagi nashrlar (asar guruhi) --}}
+            {{-- Editions in other languages (work group) --}}
             @php
                 $otherEditions = $book->work
                     ? $book->work->editions->where('id', '!=', $book->id)
@@ -109,7 +109,7 @@
                 </div>
             @endif
 
-            {{-- Raqamli fayllar --}}
+            {{-- Digital files --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Raqamli fayllar') }}</h3>
                 <ul class="space-y-2 text-sm">
@@ -124,7 +124,7 @@
                 </ul>
             </div>
 
-            {{-- Kategoriyalar --}}
+            {{-- Categories --}}
             @if ($book->categories->isNotEmpty())
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                     <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kategoriyalar') }}</h3>
@@ -139,9 +139,9 @@
             @endif
         </div>
 
-        {{-- O'ng: ma'lumotlar + annotatsiya + nusxalar --}}
+        {{-- Right: details + annotation + copies --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
-            {{-- Bibliografik --}}
+            {{-- Bibliographic --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
                 <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kitob ma’lumotlari') }}</h3>
                 <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -154,7 +154,7 @@
                 </dl>
             </div>
 
-            {{-- Annotatsiya --}}
+            {{-- Annotation --}}
             @if ($book->annotation)
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
                     <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Annotatsiya') }}</h3>
@@ -162,9 +162,9 @@
                 </div>
             @endif
 
-            {{-- Jismoniy nusxalar (kutubxonachi) --}}
+            {{-- Physical copies (librarian) --}}
             @php
-                // Modalni server-xatolarda ochiq qoldirish uchun bayroq (Alpine boshlang'ich holati)
+                // Flag to keep the modal open on server errors (Alpine initial state)
                 $openStore = $errors->any() && old('_copy_form') === 'store';
                 $openEditId = $errors->any() && old('_copy_form') === 'edit' ? (int) old('_copy_id') : null;
             @endphp
@@ -231,7 +231,7 @@
                     </table>
                 </div>
 
-                {{-- Qo'shish modali --}}
+                {{-- Add modal --}}
                 <div x-show="showStore" x-cloak
                      class="fixed inset-0 z-99999 flex items-center justify-center p-4"
                      @keydown.escape.window="showStore = false">
@@ -302,7 +302,7 @@
                     </div>
                 </div>
 
-                {{-- Tahrirlash modallari (har nusxa uchun) --}}
+                {{-- Edit modals (one per copy) --}}
                 @foreach ($book->copies as $copy)
                     <div x-show="editId === {{ $copy->id }}" x-cloak
                          class="fixed inset-0 z-99999 flex items-center justify-center p-4"

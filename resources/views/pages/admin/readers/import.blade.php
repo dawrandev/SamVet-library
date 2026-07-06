@@ -5,7 +5,7 @@
 @section('content')
     @php($stats = session('import_stats'))
 
-    {{-- Sarlavha --}}
+    {{-- Header --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchilarni Exceldan import qilish') }}</h2>
@@ -19,13 +19,13 @@
         </a>
     </div>
 
-    {{-- Import xatosi --}}
+    {{-- Import error --}}
     @if (session('import_error'))
         <x-alert type="error" class="mb-5">{{ session('import_error') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {{-- Yuklash formasi --}}
+        {{-- Upload form --}}
         <div class="lg:col-span-2">
             <form method="POST" action="{{ route('admin.readers.import.store') }}" enctype="multipart/form-data"
                   x-data="{
@@ -52,7 +52,7 @@
                   class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
                 @csrf
 
-                {{-- Drag & drop maydon --}}
+                {{-- Drag & drop area --}}
                 <label
                     @dragover.prevent="dragging = true"
                     @dragleave.prevent="dragging = false"
@@ -78,7 +78,7 @@
                     <span>{{ __('Import qilish') }}</span>
                 </button>
 
-                {{-- Import indikatori (to'liq ekran overlay) --}}
+                {{-- Import indicator (full-screen overlay) --}}
                 <template x-teleport="body">
                     <div x-show="loading" x-cloak
                          class="fixed inset-0 z-999999 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
@@ -91,7 +91,7 @@
                             </h3>
                             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400" x-text="hint"></p>
 
-                            {{-- Harakatlanuvchi (indeterminate) progress bar --}}
+                            {{-- Moving (indeterminate) progress bar --}}
                             <div class="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                                 <div class="bg-brand-500 animate-indeterminate h-full w-1/4 rounded-full"></div>
                             </div>
@@ -105,7 +105,7 @@
             </form>
         </div>
 
-        {{-- Yo'riqnoma --}}
+        {{-- Instructions --}}
         <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-white/[0.02]">
             <h3 class="mb-3 text-sm font-semibold text-gray-800 dark:text-white/90">{{ __('Qanday ishlaydi?') }}</h3>
             <ul class="text-theme-sm space-y-2 text-gray-600 dark:text-gray-400">
@@ -117,7 +117,7 @@
         </div>
     </div>
 
-    {{-- Import natijasi --}}
+    {{-- Import result --}}
     @if ($stats)
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-4 flex items-center gap-2">

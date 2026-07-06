@@ -34,7 +34,7 @@
     @endif
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- Chap: son ma'lumotlari --}}
+        {{-- Left: issue details --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mx-auto flex h-56 w-40 items-center justify-center overflow-hidden rounded-xl bg-gray-100 text-5xl dark:bg-gray-800">
@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        {{-- O'ng: nusxalar --}}
+        {{-- Right: copies --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
             <div
                 x-data="{
@@ -124,7 +124,7 @@
                     </table>
                 </div>
 
-                {{-- Qo'shish modali --}}
+                {{-- Add modal --}}
                 <div x-show="showStore" x-cloak
                      class="fixed inset-0 z-99999 flex items-center justify-center p-4"
                      @keydown.escape.window="showStore = false">
@@ -185,7 +185,7 @@
                     </div>
                 </div>
 
-                {{-- Tahrirlash modallari (har nusxa uchun) --}}
+                {{-- Edit modals (one per copy) --}}
                 @foreach ($issue->copies as $copy)
                     @php $isEditing = $openEditId === $copy->id; @endphp
                     <div x-show="editId === {{ $copy->id }}" x-cloak

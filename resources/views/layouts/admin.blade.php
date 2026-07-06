@@ -29,7 +29,7 @@
             </main>
         </div>
 
-        {{-- O'chirishni tasdiqlash modali (barcha delete tugmalari uchun) --}}
+        {{-- Delete confirmation modal (for all delete buttons) --}}
         <x-admin.confirm-delete />
     </div>
 </body>

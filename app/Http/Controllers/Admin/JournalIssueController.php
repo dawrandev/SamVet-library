@@ -64,7 +64,7 @@ class JournalIssueController extends Controller
     }
 
     /**
-     * Xavfsizlik: son aynan shu jurnalga tegishli bo'lishi shart.
+     * Security: the issue must belong to this specific journal.
      */
     private function ensureIssueBelongsToJournal(Journal $journal, JournalIssue $issue): void
     {

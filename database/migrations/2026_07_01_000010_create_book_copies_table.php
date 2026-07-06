@@ -12,28 +12,28 @@ return new class extends Migration
             $table->id();
             $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
 
-            $table->string('inventory_number')->unique(); // inventar raqami
+            $table->string('inventory_number')->unique(); // inventory number
 
-            // Format (jismoniy): print | braille — App\Enums\BookFormat
+            // Format (physical): print | braille — App\Enums\BookFormat
             $table->string('format')->default('print');
 
-            // Jismoniy holat: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
+            // Physical condition: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
             $table->string('condition')->default('new');
 
-            // Mavjudlik: available|lost|written_off — App\Enums\CopyStatus
+            // Availability: available|lost|written_off — App\Enums\CopyStatus
             $table->string('status')->default('available');
 
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
 
-            $table->decimal('price', 12, 2)->nullable(); // narx
+            $table->decimal('price', 12, 2)->nullable(); // price
 
-            // Aktlar (faqat kutubxonachi) — himoyalangan stream
-            $table->string('acquisition_act')->nullable(); // kirish akti (PDF)
-            $table->string('disposal_act')->nullable();    // chiqish akti (PDF)
+            // Acts (librarian only) — protected stream
+            $table->string('acquisition_act')->nullable(); // acquisition act (PDF)
+            $table->string('disposal_act')->nullable();    // disposal act (PDF)
 
             $table->timestamps();
 
-            $table->index(['book_id', 'status']); // mavjudlik hisobi uchun
+            $table->index(['book_id', 'status']); // for availability calculation
         });
     }
 

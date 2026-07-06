@@ -8,7 +8,7 @@ class ImportReadersRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — ReaderPolicy.
+        // Route is under `auth` middleware. When roles are added — ReaderPolicy.
         return true;
     }
 
@@ -22,7 +22,7 @@ class ImportReadersRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:xlsx,xls',
-                'max:102400', // 100 MB (rasmlar bilan katta bo'lishi mumkin)
+                'max:102400', // 100 MB (may be large due to images)
             ],
         ];
     }

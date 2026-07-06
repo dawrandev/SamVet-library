@@ -13,7 +13,7 @@
             'suspended' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500',
         ];
 
-        // Mansublik yorliqlari — talaba/xodimga qarab
+        // Affiliation labels — depending on student/staff
         $affiliation = array_filter([
             ($isStudent ? __('O‘qish joyi') : __('Ish joyi')) => $reader->affiliation_place,
             ($isStudent ? __('Mutaxassisligi') : __('Bo‘limi')) => $reader->affiliation_unit,
@@ -55,22 +55,22 @@
             <a href="{{ route('admin.readers.edit', $reader) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Tahrirlash') }}</a>
 
             @if ($isActiveOrSuspended)
-                {{-- Bloklash (modal: butunlay yoki sanagacha + sabab) --}}
+                {{-- Block (modal: permanent or until date + reason) --}}
                 <button type="button" @click="blockOpen = true"
                         class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('Bloklash') }}</button>
 
-                {{-- Foydalanishni tugatish (bitirgan / ishdan bo'shagan) --}}
+                {{-- Finish usage (graduated / left employment) --}}
                 <button type="button"
                         @click="$store.confirm.ask('{{ route('admin.readers.finish', $reader) }}', '{{ __('Kutubxonadan foydalanishni tugatishni tasdiqlaysizmi? Foydalanuvchi ro‘yxatdan olib tashlanadi.') }}', 'PATCH')"
                         class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Foydalanishni tugatish') }}</button>
             @else
-                {{-- Tiklash (bloklangan / ketgan) --}}
+                {{-- Restore (blocked / left) --}}
                 <button type="button"
                         @click="$store.confirm.ask('{{ route('admin.readers.restore', $reader) }}', '{{ __('Foydalanuvchini tiklashni tasdiqlaysizmi?') }}', 'PATCH')"
                         class="rounded-lg border border-success-200 px-4 py-2 text-sm font-medium text-success-600 hover:bg-success-50 dark:border-success-500/30 dark:text-success-500 dark:hover:bg-success-500/10">{{ __('Foydalanuvchini tiklash') }}</button>
             @endif
 
-            {{-- Bloklash modali --}}
+            {{-- Block modal --}}
             <template x-teleport="body">
                 <div x-show="blockOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                     <div class="fixed inset-0 bg-gray-900/50" @click="blockOpen = false"></div>
@@ -129,7 +129,7 @@
     @endif
 
     <div class="grid grid-cols-12 gap-6">
-        {{-- Chap: rasm + asosiy --}}
+        {{-- Left: photo + main --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 text-center dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-brand-50 text-4xl font-semibold text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
@@ -148,13 +148,13 @@
                     <p class="text-theme-sm mt-3 text-gray-500 dark:text-gray-400">{{ __('ID raqami') }}: {{ $reader->id_number }}</p>
                 @endif
 
-                {{-- Kitobxon guvohnomasini yuklab olish (ID-karta PDF) --}}
+                {{-- Download reader card (ID-card PDF) --}}
                 <a href="{{ route('admin.readers.card', $reader) }}" target="_blank"
                    class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
                     <span class="text-base leading-none">🪪</span> {{ __('Kitobxon guvohnomasini yuklab olish') }}
                 </a>
 
-                {{-- Blok ko'rsatkichi --}}
+                {{-- Block indicator --}}
                 @if ($reader->status === \App\Enums\ReaderStatus::Blocked)
                     <div class="mt-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-left text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
                         @if ($reader->blocked_until)
@@ -169,7 +169,7 @@
                 @endif
             </div>
 
-            {{-- Mansublik --}}
+            {{-- Affiliation --}}
             @if ($affiliation)
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                     <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ $isStudent ? __('O‘qish ma’lumotlari') : __('Ish ma’lumotlari') }}</h3>
@@ -185,7 +185,7 @@
             @endif
         </div>
 
-        {{-- O'ng: shaxsiy + qo'shimcha + izoh --}}
+        {{-- Right: personal + additional + note --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
             @if ($personal)
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
@@ -222,7 +222,7 @@
                 </div>
             @endif
 
-            {{-- Ogohlantirishlar (qizil qoidalar) --}}
+            {{-- Warnings (red rules) --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6"
                  x-data="{ warnOpen: {{ $errors->has('reason') || $errors->has('note') ? 'true' : 'false' }} }">
                 <div class="mb-4 flex items-center justify-between gap-3">
@@ -275,7 +275,7 @@
                     </div>
                 @endif
 
-                {{-- Ogohlantirish berish modali --}}
+                {{-- Give warning modal --}}
                 <template x-teleport="body">
                     <div x-show="warnOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                         <div class="fixed inset-0 bg-gray-900/50" @click="warnOpen = false"></div>
@@ -314,7 +314,7 @@
         </div>
     </div>
 
-    {{-- O'qigan kitoblari (oldi-berdi) --}}
+    {{-- Books read (lending) --}}
     @php
         $defaultDue = now()->addDays(15)->format('Y-m-d');
     @endphp
@@ -400,7 +400,7 @@
             @endif
         </div>
 
-        {{-- Kitob berish modali --}}
+        {{-- Give book modal --}}
         <template x-teleport="body">
             <div x-show="issueOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                 <div class="fixed inset-0 bg-gray-900/50" @click="issueOpen = false"></div>
@@ -419,7 +419,7 @@
                             autocomplete="off"
                         />
 
-                        {{-- Nusxa/kitob ma'lumoti (avtomatik chiqadi) --}}
+                        {{-- Copy/book info (appears automatically) --}}
                         <div x-show="lookupState === 'loading'" class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Qidirilmoqda...') }}</div>
 
                         <div x-show="lookupState === 'missing'" x-cloak class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
@@ -460,7 +460,7 @@
         </template>
     </div>
 
-    {{-- Qatnashgan tadbir va tanlovlar --}}
+    {{-- Attended events and competitions --}}
     <div class="mt-6" x-data="{ eventOpen: {{ $errors->has('date') || $errors->has('name') || $errors->has('type') || $errors->has('role') ? 'true' : 'false' }} }">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
@@ -514,7 +514,7 @@
             @endif
         </div>
 
-        {{-- Tadbir qo'shish modali --}}
+        {{-- Add event modal --}}
         <template x-teleport="body">
             <div x-show="eventOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                 <div class="fixed inset-0 bg-gray-900/50" @click="eventOpen = false"></div>
@@ -568,7 +568,7 @@
         </template>
     </div>
 
-    {{-- Kompyuterdan foydalanish --}}
+    {{-- Computer usage --}}
     <div class="mt-6" x-data="{ computerOpen: {{ $errors->has('issued_time') || $errors->has('returned_time') || $errors->has('computer_number') || $errors->has('location') || $errors->has('purpose') ? 'true' : 'false' }} }">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
@@ -615,7 +615,7 @@
             @endif
         </div>
 
-        {{-- Kompyuterdan foydalanish qo'shish modali --}}
+        {{-- Add computer usage modal --}}
         <template x-teleport="body">
             <div x-show="computerOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                 <div class="fixed inset-0 bg-gray-900/50" @click="computerOpen = false"></div>

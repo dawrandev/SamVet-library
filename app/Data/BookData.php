@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO.
- * Massiv (`$data['x']`) o'rniga tipli obyekt.
+ * DTO for passing data from Controller → Service.
+ * A typed object instead of an array (`$data['x']`).
  */
 class BookData
 {
@@ -19,7 +19,7 @@ class BookData
         public readonly ?int $language_id,
         public readonly ?int $publisher_id,
         public readonly ?int $publication_year,
-        /** @var array<string, string>|null Nashriyot joyi (tarjima: uz/ru/kk) */
+        /** @var array<string, string>|null Publication place (translation: uz/ru/kk) */
         public readonly ?array $publication_place,
         public readonly ?int $pages,
         public readonly ?string $isbn,
@@ -36,7 +36,7 @@ class BookData
 
     public static function fromRequest(Request $request): self
     {
-        // Nashriyot joyi: {uz,ru,kk} — bo'sh qiymatlar tashlanadi, hammasi bo'sh bo'lsa null
+        // Publication place: {uz,ru,kk} — empty values are dropped, null if all are empty
         $place = array_filter(
             array_map('trim', (array) $request->input('publication_place', [])),
             static fn (string $v): bool => $v !== '',
@@ -64,7 +64,7 @@ class BookData
     }
 
     /**
-     * Faqat books jadvaliga yoziladigan skalyar maydonlar (fayl/bog'lanishsiz).
+     * Only the scalar fields written to the books table (without files/relationships).
      *
      * @return array<string, mixed>
      */

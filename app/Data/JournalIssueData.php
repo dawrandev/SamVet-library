@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 /**
- * Controller → Service ma'lumot uzatish uchun DTO (jurnal soni).
+ * DTO for passing data from Controller → Service (journal issue).
  */
 class JournalIssueData
 {
@@ -30,7 +30,7 @@ class JournalIssueData
     }
 
     /**
-     * Faqat journal_issues jadvaliga yoziladigan skalyar maydonlar (faylsiz).
+     * Only the scalar fields written to the journal_issues table (without files).
      *
      * @return array<string, mixed>
      */

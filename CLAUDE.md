@@ -88,6 +88,17 @@ errors/        maxsus xato sahifalari (404, 403, ...)
 - Alpine.js kichik atributlari (`x-data`, `@click`, `x-show`) Blade'da qoladi — bu idiomatik.
 - Katta JS logika → `resources/js/` modullari. Inline `<script>` yozma.
 
+## Kod izohlari (comments) — MAJBURIY: INGLIZ tilida
+
+Kod ichidagi **barcha izohlar (comments) ingliz tilida** yoziladi — o'zbekcha EMAS.
+Bu PHP (Controller, Service, Repository, Model, Migration, FormRequest, DTO, Enum,
+Observer, routes/web.php), JS (`resources/js/`), Blade (`{{-- ... --}}`) va boshqa
+hamma joyga tegishli. Docblock, inline `//`, blok `/* */`, Blade izohlar — hammasi inglizcha.
+
+- **Foydalanuvchiga ko'rinadigan matn** (`{{ __('...') }}`, flash, validatsiya, label) — o'zbekcha qoladi (i18n bo'yicha).
+- **Faqat dasturchi ko'radigan izoh** — inglizcha.
+- Yangi kod yozganda ham, mavjud kodni tahrirlaganda ham shu qoidaga amal qil.
+
 ## Ko'p tillilik (i18n)
 
 - 3 til: **O'zbek (uz, default)**, **Rus (ru)**, **Qoraqalpoq (kk)**. Ingliz YO'Q. (Qoraqalpoq uchun `kk` kodi — loyiha qarori.)

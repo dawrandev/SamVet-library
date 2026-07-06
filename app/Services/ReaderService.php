@@ -17,7 +17,7 @@ class ReaderService
     ) {}
 
     /**
-     * Sahifalangan, filtrlangan ro'yxat.
+     * Paginated, filtered list.
      *
      * @param  array<string, mixed>  $filters
      */
@@ -31,7 +31,7 @@ class ReaderService
         return DB::transaction(function () use ($data) {
             $attributes = $data->toAttributes();
 
-            // Rasm — ochiq disk (avatar)
+            // Photo — public disk (avatar)
             if ($data->photo) {
                 $attributes['photo'] = $this->storePublic($data->photo, 'reader-photos');
             }
