@@ -66,7 +66,7 @@
                     @if ($book->cover_image)
                         <img src="{{ asset('storage/' . $book->cover_image) }}" alt="" class="h-full w-full object-cover" />
                     @else
-                        📕
+                        <x-admin.icon name="book" class="h-14 w-14 text-gray-300 dark:text-gray-600" />
                     @endif
                 </div>
 

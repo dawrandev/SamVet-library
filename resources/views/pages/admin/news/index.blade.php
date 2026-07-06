@@ -66,6 +66,7 @@
             <table class="min-w-full">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
+                        <th class="w-12 px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('№') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Yangilik') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kategoriya') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Holat') }}</th>
@@ -76,13 +77,14 @@
                 <tbody>
                     @forelse ($news as $item)
                         <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
+                            <td class="px-5 py-4 text-theme-sm font-medium text-gray-500 dark:text-gray-400">{{ $news->firstItem() + $loop->index }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-11 w-16 flex-none items-center justify-center overflow-hidden rounded-lg bg-gray-100 text-lg dark:bg-gray-800">
                                         @if ($item->cover_image)
                                             <img src="{{ asset('storage/' . $item->cover_image) }}" alt="" class="h-full w-full object-cover" />
                                         @else
-                                            📰
+                                            <x-admin.icon name="newspaper" class="h-6 w-6 text-gray-400" />
                                         @endif
                                     </div>
                                     <p class="text-theme-sm max-w-xs truncate font-medium text-gray-800 dark:text-white/90">{{ $item->getTranslation('title', 'uz') ?: '—' }}</p>
@@ -105,8 +107,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-12 text-center">
-                                <p class="text-3xl">📰</p>
+                            <td colspan="6" class="px-5 py-12 text-center">
+                                <x-admin.icon name="newspaper" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Yangiliklar topilmadi.') }}</p>
                             </td>
                         </tr>

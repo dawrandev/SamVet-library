@@ -1,14 +1,14 @@
 @props([
     'label' => '',
     'value' => '0',
-    'icon' => '📊',
-    'trend' => null,   // masalan '11.01%'
-    'up' => true,      // trend yo'nalishi
+    'icon' => 'chart-bar',   // icon name from the admin.icon partial
+    'trend' => null,         // e.g. '11.01%'
+    'up' => true,            // trend direction
 ])
 
 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-2xl dark:bg-gray-800">
-        {{ $icon }}
+    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+        @include('partials.admin.icon', ['name' => $icon, 'class' => 'h-6 w-6'])
     </div>
 
     <div class="mt-5 flex items-end justify-between">

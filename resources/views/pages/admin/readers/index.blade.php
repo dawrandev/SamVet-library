@@ -22,7 +22,7 @@
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.readers.import.create') }}"
                class="shadow-theme-xs inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.06]">
-                <span class="text-base leading-none">⬆</span> {{ __('Exceldan import') }}
+                <x-admin.icon name="upload" class="h-4 w-4" /> {{ __('Exceldan import') }}
             </a>
             <a href="{{ route('admin.readers.create') }}"
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
@@ -127,7 +127,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-5 py-12 text-center">
-                                <p class="text-3xl">👥</p>
+                                <x-admin.icon name="users" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Foydalanuvchilar topilmadi.') }}</p>
                             </td>
                         </tr>

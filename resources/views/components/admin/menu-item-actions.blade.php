@@ -11,7 +11,7 @@
         <a href="{{ route('admin.menu-items.page.edit', $node) }}"
            class="text-theme-xs inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-medium text-brand-500 transition hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10"
            title="{{ __('Sahifa matnini tahrirlash') }}">
-            📄 {{ __('Sahifa') }}
+            <x-admin.icon name="document-text" class="h-3.5 w-3.5" /> {{ __('Sahifa') }}
         </a>
     @endif
     <a href="{{ route('admin.menu-items.edit', $node) }}"

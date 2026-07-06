@@ -33,7 +33,7 @@
                 </template>
             @endif
 
-            <span class="text-2xl" @if ($image) x-show="!preview" @endif>⬆️</span>
+            <span class="text-gray-400" @if ($image) x-show="!preview" @endif><x-admin.icon name="upload" class="h-6 w-6" /></span>
 
             <p class="mt-1 text-theme-sm font-medium text-gray-700 dark:text-gray-300">
                 <span x-show="!fileName">{{ __('Faylni tanlang') }}</span>

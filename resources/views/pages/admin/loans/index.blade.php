@@ -127,7 +127,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-5 py-12 text-center">
-                                <p class="text-3xl">📚</p>
+                                <x-admin.icon name="book" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Kitoblar topilmadi.') }}</p>
                             </td>
                         </tr>

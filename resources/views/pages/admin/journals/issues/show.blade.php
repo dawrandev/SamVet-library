@@ -41,7 +41,7 @@
                     @if ($issue->cover_image)
                         <img src="{{ asset('storage/' . $issue->cover_image) }}" alt="" class="h-full w-full object-cover" />
                     @else
-                        📰
+                        <x-admin.icon name="newspaper" class="h-14 w-14 text-gray-300 dark:text-gray-600" />
                     @endif
                 </div>
                 <dl class="mt-5 space-y-3">

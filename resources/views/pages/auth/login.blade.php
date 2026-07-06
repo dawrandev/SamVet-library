@@ -79,7 +79,7 @@
             <div class="bg-brand-950 relative hidden h-full w-full items-center dark:bg-white/5 lg:grid lg:w-1/2">
                 <div class="z-1 flex items-center justify-center">
                     <div class="flex max-w-xs flex-col items-center">
-                        <span class="mb-4 text-6xl">📚</span>
+                        <x-admin.icon name="book" class="mb-4 h-16 w-16 text-white" />
                         <h2 class="mb-2 text-2xl font-bold text-white">{{ config('app.name') }}</h2>
                         <p class="text-center text-gray-400 dark:text-white/60">
                             {{ __('Samarqand veterinariya universiteti elektron kutubxonasi') }}

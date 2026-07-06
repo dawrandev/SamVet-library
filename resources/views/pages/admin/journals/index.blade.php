@@ -68,7 +68,7 @@
                         <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-14 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 text-lg dark:bg-gray-800">📰</div>
+                                    <div class="flex h-14 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800"><x-admin.icon name="newspaper" class="h-6 w-6 text-gray-400" /></div>
                                     <div class="min-w-0">
                                         <p class="text-theme-sm truncate font-medium text-gray-800 dark:text-white/90">{{ $journal->name }}</p>
                                         <p class="text-theme-xs truncate text-gray-500 dark:text-gray-400">{{ $journal->issn ? 'ISSN: ' . $journal->issn : '—' }}</p>
@@ -100,7 +100,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-5 py-12 text-center">
-                                <p class="text-3xl">📰</p>
+                                <x-admin.icon name="newspaper" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Jurnallar topilmadi.') }}</p>
                             </td>
                         </tr>

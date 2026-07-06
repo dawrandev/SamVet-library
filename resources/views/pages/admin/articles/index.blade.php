@@ -106,7 +106,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-5 py-12 text-center">
-                                <p class="text-3xl">📄</p>
+                                <x-admin.icon name="document-text" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Maqolalar topilmadi.') }}</p>
                             </td>
                         </tr>

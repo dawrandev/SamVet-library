@@ -8,15 +8,15 @@
         <div class="col-span-12 space-y-6 xl:col-span-7">
             {{-- Metric cards --}}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-                <x-admin.metric-card :label="__('Jami kitoblar')" value="0" icon="📕" :trend="null" />
-                <x-admin.metric-card :label="__('Kategoriyalar')" value="0" icon="🗂️" :trend="null" />
-                <x-admin.metric-card :label="__('Foydalanuvchilar')" value="0" icon="👥" :trend="null" />
+                <x-admin.metric-card :label="__('Jami kitoblar')" value="0" icon="book" :trend="null" />
+                <x-admin.metric-card :label="__('Kategoriyalar')" value="0" icon="folder" :trend="null" />
+                <x-admin.metric-card :label="__('Foydalanuvchilar')" value="0" icon="users" :trend="null" />
 
                 {{-- Overdue loans (notification) --}}
                 <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}" class="block">
                     <div class="rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-error-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/40 md:p-6">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 text-2xl text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                            ⏰
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                            <x-admin.icon name="clock" class="h-6 w-6" />
                         </div>
                         <div class="mt-5 flex items-end justify-between">
                             <div>

@@ -24,7 +24,7 @@
 
             {{-- Mobile logo --}}
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 lg:hidden">
-                <span class="text-2xl">📚</span>
+                <x-admin.icon name="book" class="h-6 w-6 shrink-0 text-brand-500" />
                 <span class="font-bold text-gray-900 dark:text-white">{{ config('app.name') }}</span>
             </a>
 

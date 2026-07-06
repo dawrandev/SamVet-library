@@ -59,7 +59,7 @@
                     @drop.prevent="dragging = false; if ($event.dataTransfer.files.length) { $refs.file.files = $event.dataTransfer.files; fileName = $refs.file.files[0].name }"
                     :class="dragging ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-gray-300 dark:border-gray-700'"
                     class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition">
-                    <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-3xl dark:bg-brand-500/15">📚</div>
+                    <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"><x-admin.icon name="book" class="h-6 w-6" /></div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                         <span x-show="!fileName">{{ __('Faylni bu yerga tashlang yoki tanlash uchun bosing') }}</span>
                         <span x-show="fileName" x-text="fileName" class="text-brand-600 dark:text-brand-400"></span>
