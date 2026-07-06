@@ -21,6 +21,8 @@ use App\Http\Controllers\Admin\ReaderCardController;
 use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
 use App\Http\Controllers\Admin\ReaderStatusController;
+use App\Http\Controllers\Admin\SubscriberController;
+use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
@@ -122,6 +124,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('loans', [LoanController::class, 'index'])->name('loans.index');
     Route::post('readers/{reader}/loans', [LoanController::class, 'store'])->name('readers.loans.store');
     Route::patch('loans/{loan}/return', [LoanController::class, 'return'])->name('loans.return');
+
+    // Periodical subscriptions (university staff)
+    Route::resource('subscribers', SubscriberController::class)->except(['show']);
+    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
 
     // Site menu (client navbar navigation) — tree-structured CRUD
     Route::get('menu-items/{menuItem}/page', [PageController::class, 'edit'])->name('menu-items.page.edit');

@@ -12,6 +12,7 @@ class JournalData
 {
     public function __construct(
         public readonly string $name,
+        public readonly string $kind,
         public readonly ?int $journal_type_id,
         public readonly ?string $founder,
         public readonly ?int $language_id,
@@ -33,6 +34,7 @@ class JournalData
 
         return new self(
             name: $request->string('name')->toString(),
+            kind: $request->string('kind')->toString(),
             journal_type_id: $request->integer('journal_type_id') ?: null,
             founder: $request->input('founder'),
             language_id: $request->integer('language_id') ?: null,
@@ -53,6 +55,7 @@ class JournalData
     {
         return [
             'name' => $this->name,
+            'kind' => $this->kind,
             'journal_type_id' => $this->journal_type_id,
             'founder' => $this->founder,
             'language_id' => $this->language_id,

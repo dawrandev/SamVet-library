@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 /**
- * Tahrirlash validatsiyasi — yaratish bilan bir xil qoidalar.
+ * Update validation — same rules as create.
  */
 class UpdateJournalRequest extends StoreJournalRequest
 {

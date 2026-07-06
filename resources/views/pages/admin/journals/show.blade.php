@@ -5,6 +5,7 @@
 @section('content')
     @php
         $meta = array_filter([
+            __('Nashr turi') => $journal->kind?->label(),
             __('Turi') => $journal->type?->name,
             __('Muassis') => $journal->founder,
             __('Tili') => $journal->language?->name,

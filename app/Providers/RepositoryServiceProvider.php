@@ -15,6 +15,8 @@ use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Repositories\Contracts\NewsRepositoryInterface;
 use App\Repositories\Contracts\PageRepositoryInterface;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
+use App\Repositories\Contracts\SubscriberRepositoryInterface;
+use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\ArticleRepository;
 use App\Repositories\Eloquent\BookRepository;
@@ -29,6 +31,8 @@ use App\Repositories\Eloquent\MenuItemRepository;
 use App\Repositories\Eloquent\NewsRepository;
 use App\Repositories\Eloquent\PageRepository;
 use App\Repositories\Eloquent\ReaderRepository;
+use App\Repositories\Eloquent\SubscriberRepository;
+use App\Repositories\Eloquent\SubscriptionRepository;
 use App\Repositories\Eloquent\WarningRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -54,6 +58,8 @@ class RepositoryServiceProvider extends ServiceProvider
         NewsRepositoryInterface::class => NewsRepository::class,
         PageRepositoryInterface::class => PageRepository::class,
         ReaderRepositoryInterface::class => ReaderRepository::class,
+        SubscriberRepositoryInterface::class => SubscriberRepository::class,
+        SubscriptionRepositoryInterface::class => SubscriptionRepository::class,
         WarningRepositoryInterface::class => WarningRepository::class,
     ];
 }

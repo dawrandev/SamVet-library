@@ -56,6 +56,7 @@
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Jurnal') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Nashr turi') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Tili') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Sonlar') }}</th>
@@ -73,6 +74,9 @@
                                         <p class="text-theme-xs truncate text-gray-500 dark:text-gray-400">{{ $journal->issn ? 'ISSN: ' . $journal->issn : '—' }}</p>
                                     </div>
                                 </div>
+                            </td>
+                            <td class="px-5 py-4">
+                                <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $journal->kind?->label() ?? '—' }}</span>
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $journal->type?->name ?? '—' }}</td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $journal->language?->name ?? '—' }}</td>
@@ -95,7 +99,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-12 text-center">
+                            <td colspan="6" class="px-5 py-12 text-center">
                                 <p class="text-3xl">📰</p>
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Jurnallar topilmadi.') }}</p>
                             </td>

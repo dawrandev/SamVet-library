@@ -4,6 +4,9 @@
 
     $periodicityOptions = \App\Enums\JournalPeriodicity::cases();
     $currentPeriodicity = old('periodicity', $editing ? $journal->periodicity?->value : null);
+
+    $kindOptions = \App\Enums\PublicationKind::cases();
+    $currentKind = old('kind', $editing ? $journal->kind?->value : \App\Enums\PublicationKind::Journal->value);
 @endphp
 
 <form
@@ -37,6 +40,18 @@
         <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
             <div class="space-y-5">
                 <x-admin.form.input name="name" :label="__('Nomi')" :value="$journal?->name" required :placeholder="__('Jurnal nomi')" />
+
+                {{-- Publication kind (journal / newspaper) --}}
+                <div>
+                    <label for="kind" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi (jurnal/gazeta)') }}<span class="text-error-500">*</span></label>
+                    <select name="kind" id="kind" required
+                            class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('kind') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                        @foreach ($kindOptions as $opt)
+                            <option value="{{ $opt->value }}" @selected($currentKind === $opt->value)>{{ $opt->label() }}</option>
+                        @endforeach
+                    </select>
+                    @error('kind')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"

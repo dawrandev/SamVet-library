@@ -27,7 +27,6 @@ class StoreJournalCopyRequest extends FormRequest
             'status' => ['required', new Enum(CopyStatus::class)],
             'location_id' => ['nullable', 'exists:locations,id'],
             'arrival_date' => ['nullable', 'date'],
-            'price' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
@@ -50,7 +49,6 @@ class StoreJournalCopyRequest extends FormRequest
             'status' => __('Mavjudligi'),
             'location_id' => __('Joylashuvi'),
             'arrival_date' => __('Kelgan vaqti'),
-            'price' => __('Narxi'),
         ];
     }
 }

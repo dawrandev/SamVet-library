@@ -107,6 +107,28 @@
                         </a>
                     </li>
 
+                    {{-- Obunachilar (universitet xodimlari) --}}
+                    <li>
+                        <a href="{{ route('admin.subscribers.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.subscribers.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.subscribers.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 4.5C7.48122 4.5 6.25 5.73122 6.25 7.25C6.25 8.76878 7.48122 10 9 10C10.5188 10 11.75 8.76878 11.75 7.25C11.75 5.73122 10.5188 4.5 9 4.5ZM4.75 7.25C4.75 4.90279 6.65279 3 9 3C11.3472 3 13.25 4.90279 13.25 7.25C13.25 9.59721 11.3472 11.5 9 11.5C6.65279 11.5 4.75 9.59721 4.75 7.25ZM15.5 6.75C15.0858 6.75 14.75 7.08579 14.75 7.5C14.75 7.91421 15.0858 8.25 15.5 8.25C16.7426 8.25 17.75 9.25736 17.75 10.5C17.75 11.7426 16.7426 12.75 15.5 12.75C15.0858 12.75 14.75 13.0858 14.75 13.5C14.75 13.9142 15.0858 14.25 15.5 14.25C17.5711 14.25 19.25 12.5711 19.25 10.5C19.25 8.42893 17.5711 6.75 15.5 6.75ZM4.5 14.5C3.25736 14.5 2.25 15.5074 2.25 16.75V18.5C2.25 18.9142 2.58579 19.25 3 19.25C3.41421 19.25 3.75 18.9142 3.75 18.5V16.75C3.75 16.3358 4.08579 16 4.5 16H13.5C13.9142 16 14.25 16.3358 14.25 16.75V18.5C14.25 18.9142 14.5858 19.25 15 19.25C15.4142 19.25 15.75 18.9142 15.75 18.5V16.75C15.75 15.5074 14.7426 14.5 13.5 14.5H4.5ZM18 14.5C17.5858 14.5 17.25 14.8358 17.25 15.25C17.25 15.6642 17.5858 16 18 16H19.5C19.9142 16 20.25 16.3358 20.25 16.75V18.5C20.25 18.9142 20.5858 19.25 21 19.25C21.4142 19.25 21.75 18.9142 21.75 18.5V16.75C21.75 15.5074 20.7426 14.5 19.5 14.5H18Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Obunachilar') }}</span>
+                        </a>
+                    </li>
+
+                    {{-- Obunalar (nashrlarga obuna) --}}
+                    <li>
+                        <a href="{{ route('admin.subscriptions.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.subscriptions.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.subscriptions.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M6.25 4C5.00736 4 4 5.00736 4 6.25V17.75C4 18.9926 5.00736 20 6.25 20H17.75C18.9926 20 20 18.9926 20 17.75V6.25C20 5.00736 18.9926 4 17.75 4H6.25ZM5.5 6.25C5.5 5.83579 5.83579 5.5 6.25 5.5H17.75C18.1642 5.5 18.5 5.83579 18.5 6.25V17.75C18.5 18.1642 18.1642 18.5 17.75 18.5H6.25C5.83579 18.5 5.5 18.1642 5.5 17.75V6.25ZM8 8.75C7.58579 8.75 7.25 9.08579 7.25 9.5C7.25 9.91421 7.58579 10.25 8 10.25H16C16.4142 10.25 16.75 9.91421 16.75 9.5C16.75 9.08579 16.4142 8.75 16 8.75H8ZM7.25 13C7.25 12.5858 7.58579 12.25 8 12.25H16C16.4142 12.25 16.75 12.5858 16.75 13C16.75 13.4142 16.4142 13.75 16 13.75H8C7.58579 13.75 7.25 13.4142 7.25 13ZM8 15.75C7.58579 15.75 7.25 16.0858 7.25 16.5C7.25 16.9142 7.58579 17.25 8 17.25H12C12.4142 17.25 12.75 16.9142 12.75 16.5C12.75 16.0858 12.4142 15.75 12 15.75H8Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Obunalar') }}</span>
+                        </a>
+                    </li>
+
                     {{-- Ma'lumotnomalar (ochiladigan guruh) --}}
                     <li x-data="{ open: {{ request()->routeIs('admin.lookups.*') ? 'true' : 'false' }} }">
                         <button type="button" @click="open = !open"

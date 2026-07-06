@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\JournalPeriodicity;
+use App\Enums\PublicationKind;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -21,6 +22,7 @@ class StoreJournalRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'kind' => ['required', new Enum(PublicationKind::class)],
             'journal_type_id' => ['nullable', 'exists:journal_types,id'],
             'founder' => ['nullable', 'string', 'max:255'],
             'language_id' => ['nullable', 'exists:languages,id'],
@@ -42,6 +44,7 @@ class StoreJournalRequest extends FormRequest
     {
         return [
             'name' => __('Nomi'),
+            'kind' => __('Turi (jurnal/gazeta)'),
             'journal_type_id' => __('Turi'),
             'founder' => __('Muassis'),
             'language_id' => __('Tili'),

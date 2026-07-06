@@ -14,7 +14,7 @@ class JournalCopy extends Model
 
     protected $fillable = [
         'journal_issue_id', 'inventory_number', 'condition', 'status',
-        'location_id', 'arrival_date', 'price',
+        'location_id', 'arrival_date',
     ];
 
     protected function casts(): array
@@ -23,7 +23,6 @@ class JournalCopy extends Model
             'condition' => CopyCondition::class,
             'status' => CopyStatus::class,
             'arrival_date' => 'date',
-            'price' => 'decimal:2',
         ];
     }
 

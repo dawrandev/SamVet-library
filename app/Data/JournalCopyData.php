@@ -15,7 +15,6 @@ class JournalCopyData
         public readonly string $status,
         public readonly ?int $location_id,
         public readonly ?string $arrival_date,
-        public readonly ?float $price,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -26,7 +25,6 @@ class JournalCopyData
             status: $request->string('status')->toString(),
             location_id: $request->integer('location_id') ?: null,
             arrival_date: $request->input('arrival_date') ?: null,
-            price: $request->filled('price') ? (float) $request->input('price') : null,
         );
     }
 
@@ -43,7 +41,6 @@ class JournalCopyData
             'status' => $this->status,
             'location_id' => $this->location_id,
             'arrival_date' => $this->arrival_date,
-            'price' => $this->price,
         ];
     }
 }

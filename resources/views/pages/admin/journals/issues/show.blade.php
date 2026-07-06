@@ -90,7 +90,6 @@
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Mavjudligi') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Joylashuvi') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kelgan vaqti') }}</th>
-                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Narxi') }}</th>
                                 <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                             </tr>
                         </thead>
@@ -104,7 +103,6 @@
                                     </td>
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->location?->name ?? '—' }}</td>
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->arrival_date?->format('d.m.Y') ?? '—' }}</td>
-                                    <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->price ? number_format($copy->price, 0, '.', ' ') . ' ' . __('so‘m') : '—' }}</td>
                                     <td class="px-5 py-3 text-right text-theme-xs">
                                         <div class="flex items-center justify-end gap-2">
                                             <button type="button" @click="editId = {{ $copy->id }}"
@@ -117,7 +115,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-5 py-8 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Nusxa yo‘q') }}</td>
+                                    <td colspan="6" class="px-5 py-8 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Nusxa yo‘q') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -172,8 +170,6 @@
                                 </div>
                                 <x-admin.form.input name="arrival_date" type="date" :label="__('Kelgan vaqti')" />
                             </div>
-
-                            <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')" />
 
                             <div class="flex justify-end gap-3 pt-2">
                                 <button type="button" @click="showStore = false"
@@ -238,9 +234,6 @@
                                     <x-admin.form.input name="arrival_date" type="date" :label="__('Kelgan vaqti')"
                                         :value="$isEditing ? old('arrival_date') : $copy->arrival_date?->format('Y-m-d')" />
                                 </div>
-
-                                <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')"
-                                    :value="$isEditing ? old('price') : $copy->price" />
 
                                 <div class="flex justify-end gap-3 pt-2">
                                     <button type="button" @click="editId = null"
