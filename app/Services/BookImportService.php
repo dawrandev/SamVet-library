@@ -165,7 +165,7 @@ class BookImportService
             'udc' => $udc,
             'publication_year' => $year,
             'book_type_id' => $this->translatableLookup(BookType::class, 'book_types', $this->clean($row[self::COL['book_type']] ?? null)),
-            'language_id' => $this->translatableLookup(Language::class, 'languages', $this->clean($row[self::COL['language']] ?? null)),
+            'language_id' => $this->resolveLanguage($this->clean($row[self::COL['language']] ?? null)),
             'publisher_id' => $this->plainLookup(Publisher::class, 'publishers', $this->clean($row[self::COL['publisher']] ?? null)),
             'pages' => $this->parseInt($this->clean($row[self::COL['pages']] ?? null)),
             'publication_place' => $this->placeTranslation($this->clean($row[self::COL['publication_place']] ?? null)),
@@ -278,6 +278,31 @@ class BookImportService
         }
 
         return $this->lookupCache[$key] = $model->id;
+    }
+
+    /**
+     * Resolve the language lookup, guarding against format words that some
+     * source rows put in the language column (e.g. "Bosma"/"Elektron"). Those are
+     * copy formats, never languages — so we leave the language empty instead of
+     * polluting the languages lookup.
+     */
+    private function resolveLanguage(?string $value): ?int
+    {
+        if ($value !== null && $this->isFormatWord($value)) {
+            return null;
+        }
+
+        return $this->translatableLookup(Language::class, 'languages', $value);
+    }
+
+    private function isFormatWord(string $value): bool
+    {
+        $n = $this->stripApostrophes(mb_strtolower($value, 'UTF-8'));
+
+        return str_contains($n, 'bosma')
+            || str_contains($n, 'elektron')
+            || str_contains($n, 'brayl')
+            || str_contains($n, 'braille');
     }
 
     // --- Maps (enum) ---
