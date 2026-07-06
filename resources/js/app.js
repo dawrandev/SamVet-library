@@ -7,6 +7,7 @@ import 'flatpickr/dist/flatpickr.css';
 
 import { initCharts } from './admin/charts';
 import lookupTable from './admin/lookup-table';
+import articleForm from './admin/article-form';
 
 // Alpine.js (persist plugin — remembers sidebar/dark mode state)
 Alpine.plugin(persist);
@@ -14,6 +15,9 @@ window.Alpine = Alpine;
 
 // Lookup management table (add/edit modal)
 Alpine.data('lookupTable', lookupTable);
+
+// Article form (journal autocomplete + dependent issue select)
+Alpine.data('articleForm', articleForm);
 
 // 3-language rich text editor (TinyMCE loaded lazily) — used in news/page forms.
 Alpine.data('richEditor', () => ({

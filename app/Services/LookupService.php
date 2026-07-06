@@ -10,6 +10,7 @@ use App\Models\Language;
 use App\Models\Location;
 use App\Models\NewsCategory;
 use App\Models\Publisher;
+use App\Models\ResourceField;
 
 /**
  * Creates a lookup (type, language, publisher, author, category, location)
@@ -27,6 +28,7 @@ class LookupService
         'category' => Category::class,
         'location' => Location::class,
         'news_category' => NewsCategory::class,
+        'resource_field' => ResourceField::class,
     ];
 
     /**
@@ -34,7 +36,7 @@ class LookupService
      *
      * @var list<string>
      */
-    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location', 'news_category'];
+    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location', 'news_category', 'resource_field'];
 
     /**
      * @return list<string>

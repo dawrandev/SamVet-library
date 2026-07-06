@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ComputerSessionController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
 use App\Http\Controllers\Admin\JournalIssueController;
+use App\Http\Controllers\Admin\JournalLookupController;
 use App\Http\Controllers\Admin\LoanController;
 use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\MenuItemController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
 use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
 use App\Http\Controllers\Admin\Lookups\PublisherController;
+use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
@@ -68,8 +71,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Book copies (modal on the book show page)
     Route::resource('books.copies', CopyController::class)->only(['store', 'update', 'destroy']);
 
+    // Journal live-search + issues (article form autocomplete) — BEFORE the resource
+    // so `journals/search` doesn't clash with `journals/{journal}`.
+    Route::get('journals/search', [JournalLookupController::class, 'show'])->name('journals.search');
+    Route::get('journals/{journal}/issues', [JournalLookupController::class, 'issues'])->name('journals.issues.lookup');
+
     // Journals CRUD (title level)
     Route::resource('journals', JournalController::class);
+
+    // Journal articles CRUD
+    Route::resource('articles', ArticleController::class);
 
     // Journal issues (modal on the journal show page + issue page)
     Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);
@@ -133,6 +144,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('publishers', PublisherController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('authors', AuthorController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['news-categories' => 'newsCategory']);
+        Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

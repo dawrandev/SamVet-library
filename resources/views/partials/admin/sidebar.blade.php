@@ -57,6 +57,17 @@
                         </a>
                     </li>
 
+                    {{-- Maqolalar --}}
+                    <li>
+                        <a href="{{ route('admin.articles.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.articles.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.articles.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5C19.7426 20.75 20.75 19.7426 20.75 18.5V5.5C20.75 4.25736 19.7426 3.25 18.5 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5C18.9142 4.75 19.25 5.08579 19.25 5.5V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM7.75 8.5C7.33579 8.5 7 8.83579 7 9.25C7 9.66421 7.33579 10 7.75 10H16.25C16.6642 10 17 9.66421 17 9.25C17 8.83579 16.6642 8.5 16.25 8.5H7.75ZM7 13C7 12.5858 7.33579 12.25 7.75 12.25H16.25C16.6642 12.25 17 12.5858 17 13C17 13.4142 16.6642 13.75 16.25 13.75H7.75C7.33579 13.75 7 13.4142 7 13ZM7.75 16C7.33579 16 7 16.3358 7 16.75C7 17.1642 7.33579 17.5 7.75 17.5H12.25C12.6642 17.5 13 17.1642 13 16.75C13 16.3358 12.6642 16 12.25 16H7.75Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Maqolalar') }}</span>
+                        </a>
+                    </li>
+
                     {{-- Yangiliklar --}}
                     <li>
                         <a href="{{ route('admin.news.index') }}"
@@ -118,6 +129,7 @@
                                         'categories' => __('Kategoriyalar'),
                                         'book-types' => __('Kitob turlari'),
                                         'journal-types' => __('Jurnal turlari'),
+                                        'resource-fields' => __('Resurs sohalari'),
                                         'news-categories' => __('Yangilik kategoriyalari'),
                                         'languages' => __('Tillar'),
                                         'locations' => __('Joylashuvlar'),
