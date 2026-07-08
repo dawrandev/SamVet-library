@@ -3,101 +3,212 @@
 @section('title', __('Bosh sahifa'))
 
 @section('content')
-    <div class="grid grid-cols-12 gap-4 md:gap-6">
-        {{-- Left column --}}
-        <div class="col-span-12 space-y-6 xl:col-span-7">
-            {{-- Metric cards --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-                <x-admin.metric-card :label="__('Jami kitoblar')" value="0" icon="book" :trend="null" />
-                <x-admin.metric-card :label="__('Kategoriyalar')" value="0" icon="folder" :trend="null" />
-                <x-admin.metric-card :label="__('Foydalanuvchilar')" value="0" icon="users" :trend="null" />
+    @php
+        // color-name -> progress-bar class
+        $barClass = [
+            'success' => 'bg-success-500',
+            'brand' => 'bg-brand-500',
+            'error' => 'bg-error-500',
+            'warning' => 'bg-warning-500',
+            'gray' => 'bg-gray-300 dark:bg-gray-600',
+        ];
+        $copyColor = ['available' => 'success', 'borrowed' => 'brand', 'lost' => 'error', 'written_off' => 'gray'];
+        $today = now()->startOfDay();
+    @endphp
 
-                {{-- Overdue loans (notification) --}}
-                <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}" class="block">
-                    <div class="rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-error-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/40 md:p-6">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500">
-                            <x-admin.icon name="clock" class="h-6 w-6" />
-                        </div>
-                        <div class="mt-5 flex items-end justify-between">
-                            <div>
-                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Muddati o‘tgan') }}</span>
-                                <h4 class="mt-2 text-title-sm font-bold text-error-600 dark:text-error-500">{{ $overdueLoansCount ?? 0 }}</h4>
-                            </div>
-                        </div>
-                    </div>
-                </a>
+    {{-- ===== Row 1: KPI cards ===== --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        {{-- Books --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                <x-admin.icon name="book" class="h-6 w-6" />
             </div>
-
-            {{-- Bar chart: oylik ko'rishlar --}}
-            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Oylik ko‘rishlar') }}</h3>
-                </div>
-                <div class="custom-scrollbar max-w-full overflow-x-auto">
-                    <div class="-ml-5 min-w-[650px] pl-2 xl:min-w-full">
-                        <div id="chartOne" class="-ml-5 h-full min-w-[650px] pl-2 xl:min-w-full"></div>
-                    </div>
-                </div>
+            <div class="mt-5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Kitob nomlari') }}</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">{{ number_format($booksTotal, 0, '.', ' ') }}</h4>
+                <p class="text-theme-xs mt-1 text-gray-400">{{ number_format($copiesTotal, 0, '.', ' ') }} {{ __('nusxa') }}</p>
             </div>
         </div>
 
-        {{-- O'ng ustun: radial (maqsad) --}}
-        <div class="col-span-12 xl:col-span-5">
-            <div class="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
-                <div class="shadow-default rounded-2xl bg-white px-5 pt-5 pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
-                    <div class="flex justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Oylik maqsad') }}</h3>
-                            <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Har oy uchun belgilangan maqsad') }}</p>
-                        </div>
-                    </div>
-                    <div class="relative max-h-[195px]">
-                        <div id="chartTwo" class="h-full"></div>
-                        <span class="bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500 absolute left-1/2 top-[85%] -translate-x-1/2 -translate-y-[85%] rounded-full px-3 py-1 text-xs font-medium">+10%</span>
-                    </div>
-                    <p class="mx-auto mt-1.5 w-full max-w-[380px] text-center text-sm text-gray-500 sm:text-base">
-                        {{ __('Bugun kutubxona faolligi o‘tgan oyga nisbatan yuqori. Ajoyib natija!') }}
-                    </p>
-                </div>
+        {{-- Readers --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                <x-admin.icon name="users" class="h-6 w-6" />
+            </div>
+            <div class="mt-5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Foydalanuvchilar') }}</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">{{ number_format($readersTotal, 0, '.', ' ') }}</h4>
+                <p class="text-theme-xs mt-1 text-success-600 dark:text-success-500">{{ number_format($readersActive, 0, '.', ' ') }} {{ __('faol') }}</p>
             </div>
         </div>
 
-        {{-- To'liq kenglik: area chart --}}
-        <div class="col-span-12">
-            <div class="rounded-2xl border border-gray-200 bg-white px-5 pt-5 pb-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-                <div class="mb-6 flex flex-col gap-5 sm:flex-row sm:justify-between">
-                    <div class="w-full">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Statistika') }}</h3>
-                        <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Ko‘rishlar va o‘qishlar dinamikasi') }}</p>
-                    </div>
+        {{-- Active loans --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                <x-admin.icon name="book" class="h-6 w-6" />
+            </div>
+            <div class="mt-5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Hozir berilgan') }}</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">{{ number_format($loansActive, 0, '.', ' ') }}</h4>
+                <p class="text-theme-xs mt-1 text-gray-400">{{ number_format($copiesAvailable, 0, '.', ' ') }} {{ __('nusxa mavjud') }}</p>
+            </div>
+        </div>
 
-                    <div class="flex w-full items-start gap-3 sm:justify-end">
-                        <div x-data="{ selected: 'overview' }" class="inline-flex w-fit items-center gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900">
-                            <button @click="selected = 'overview'"
-                                :class="selected === 'overview' ? 'shadow-theme-xs text-gray-900 dark:text-white bg-white dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'"
-                                class="text-theme-sm rounded-md px-3 py-2 font-medium hover:text-gray-900 dark:hover:text-white">{{ __('Umumiy') }}</button>
-                            <button @click="selected = 'views'"
-                                :class="selected === 'views' ? 'shadow-theme-xs text-gray-900 dark:text-white bg-white dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'"
-                                class="text-theme-sm rounded-md px-3 py-2 font-medium hover:text-gray-900 dark:hover:text-white">{{ __('Ko‘rishlar') }}</button>
-                            <button @click="selected = 'reads'"
-                                :class="selected === 'reads' ? 'shadow-theme-xs text-gray-900 dark:text-white bg-white dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'"
-                                class="text-theme-sm rounded-md px-3 py-2 font-medium hover:text-gray-900 dark:hover:text-white">{{ __('O‘qishlar') }}</button>
-                        </div>
+        {{-- Overdue (clickable) --}}
+        <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}"
+           class="block rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-error-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/40 md:p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                <x-admin.icon name="clock" class="h-6 w-6" />
+            </div>
+            <div class="mt-5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Muddati o‘tgan') }}</span>
+                <h4 class="mt-1 text-2xl font-bold {{ $overdue > 0 ? 'text-error-600 dark:text-error-500' : 'text-gray-800 dark:text-white/90' }}">{{ number_format($overdue, 0, '.', ' ') }}</h4>
+                <p class="text-theme-xs mt-1 text-gray-400">{{ __('ko‘rish uchun bosing') }}</p>
+            </div>
+        </a>
+    </div>
 
-                        <div class="relative max-w-41">
-                            <input class="datepicker text-theme-sm shadow-theme-xs h-10 w-full rounded-lg border border-gray-200 bg-white py-2.5 pr-4 pl-[34px] font-medium text-gray-700 focus:ring-0 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                placeholder="{{ __('Sanani tanlang') }}" data-class="flatpickr-right" readonly />
-                            <div class="pointer-events-none absolute inset-0 right-auto left-3 flex items-center">
-                                <svg class="fill-gray-700 dark:fill-gray-400" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.66683 1.54199C7.08104 1.54199 7.41683 1.87778 7.41683 2.29199V3.00033H12.5835V2.29199C12.5835 1.87778 12.9193 1.54199 13.3335 1.54199C13.7477 1.54199 14.0835 1.87778 14.0835 2.29199V3.00033L15.4168 3.00033C16.5214 3.00033 17.4168 3.89576 17.4168 5.00033V7.50033V15.8337C17.4168 16.9382 16.5214 17.8337 15.4168 17.8337H4.5835C3.47893 17.8337 2.5835 16.9382 2.5835 15.8337V7.50033V5.00033C2.5835 3.89576 3.47893 3.00033 4.5835 3.00033L5.91683 3.00033V2.29199C5.91683 1.87778 6.25262 1.54199 6.66683 1.54199ZM6.66683 4.50033H4.5835C4.30735 4.50033 4.0835 4.72418 4.0835 5.00033V6.75033H15.9168V5.00033C15.9168 4.72418 15.693 4.50033 15.4168 4.50033H13.3335H6.66683ZM15.9168 8.25033H4.0835V15.8337C4.0835 16.1098 4.30735 16.3337 4.5835 16.3337H15.4168C15.693 16.3337 15.9168 16.1098 15.9168 15.8337V8.25033Z" fill="" />
-                                </svg>
-                            </div>
+    {{-- ===== Row 2: breakdowns ===== --}}
+    <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-6">
+        {{-- Copy status --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
+            <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
+            <div class="mt-5 space-y-4">
+                @foreach (\App\Enums\CopyStatus::cases() as $st)
+                    @php $c = (int) ($copiesByStatus[$st->value] ?? 0); $pct = $copiesTotal > 0 ? round($c / $copiesTotal * 100) : 0; @endphp
+                    <div>
+                        <div class="text-theme-sm flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ $st->label() }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-white/90">{{ $c }}</span>
+                        </div>
+                        <div class="mt-1.5 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                            <div class="h-2 rounded-full {{ $barClass[$copyColor[$st->value] ?? 'gray'] }}" style="width: {{ $pct }}%"></div>
                         </div>
                     </div>
-                </div>
-                <div class="custom-scrollbar max-w-full overflow-x-auto">
-                    <div id="chartThree" class="-ml-4 min-w-[700px] pl-2"></div>
-                </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Readers by type --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchilar turi') }}</h3>
+            <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Tur bo‘yicha taqsimot') }}</p>
+            <div class="mt-5 space-y-3">
+                @foreach (\App\Enums\ReaderType::cases() as $t)
+                    @php $c = (int) ($readersByType[$t->value] ?? 0); $pct = $readersTotal > 0 ? round($c / $readersTotal * 100) : 0; @endphp
+                    <div>
+                        <div class="text-theme-sm flex items-center justify-between">
+                            <span class="truncate text-gray-600 dark:text-gray-400">{{ $t->label() }}</span>
+                            <span class="ml-2 font-semibold text-gray-800 dark:text-white/90">{{ $c }}</span>
+                        </div>
+                        <div class="mt-1 h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                            <div class="h-1.5 rounded-full bg-brand-500" style="width: {{ $pct }}%"></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Computers by status --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterlar holati') }}</h3>
+            <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Elektron o‘qish zali') }}</p>
+            <div class="mt-5 space-y-4">
+                @foreach (\App\Enums\ComputerStatus::cases() as $st)
+                    @php $c = (int) ($computersByStatus[$st->value] ?? 0); $pct = $computersTotal > 0 ? round($c / $computersTotal * 100) : 0; @endphp
+                    <div>
+                        <div class="text-theme-sm flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400">{{ $st->label() }}</span>
+                            <span class="font-semibold text-gray-800 dark:text-white/90">{{ $c }}</span>
+                        </div>
+                        <div class="mt-1.5 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                            <div class="h-2 rounded-full {{ $barClass[$st->color()] ?? $barClass['gray'] }}" style="width: {{ $pct }}%"></div>
+                        </div>
+                    </div>
+                @endforeach
+                @if ($computersTotal === 0)
+                    <p class="text-theme-sm text-gray-400">{{ __('Hali kompyuter kiritilmagan.') }}</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ===== Row 3: recent loans + quick counts ===== --}}
+    <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-6">
+        {{-- Recent loans --}}
+        <div class="lg:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex items-center justify-between px-5 py-4 sm:px-6">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('So‘nggi berilgan kitoblar') }}</h3>
+                <a href="{{ route('admin.loans.index') }}" class="text-theme-sm font-medium text-brand-500 hover:text-brand-600">{{ __('Barchasi') }}</a>
+            </div>
+            <div class="max-w-full overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-y border-gray-100 dark:border-gray-800">
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('Foydalanuvchi') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kitob') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Berilgan') }}</th>
+                            <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('Muddat') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($recentLoans as $loan)
+                            @php $isOverdue = $loan->status === \App\Enums\LoanStatus::OnLoan && $loan->due_at && $loan->due_at->lt($today); @endphp
+                            <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/60">
+                                <td class="px-5 py-3.5 text-theme-sm font-medium text-gray-800 dark:text-white/90 sm:px-6">{{ $loan->reader?->full_name ?? '—' }}</td>
+                                <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($loan->copy?->book?->title ?? '—', 32) }}</td>
+                                <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
+                                <td class="px-5 py-3.5 text-right sm:px-6">
+                                    <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $isOverdue ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }}">
+                                        {{ $loan->due_at?->format('d.m.Y') ?? '—' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center">
+                                    <x-admin.icon name="book" class="mx-auto h-9 w-9 text-gray-300 dark:text-gray-600" />
+                                    <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hali kitob berilmagan.') }}</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Quick counts --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qisqa hisobot') }}</h3>
+            <div class="mt-4 space-y-1">
+                @php
+                    $counts = [
+                        ['newspaper', __('Jurnallar'), $journalsTotal],
+                        ['document-text', __('Maqolalar'), $articlesTotal],
+                        ['newspaper', __('Yangiliklar'), $newsTotal],
+                        ['computer-desktop', __('Kompyuterlar'), $computersTotal],
+                        ['clipboard-list', __('Obunalar'), $subscriptionsTotal],
+                        ['folder', __('Kategoriyalar'), $categoriesTotal],
+                        ['users', __('Mualliflar'), $authorsTotal],
+                    ];
+                @endphp
+                @foreach ($counts as [$icon, $label, $value])
+                    <div class="flex items-center justify-between rounded-lg px-2 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                <x-admin.icon :name="$icon" class="h-4 w-4" />
+                            </span>
+                            <span class="text-theme-sm text-gray-600 dark:text-gray-400">{{ $label }}</span>
+                        </div>
+                        <span class="text-theme-sm font-semibold text-gray-800 dark:text-white/90">{{ number_format($value, 0, '.', ' ') }}</span>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-3 rounded-xl bg-brand-50 p-4 dark:bg-brand-500/10">
+                <p class="text-theme-xs text-brand-600 dark:text-brand-400">{{ __('Jami obuna summasi') }}</p>
+                <p class="mt-1 text-lg font-bold text-brand-700 dark:text-brand-300">{{ number_format($subscriptionsAmount, 0, '.', ' ') }} {{ __('so‘m') }}</p>
             </div>
         </div>
     </div>
