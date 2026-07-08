@@ -24,17 +24,17 @@ class LoginController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required'],
         ], [], [
-            'email' => 'Email',
+            'username' => 'Login',
             'password' => 'Parol',
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => 'Email yoki parol noto‘g‘ri.']);
+                ->withInput($request->only('username'))
+                ->withErrors(['username' => 'Login yoki parol noto‘g‘ri.']);
         }
 
         $request->session()->regenerate();

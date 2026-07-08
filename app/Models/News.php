@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\NewsStatus;
 use App\Observers\NewsObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +24,6 @@ class News extends Model
         'body',
         'slug',
         'cover_image',
-        'status',
         'published_at',
         'views_count',
     ];
@@ -36,7 +34,6 @@ class News extends Model
     protected function casts(): array
     {
         return [
-            'status' => NewsStatus::class,
             'published_at' => 'datetime',
             'views_count' => 'integer',
         ];

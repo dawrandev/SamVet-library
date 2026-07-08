@@ -13,7 +13,7 @@
                             {{ __('Tizimga kirish') }}
                         </h1>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ __('Kirish uchun email va parolingizni kiriting.') }}
+                            {{ __('Kirish uchun login va parolingizni kiriting.') }}
                         </p>
                     </div>
 
@@ -26,14 +26,14 @@
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="space-y-5">
-                            {{-- Email --}}
+                            {{-- Login --}}
                             <div>
                                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    {{ __('Email') }}<span class="text-error-500">*</span>
+                                    {{ __('Login') }}<span class="text-error-500">*</span>
                                 </label>
-                                <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                                    autocomplete="username" placeholder="admin@samvet.uz"
-                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('email') border-error-500 @enderror" />
+                                <input type="text" name="username" value="{{ old('username') }}" required autofocus
+                                    autocomplete="username" placeholder="{{ __('Login') }}"
+                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 @error('username') border-error-500 @enderror" />
                             </div>
 
                             {{-- Password --}}

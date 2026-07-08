@@ -2,7 +2,6 @@
 
 namespace App\Data;
 
-use App\Enums\NewsStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
@@ -22,7 +21,6 @@ class NewsData
         /** @var array<string, string> Rich HTML (translation, raw) */
         public readonly array $body,
         public readonly ?int $news_category_id,
-        public readonly NewsStatus $status,
         public readonly ?string $published_at,
         public readonly ?UploadedFile $cover,
         /** @var array<int, UploadedFile> */
@@ -36,7 +34,6 @@ class NewsData
             excerpt: self::localized($request->input('excerpt', [])),
             body: self::localized($request->input('body', []), false),
             news_category_id: $request->integer('news_category_id') ?: null,
-            status: NewsStatus::from((string) $request->input('status')),
             published_at: $request->input('published_at') ?: null,
             cover: $request->file('cover'),
             gallery: array_values(array_filter(
@@ -72,7 +69,6 @@ class NewsData
             'excerpt' => $this->excerpt,
             'body' => $this->body,
             'news_category_id' => $this->news_category_id,
-            'status' => $this->status,
             'published_at' => $this->published_at,
         ];
     }

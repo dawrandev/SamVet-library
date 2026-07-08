@@ -20,7 +20,7 @@ class NewsController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'news_category_id', 'status']);
+        $filters = $request->only(['search', 'news_category_id']);
 
         return view('pages.admin.news.index', [
             'news' => $this->newsService->paginate($filters),
@@ -32,6 +32,13 @@ class NewsController extends Controller
     public function create(): View
     {
         return view('pages.admin.news.create', $this->newsService->formOptions());
+    }
+
+    public function show(News $news): View
+    {
+        $news->load(['category', 'images']);
+
+        return view('pages.admin.news.show', ['news' => $news]);
     }
 
     public function store(StoreNewsRequest $request): RedirectResponse

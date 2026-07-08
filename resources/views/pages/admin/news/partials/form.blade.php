@@ -6,7 +6,6 @@
     $excerptVal = $editing ? $news->getTranslations('excerpt') : [];
     $bodyVal = $editing ? $news->getTranslations('body') : [];
     $curCategory = old('news_category_id', $news?->news_category_id);
-    $curStatus = old('status', $editing ? $news->status->value : \App\Enums\NewsStatus::Draft->value);
     $curPublished = old('published_at', $editing ? $news->published_at?->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i'));
 @endphp
 
@@ -59,16 +58,6 @@
                     <x-admin.form.select name="news_category_id" :label="__('Kategoriya')" :options="$categories"
                         :selected="$curCategory" :placeholder="__('Tanlang')" :required="true"
                         creatable create-translatable create-type="news_category" :create-label="__('Yangi kategoriya')" />
-
-                    <div>
-                        <label for="status" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Holat') }}</label>
-                        <select name="status" id="status"
-                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 border-gray-300 dark:border-gray-700">
-                            @foreach (\App\Enums\NewsStatus::cases() as $st)
-                                <option value="{{ $st->value }}" @selected($curStatus === $st->value)>{{ $st->label() }}</option>
-                            @endforeach
-                        </select>
-                    </div>
 
                     <x-admin.form.input type="datetime-local" name="published_at" :label="__('Nashr sanasi')" :value="$curPublished" />
                 </div>

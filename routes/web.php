@@ -138,8 +138,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('menu-items/{menuItem}/page', [PageController::class, 'update'])->name('menu-items.page.update');
     Route::resource('menu-items', MenuItemController::class)->except(['show']);
 
-    // News CRUD (show is on the client site — not needed here)
-    Route::resource('news', NewsController::class)->except(['show'])->parameters(['news' => 'news']);
+    // News CRUD (admin preview page included)
+    Route::resource('news', NewsController::class)->parameters(['news' => 'news']);
 
     // Instant lookup creation (AJAX, in the book form)
     Route::post('lookups', [LookupController::class, 'store'])->name('lookups.store');

@@ -23,9 +23,6 @@ class NewsRepository implements NewsRepositoryInterface
             ->when($filters['news_category_id'] ?? null, function ($query, int $categoryId) {
                 $query->where('news_category_id', $categoryId);
             })
-            ->when($filters['status'] ?? null, function ($query, string $status) {
-                $query->where('status', $status);
-            })
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

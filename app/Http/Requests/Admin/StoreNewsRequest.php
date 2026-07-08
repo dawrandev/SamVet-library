@@ -2,10 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\NewsStatus;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class StoreNewsRequest extends FormRequest
 {
@@ -43,7 +41,6 @@ class StoreNewsRequest extends FormRequest
             'gallery' => ['nullable', 'array'],
             'gallery.*' => ['image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
 
-            'status' => ['required', new Enum(NewsStatus::class)],
             'published_at' => ['nullable', 'date'],
         ];
     }
@@ -88,7 +85,6 @@ class StoreNewsRequest extends FormRequest
             'body.kk' => __('Matn (qoraqalpoqcha)'),
             'news_category_id' => __('Kategoriya'),
             'cover' => __('Muqova rasm'),
-            'status' => __('Holat'),
             'published_at' => __('Nashr sanasi'),
         ];
     }
