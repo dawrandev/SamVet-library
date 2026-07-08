@@ -1,6 +1,14 @@
 {
+  "node_modules/@fontsource-variable/outfit/files/outfit-latin-ext-wght-normal.woff2": {
+    "file": "assets/outfit-latin-ext-wght-normal-DdQaqQDo.woff2",
+    "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2": {
+    "file": "assets/outfit-latin-wght-normal-Bc-8i84L.woff2",
+    "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DT3u7nfQ.css",
+    "file": "assets/app-anIKZp6H.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -14,7 +22,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-jf04pA6X.js",
+    "file": "assets/app-DeEeC8U_.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

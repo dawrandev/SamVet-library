@@ -1,5 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap")
-layer(base);
+/* Outfit font — self-hosted via @fontsource-variable/outfit (no external CDN). */
+@import '@fontsource-variable/outfit/index.css' layer(base);
 
 @import "tailwindcss";
 
@@ -7,7 +7,7 @@ layer(base);
 
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  --font-outfit: 'Outfit Variable', Outfit, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
