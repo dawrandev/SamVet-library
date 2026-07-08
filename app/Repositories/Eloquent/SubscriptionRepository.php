@@ -12,7 +12,7 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->filtered($filters)
-            ->with(['subscriber', 'journal']) // eager load — no N+1
+            ->with(['reader', 'journal']) // eager load — no N+1
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
@@ -25,7 +25,7 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
 
     public function find(int $id): ?Subscription
     {
-        return Subscription::with(['subscriber', 'journal'])->find($id);
+        return Subscription::with(['reader', 'journal'])->find($id);
     }
 
     public function create(array $data): Subscription
@@ -55,8 +55,8 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
         // Cast filter values to int here: request input is a string, and a
         // non-numeric value (e.g. ?year=abc) would otherwise fatal on a typed param.
         return Subscription::query()
-            ->when($filters['subscriber_id'] ?? null, function (Builder $query, $value) {
-                $query->where('subscriber_id', (int) $value);
+            ->when($filters['reader_id'] ?? null, function (Builder $query, $value) {
+                $query->where('reader_id', (int) $value);
             })
             ->when($filters['journal_id'] ?? null, function (Builder $query, $value) {
                 $query->where('journal_id', (int) $value);

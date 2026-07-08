@@ -17,7 +17,7 @@
             action: '{{ old('subscription_id') ? route('admin.subscriptions.update', old('subscription_id')) : route('admin.subscriptions.store') }}',
             form: {
                 id: @js(old('subscription_id')),
-                subscriber_id: @js(old('subscriber_id', '')),
+                reader_id: @js(old('reader_id', '')),
                 journal_id: @js(old('journal_id', '')),
                 year: @js(old('year', date('Y'))),
                 start_month: @js(old('start_month', '1')),
@@ -27,7 +27,7 @@
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.subscriptions.store') }}';
-                this.form = { id: null, subscriber_id: '', journal_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
+                this.form = { id: null, reader_id: '', journal_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -67,11 +67,11 @@
               class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
             <div class="flex-1">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obunachi') }}</label>
-                <select name="subscriber_id"
+                <select name="reader_id"
                         class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
                     <option value="">{{ __('Barchasi') }}</option>
-                    @foreach ($subscribers as $s)
-                        <option value="{{ $s->id }}" @selected(($filters['subscriber_id'] ?? null) == $s->id)>{{ $s->full_name }}</option>
+                    @foreach ($readers as $r)
+                        <option value="{{ $r->id }}" @selected(($filters['reader_id'] ?? null) == $r->id)>{{ $r->full_name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -115,7 +115,7 @@
                     <tbody>
                         @forelse ($subscriptions as $subscription)
                             <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
-                                <td class="px-5 py-4 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->subscriber?->full_name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->reader?->full_name ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $subscription->journal?->name ?? '—' }}</p>
                                     <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $subscription->journal?->kind?->label() ?? '—' }}</span>
@@ -126,7 +126,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, subscriber_id: @js((string) $subscription->subscriber_id), journal_id: @js((string) $subscription->journal_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
+                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.subscriptions.destroy', $subscription) }}', '{{ __('Obunani o‘chirishni tasdiqlaysizmi?') }}')"
@@ -171,15 +171,15 @@
                     <input type="hidden" name="subscription_id" :value="form.id" />
 
                     <div>
-                        <label for="m_subscriber" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obunachi') }}<span class="text-error-500">*</span></label>
-                        <select name="subscriber_id" id="m_subscriber" x-model="form.subscriber_id" required
-                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('subscriber_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
+                        <label for="m_reader" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obunachi') }}<span class="text-error-500">*</span></label>
+                        <select name="reader_id" id="m_reader" x-model="form.reader_id" required
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('reader_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                             <option value="">{{ __('Tanlang') }}</option>
-                            @foreach ($subscribers as $s)
-                                <option value="{{ $s->id }}">{{ $s->full_name }}</option>
+                            @foreach ($readers as $r)
+                                <option value="{{ $r->id }}">{{ $r->full_name }}</option>
                             @endforeach
                         </select>
-                        @error('subscriber_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        @error('reader_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
 
                     <div>

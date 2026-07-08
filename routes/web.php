@@ -22,7 +22,6 @@ use App\Http\Controllers\Admin\ReaderCardController;
 use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
 use App\Http\Controllers\Admin\ReaderStatusController;
-use App\Http\Controllers\Admin\SubscriberController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
@@ -126,9 +125,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('readers/{reader}/loans', [LoanController::class, 'store'])->name('readers.loans.store');
     Route::patch('loans/{loan}/return', [LoanController::class, 'return'])->name('loans.return');
 
-    // Periodical subscriptions (university staff)
-    Route::resource('subscribers', SubscriberController::class)->except(['show']);
-    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
+    // Periodical subscriptions — attached to a reader (Foydalanuvchi)
+    Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
 
     // Computers (electronic reading room inventory)
     Route::resource('computers', ComputerController::class);

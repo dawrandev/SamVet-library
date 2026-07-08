@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A single subscription record: a subscriber subscribed to a
+ * A single subscription record: a reader (Foydalanuvchi) subscribed to a
  * journal/newspaper for a period (start_month..end_month) of a year.
  */
 class Subscription extends Model
@@ -16,7 +16,7 @@ class Subscription extends Model
     use HasFactory;
 
     protected $fillable = [
-        'subscriber_id', 'journal_id', 'year',
+        'reader_id', 'journal_id', 'year',
         'start_month', 'end_month', 'amount',
     ];
 
@@ -30,9 +30,9 @@ class Subscription extends Model
         ];
     }
 
-    public function subscriber(): BelongsTo
+    public function reader(): BelongsTo
     {
-        return $this->belongsTo(Subscriber::class);
+        return $this->belongsTo(Reader::class);
     }
 
     public function journal(): BelongsTo

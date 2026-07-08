@@ -21,20 +21,12 @@ class SubscriptionController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = array_filter($request->only(['subscriber_id', 'journal_id', 'year']), fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($request->only(['reader_id', 'journal_id', 'year']), fn ($v) => $v !== null && $v !== '');
 
         return view('pages.admin.subscriptions.index', [
             'subscriptions' => $this->subscriptionService->paginate($filters),
             'totalAmount' => $this->subscriptionService->sumAmount($filters),
             'filters' => $filters,
-            'months' => Month::cases(),
-            ...$this->subscriptionService->formOptions(),
-        ]);
-    }
-
-    public function create(): View
-    {
-        return view('pages.admin.subscriptions.create', [
             'months' => Month::cases(),
             ...$this->subscriptionService->formOptions(),
         ]);
@@ -47,15 +39,6 @@ class SubscriptionController extends Controller
         return redirect()
             ->route('admin.subscriptions.index')
             ->with('success', __('Obuna qo‘shildi.'));
-    }
-
-    public function edit(Subscription $subscription): View
-    {
-        return view('pages.admin.subscriptions.edit', [
-            'subscription' => $subscription,
-            'months' => Month::cases(),
-            ...$this->subscriptionService->formOptions(),
-        ]);
     }
 
     public function update(UpdateSubscriptionRequest $request, Subscription $subscription): RedirectResponse

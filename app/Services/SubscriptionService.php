@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Data\SubscriptionData;
 use App\Models\Journal;
-use App\Models\Subscriber;
+use App\Models\Reader;
 use App\Models\Subscription;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -44,7 +44,7 @@ class SubscriptionService
     public function formOptions(): array
     {
         return [
-            'subscribers' => Subscriber::orderBy('full_name')->get(),
+            'readers' => Reader::orderBy('full_name')->get(['id', 'full_name']),
             'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind']),
         ];
     }
