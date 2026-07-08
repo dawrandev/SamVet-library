@@ -1,101 +1,64 @@
 import ApexCharts from 'apexcharts';
 
+const FONT = 'Outfit Variable, Outfit, sans-serif';
+
 /**
- * Bar chart — monthly statistics (e.g. book views).
- * Container: #chartOne
+ * Render a donut chart into an element that carries its data via data-* attributes:
+ *   data-series  JSON array of numbers
+ *   data-labels  JSON array of labels
+ *   data-colors  JSON array of hex colors
+ *   data-center  center total label (e.g. "Nusxa")
+ * Empty data (all zero) renders a neutral grey ring with a "0" total.
  */
-const barChart = () => {
-    const el = document.querySelector('#chartOne');
-    if (!el) return;
+const donut = (el) => {
+    const series = JSON.parse(el.dataset.series || '[]');
+    const labels = JSON.parse(el.dataset.labels || '[]');
+    const colors = JSON.parse(el.dataset.colors || '[]');
+    const center = el.dataset.center || 'Jami';
+    const total = series.reduce((a, b) => a + Number(b), 0);
+    const empty = total === 0;
 
     new ApexCharts(el, {
-        series: [{ name: 'Ko‘rishlar', data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112] }],
-        colors: ['#465fff'],
-        chart: { fontFamily: 'Outfit, sans-serif', type: 'bar', height: 180, toolbar: { show: false } },
-        plotOptions: { bar: { horizontal: false, columnWidth: '39%', borderRadius: 5, borderRadiusApplication: 'end' } },
+        chart: { type: 'donut', height: 260, width: '100%', fontFamily: FONT, animations: { enabled: false } },
+        series: empty ? [1] : series,
+        labels: empty ? ['—'] : labels,
+        colors: empty ? ['#e4e7ec'] : colors,
+        stroke: { width: 0 },
         dataLabels: { enabled: false },
-        stroke: { show: true, width: 4, colors: ['transparent'] },
-        xaxis: {
-            categories: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'],
-            axisBorder: { show: false },
-            axisTicks: { show: false },
+        legend: {
+            position: 'bottom',
+            fontSize: '13px',
+            fontFamily: FONT,
+            labels: { colors: '#667085' },
+            markers: { radius: 12 },
+            itemMargin: { horizontal: 8, vertical: 2 },
         },
-        legend: { show: true, position: 'top', horizontalAlign: 'left', fontFamily: 'Outfit', markers: { radius: 99 } },
-        yaxis: { title: false },
-        grid: { yaxis: { lines: { show: true } } },
-        fill: { opacity: 1 },
-        tooltip: { x: { show: false }, y: { formatter: (val) => val } },
-    }).render();
-};
-
-/**
- * Radial chart — goal/progress indicator.
- * Container: #chartTwo
- */
-const radialChart = () => {
-    const el = document.querySelector('#chartTwo');
-    if (!el) return;
-
-    new ApexCharts(el, {
-        series: [75.55],
-        colors: ['#465FFF'],
-        chart: { fontFamily: 'Outfit, sans-serif', type: 'radialBar', height: 330, sparkline: { enabled: true } },
         plotOptions: {
-            radialBar: {
-                startAngle: -90,
-                endAngle: 90,
-                hollow: { size: '80%' },
-                track: { background: '#E4E7EC', strokeWidth: '100%', margin: 5 },
-                dataLabels: {
-                    name: { show: false },
-                    value: { fontSize: '36px', fontWeight: '600', offsetY: 60, color: '#1D2939', formatter: (val) => val + '%' },
+            pie: {
+                donut: {
+                    size: '68%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: center,
+                            fontSize: '13px',
+                            color: '#98a2b3',
+                            formatter: () => String(total),
+                        },
+                        value: { fontSize: '26px', fontWeight: 700, color: '#1d2939' },
+                    },
                 },
             },
         },
-        fill: { type: 'solid', colors: ['#465FFF'] },
-        stroke: { lineCap: 'round' },
-        labels: ['Progress'],
+        tooltip: { enabled: !empty },
+        states: { hover: { filter: { type: empty ? 'none' : 'lighten' } } },
     }).render();
 };
 
 /**
- * Area chart — statistics (views / downloads).
- * Container: #chartThree
+ * Initialize every dashboard donut on the page.
  */
-const areaChart = () => {
-    const el = document.querySelector('#chartThree');
-    if (!el) return;
-
-    new ApexCharts(el, {
-        series: [
-            { name: 'Ko‘rishlar', data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235] },
-            { name: 'O‘qishlar', data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140] },
-        ],
-        legend: { show: false, position: 'top', horizontalAlign: 'left' },
-        colors: ['#465FFF', '#9CB9FF'],
-        chart: { fontFamily: 'Outfit, sans-serif', height: 310, type: 'area', toolbar: { show: false } },
-        fill: { gradient: { enabled: true, opacityFrom: 0.55, opacityTo: 0 } },
-        stroke: { curve: 'straight', width: ['2', '2'] },
-        markers: { size: 0 },
-        grid: { xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
-        dataLabels: { enabled: false },
-        tooltip: { x: { format: 'dd MMM yyyy' } },
-        xaxis: {
-            type: 'category',
-            categories: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'],
-            axisBorder: { show: false },
-            axisTicks: { show: false },
-            tooltip: false,
-        },
-        yaxis: { title: { style: { fontSize: '0px' } } },
-    }).render();
-};
-
-/**
- * Initialize all dashboard charts.
- */
-export const initCharts = () => {
-    barChart();
-    radialChart();
-    areaChart();
+export const initDashboardCharts = () => {
+    document.querySelectorAll('[data-donut]').forEach(donut);
 };

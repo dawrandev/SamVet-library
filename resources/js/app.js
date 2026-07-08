@@ -5,7 +5,6 @@ import persist from '@alpinejs/persist';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 
-import { initCharts } from './admin/charts';
 import lookupTable from './admin/lookup-table';
 import articleForm from './admin/article-form';
 
@@ -71,8 +70,10 @@ flatpickr('.datepicker', {
     dateFormat: 'M j',
 });
 
-// Dashboard charts (only start on the matching page)
-document.addEventListener('DOMContentLoaded', initCharts);
+// Dashboard charts: ApexCharts is heavy — load it only on the dashboard (code-split).
+if (document.querySelector('[data-dashboard]')) {
+    import('./admin/charts.js').then((m) => m.initDashboardCharts());
+}
 
 // TinyMCE is heavy (~1MB) — load it dynamically only on pages with a rich editor (code-split).
 if (document.querySelector('[data-rich-editor]')) {
