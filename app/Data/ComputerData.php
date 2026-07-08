@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Data;
+
+use Illuminate\Http\Request;
+
+/**
+ * DTO for passing data from Controller → Service (computer).
+ * A typed object instead of an array (`$data['x']`).
+ */
+class ComputerData
+{
+    public function __construct(
+        public readonly string $model,
+        public readonly string $type,
+        public readonly string $inventory_number,
+        public readonly string $status,
+        public readonly ?int $location_id,
+        public readonly ?string $note,
+    ) {}
+
+    public static function fromRequest(Request $request): self
+    {
+        return new self(
+            model: $request->string('model')->toString(),
+            type: $request->string('type')->toString(),
+            inventory_number: $request->string('inventory_number')->toString(),
+            status: $request->string('status')->toString(),
+            location_id: $request->integer('location_id') ?: null,
+            note: $request->input('note'),
+        );
+    }
+
+    /**
+     * Attributes written to the computers table.
+     *
+     * @return array<string, mixed>
+     */
+    public function toAttributes(): array
+    {
+        return [
+            'model' => $this->model,
+            'type' => $this->type,
+            'inventory_number' => $this->inventory_number,
+            'status' => $this->status,
+            'location_id' => $this->location_id,
+            'note' => $this->note,
+        ];
+    }
+}

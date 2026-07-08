@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use App\Enums\ComputerStatus;
+use App\Enums\ComputerType;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
+
+class StoreComputerRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        // Route is under `auth` middleware. If roles are added — ComputerPolicy.
+        return true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'model' => ['required', 'string', 'max:255'],
+            'type' => ['required', new Enum(ComputerType::class)],
+            'inventory_number' => ['required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
+            'status' => ['required', new Enum(ComputerStatus::class)],
+            'location_id' => ['nullable', 'exists:locations,id'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Inventory number is unique (unrestricted on create).
+     */
+    protected function inventoryNumberUniqueRule(): object
+    {
+        return Rule::unique('computers', 'inventory_number');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'model' => __('Modeli'),
+            'type' => __('Turi'),
+            'inventory_number' => __('Inventar raqami'),
+            'status' => __('Holati'),
+            'location_id' => __('Joylashuv'),
+            'note' => __('Eslatma'),
+        ];
+    }
+}

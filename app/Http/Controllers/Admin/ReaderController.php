@@ -9,6 +9,7 @@ use App\Enums\ReaderType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreReaderRequest;
 use App\Http\Requests\Admin\UpdateReaderRequest;
+use App\Models\Computer;
 use App\Models\Reader;
 use App\Services\ReaderService;
 use Illuminate\Http\RedirectResponse;
@@ -53,9 +54,13 @@ class ReaderController extends Controller
 
     public function show(Reader $reader): View
     {
-        $reader->load(['loans.copy.book.authors', 'warnings', 'events', 'computerSessions']);
+        $reader->load(['loans.copy.book.authors', 'warnings', 'events', 'computerSessions.computer']);
 
-        return view('pages.admin.readers.show', ['reader' => $reader]);
+        return view('pages.admin.readers.show', [
+            'reader' => $reader,
+            // Computers picked from the registry in the "computer usage" modal
+            'computers' => Computer::orderBy('model')->get(),
+        ]);
     }
 
     public function edit(Reader $reader): View

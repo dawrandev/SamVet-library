@@ -9,7 +9,7 @@ class ComputerSession extends Model
 {
     protected $fillable = [
         'reader_id', 'date', 'issued_time', 'returned_time',
-        'computer_number', 'location', 'purpose', 'note',
+        'computer_number', 'computer_id', 'location', 'purpose', 'note',
     ];
 
     protected function casts(): array
@@ -22,5 +22,10 @@ class ComputerSession extends Model
     public function reader(): BelongsTo
     {
         return $this->belongsTo(Reader::class);
+    }
+
+    public function computer(): BelongsTo
+    {
+        return $this->belongsTo(Computer::class);
     }
 }

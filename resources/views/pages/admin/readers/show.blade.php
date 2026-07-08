@@ -569,7 +569,7 @@
     </div>
 
     {{-- Computer usage --}}
-    <div class="mt-6" x-data="{ computerOpen: {{ $errors->has('issued_time') || $errors->has('returned_time') || $errors->has('computer_number') || $errors->has('location') || $errors->has('purpose') ? 'true' : 'false' }} }">
+    <div class="mt-6" x-data="{ computerOpen: {{ $errors->has('issued_time') || $errors->has('returned_time') || $errors->has('computer_id') || $errors->has('location') || $errors->has('purpose') ? 'true' : 'false' }} }">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterdan foydalanish') }}</h3>
@@ -586,7 +586,7 @@
                             <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                                 <th class="px-3 py-2 font-medium">{{ __('Sanasi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Berilgan vaqti') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Kompyuter raqami') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Kompyuter') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Joylashuv') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Maqsadi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Topshirish vaqti') }}</th>
@@ -598,7 +598,13 @@
                                 <tr class="border-b border-gray-50 dark:border-gray-800/50">
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->date?->format('d.m.Y') }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->issued_time ?: '—' }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->computer_number ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                        @if ($session->computer)
+                                            {{ $session->computer->inventory_number }} — {{ $session->computer->model }}
+                                        @else
+                                            {{ $session->computer_number ?: '—' }}
+                                        @endif
+                                    </td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->location ?: '—' }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->purpose ?: '—' }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->returned_time ?: '—' }}</td>
@@ -628,7 +634,20 @@
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <x-admin.form.input type="date" name="date" :label="__('Sanasi')" :required="true" :value="old('date')" />
                             <x-admin.form.input type="time" name="issued_time" :label="__('Berilgan vaqti')" :value="old('issued_time')" />
-                            <x-admin.form.input name="computer_number" :label="__('Kompyuter raqami')" :value="old('computer_number')" />
+
+                            {{-- Computer picked from the registry (inventory number + model) --}}
+                            @php $computerInput = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90'; @endphp
+                            <div>
+                                <label for="computer_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kompyuter') }}</label>
+                                <select name="computer_id" id="computer_id" class="{{ $computerInput }} {{ $errors->has('computer_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                    <option value="">{{ __('Tanlang') }}</option>
+                                    @foreach ($computers as $computer)
+                                        <option value="{{ $computer->id }}" @selected(old('computer_id') == $computer->id)>{{ $computer->inventory_number }} — {{ $computer->model }} ({{ $computer->status->label() }})</option>
+                                    @endforeach
+                                </select>
+                                @error('computer_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            </div>
+
                             <x-admin.form.input name="location" :label="__('Joylashuv')" :value="old('location')" />
                             <x-admin.form.input name="purpose" :label="__('Maqsadi')" :value="old('purpose')" />
                             <x-admin.form.input type="time" name="returned_time" :label="__('Topshirish vaqti')" :value="old('returned_time')" />

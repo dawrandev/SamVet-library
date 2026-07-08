@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ComputerSessionController;
+use App\Http\Controllers\Admin\ComputerController;
 use App\Http\Controllers\Admin\CopyController;
 use App\Http\Controllers\Admin\CopyLookupController;
 use App\Http\Controllers\Admin\EventController;
@@ -128,6 +129,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Periodical subscriptions (university staff)
     Route::resource('subscribers', SubscriberController::class)->except(['show']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
+
+    // Computers (electronic reading room inventory)
+    Route::resource('computers', ComputerController::class);
 
     // Site menu (client navbar navigation) — tree-structured CRUD
     Route::get('menu-items/{menuItem}/page', [PageController::class, 'edit'])->name('menu-items.page.edit');

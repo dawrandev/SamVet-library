@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Repositories\Contracts\BookRepositoryInterface;
+use App\Repositories\Contracts\ComputerRepositoryInterface;
 use App\Repositories\Contracts\ComputerSessionRepositoryInterface;
 use App\Repositories\Contracts\CopyRepositoryInterface;
 use App\Repositories\Contracts\EventRepositoryInterface;
@@ -20,6 +21,7 @@ use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\ArticleRepository;
 use App\Repositories\Eloquent\BookRepository;
+use App\Repositories\Eloquent\ComputerRepository;
 use App\Repositories\Eloquent\ComputerSessionRepository;
 use App\Repositories\Eloquent\CopyRepository;
 use App\Repositories\Eloquent\EventRepository;
@@ -47,6 +49,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public array $bindings = [
         ArticleRepositoryInterface::class => ArticleRepository::class,
         BookRepositoryInterface::class => BookRepository::class,
+        ComputerRepositoryInterface::class => ComputerRepository::class,
         ComputerSessionRepositoryInterface::class => ComputerSessionRepository::class,
         CopyRepositoryInterface::class => CopyRepository::class,
         EventRepositoryInterface::class => EventRepository::class,

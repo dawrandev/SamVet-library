@@ -21,7 +21,8 @@ class StoreComputerSessionRequest extends FormRequest
             'date' => ['required', 'date'],
             'issued_time' => ['nullable', 'date_format:H:i'],
             'returned_time' => ['nullable', 'date_format:H:i'],
-            'computer_number' => ['nullable', 'string', 'max:255'],
+            'computer_number' => ['nullable', 'string', 'max:255'], // legacy free-text
+            'computer_id' => ['nullable', 'exists:computers,id'],
             'location' => ['nullable', 'string', 'max:255'],
             'purpose' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:1000'],
@@ -38,6 +39,7 @@ class StoreComputerSessionRequest extends FormRequest
             'issued_time' => __('Berilgan vaqti'),
             'returned_time' => __('Topshirish vaqti'),
             'computer_number' => __('Kompyuter raqami'),
+            'computer_id' => __('Kompyuter'),
             'location' => __('Joylashuv'),
             'purpose' => __('Maqsadi'),
             'note' => __('Izoh'),
