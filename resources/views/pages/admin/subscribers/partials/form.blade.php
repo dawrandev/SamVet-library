@@ -42,10 +42,5 @@
                 <x-admin.form.input name="phone" :label="__('Telefon')" :value="$subscriber?->phone" :placeholder="'+998 __ ___ __ __'" />
             </div>
         </x-admin.form.section>
-
-        <div class="mt-6 flex justify-end gap-2">
-            <a href="{{ route('admin.subscribers.index') }}" class="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
-            <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>
-        </div>
     </div>
 </form>
