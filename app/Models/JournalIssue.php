@@ -33,4 +33,9 @@ class JournalIssue extends Model
     {
         return $this->hasMany(JournalCopy::class);
     }
+
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
 }

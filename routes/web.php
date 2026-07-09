@@ -34,9 +34,11 @@ use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
 use App\Http\Controllers\Admin\Lookups\PublisherController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Site\ArticleController as SiteArticleController;
 use App\Http\Controllers\Site\BookController as SiteBookController;
 use App\Http\Controllers\Site\CatalogController;
 use App\Http\Controllers\Site\HomeController;
+use App\Http\Controllers\Site\JournalController as SiteJournalController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +50,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog');
 Route::get('/kitob/{slug}', [SiteBookController::class, 'show'])->name('book.show');
+Route::get('/jurnal/{slug}', [SiteJournalController::class, 'show'])->name('journal.show');
+Route::get('/maqola/{slug}', [SiteArticleController::class, 'show'])->name('article.show');
 
 // Language switch (for everyone — including the login page)
 Route::get('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
