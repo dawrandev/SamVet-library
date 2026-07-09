@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Data\CatalogFilters;
 use App\Enums\CopyStatus;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\BookType;
 use App\Models\Category;
 use App\Models\Language;
@@ -83,6 +84,52 @@ class CatalogRepository implements CatalogRepositoryInterface
             'min' => $bounds?->min_year !== null ? (int) $bounds->min_year : null,
             'max' => $bounds?->max_year !== null ? (int) $bounds->max_year : null,
         ];
+    }
+
+    public function findPublicBySlug(string $slug): ?Book
+    {
+        return Book::query()
+            ->with(['type', 'language', 'publisher', 'authors', 'categories'])
+            ->withCount([
+                'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
+            ])
+            ->where('slug', $slug)
+            ->first();
+    }
+
+    public function similar(Book $book, int $limit): Collection
+    {
+        $categoryIds = $book->categories->pluck('id');
+
+        if ($categoryIds->isEmpty()) {
+            return collect();
+        }
+
+        return Book::query()
+            ->with(['type', 'authors'])
+            ->withCount([
+                'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
+            ])
+            ->whereKeyNot($book->id)
+            ->whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $categoryIds))
+            ->latest('id')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function formats(Book $book): Collection
+    {
+        return BookCopy::query()
+            ->where('book_id', $book->id)
+            ->select('format')
+            ->distinct()
+            ->get()
+            ->pluck('format');
+    }
+
+    public function incrementViews(Book $book): void
+    {
+        $book->increment('views_count');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Data\CatalogFilters;
+use App\Models\Book;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -34,4 +35,24 @@ interface CatalogRepositoryInterface
      * @return array{min: ?int, max: ?int}
      */
     public function yearBounds(): array;
+
+    /** A single public book (by slug) with all display relations eager-loaded. */
+    public function findPublicBySlug(string $slug): ?Book;
+
+    /**
+     * Books sharing a category with the given book (for the "similar" row).
+     *
+     * @return Collection<int, Book>
+     */
+    public function similar(Book $book, int $limit): Collection;
+
+    /**
+     * Distinct copy formats held for this book (drives the format tabs).
+     *
+     * @return Collection<int, \App\Enums\BookFormat>
+     */
+    public function formats(Book $book): Collection;
+
+    /** Register one page view. */
+    public function incrementViews(Book $book): void;
 }

@@ -8,7 +8,7 @@
     $available = $book->available_copies ?? null;
 @endphp
 
-<a href="#" {{ $attributes->merge(['class' => 'group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg']) }}>
+<a href="{{ route('book.show', $book->slug) }}" {{ $attributes->merge(['class' => 'group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg']) }}>
     {{-- Cover --}}
     <div class="relative flex h-52 items-end justify-center overflow-hidden border-b-2 border-blue-600 bg-blue-50">
         <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 10px, #dbeafe 10px 20px);"></div>
