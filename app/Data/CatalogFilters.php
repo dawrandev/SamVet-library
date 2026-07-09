@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Data;
+
+use App\Enums\CatalogSort;
+
+/**
+ * Immutable set of catalog filter criteria passed from the controller to the
+ * service/repository layer (instead of a loose $data array).
+ */
+final class CatalogFilters
+{
+    /**
+     * @param  array<int, int>  $categories  selected category ids
+     * @param  array<int, int>  $types       selected book type ids
+     * @param  array<int, int>  $languages   selected language ids
+     */
+    public function __construct(
+        public readonly ?string $search = null,
+        public readonly array $categories = [],
+        public readonly array $types = [],
+        public readonly array $languages = [],
+        public readonly ?int $yearFrom = null,
+        public readonly ?int $yearTo = null,
+        public readonly ?string $author = null,
+        public readonly CatalogSort $sort = CatalogSort::Newest,
+    ) {}
+
+    /** True when at least one narrowing filter is applied (sort excluded). */
+    public function isActive(): bool
+    {
+        return $this->search !== null
+            || $this->categories !== []
+            || $this->types !== []
+            || $this->languages !== []
+            || $this->yearFrom !== null
+            || $this->yearTo !== null
+            || $this->author !== null;
+    }
+}

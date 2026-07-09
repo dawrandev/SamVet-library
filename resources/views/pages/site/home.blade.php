@@ -20,7 +20,7 @@
                 </p>
 
                 {{-- Search --}}
-                <form action="#" method="GET" class="mt-8 flex max-w-2xl overflow-hidden rounded-xl bg-white p-1.5 shadow-lg">
+                <form action="{{ route('catalog') }}" method="GET" class="mt-8 flex max-w-2xl overflow-hidden rounded-xl bg-white p-1.5 shadow-lg">
                     <div class="flex flex-1 items-center gap-2 pl-3">
                         <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
                         <input type="text" name="q" placeholder="{{ __('Kitob, muallif, ISBN yoki kalit so‘z...') }}"

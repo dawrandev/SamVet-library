@@ -2,7 +2,7 @@
     // Primary navigation. `route` is null for pages not built yet (placeholder '#').
     $nav = [
         ['label' => __('Bosh sahifa'), 'url' => route('home'), 'active' => request()->routeIs('home')],
-        ['label' => __('Elektron katalog'), 'url' => '#', 'active' => false],
+        ['label' => __('Elektron katalog'), 'url' => route('catalog'), 'active' => request()->routeIs('catalog')],
         ['label' => __('Bo‘limlar'), 'url' => '#', 'active' => false],
         ['label' => __('Yangiliklar'), 'url' => '#', 'active' => false],
         ['label' => __('ARM haqida'), 'url' => '#', 'active' => false],
