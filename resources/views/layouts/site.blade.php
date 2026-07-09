@@ -24,13 +24,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-outfit min-h-screen bg-gray-50 text-gray-700 antialiased">
-    @include('partials.client.topbar')
-    @include('partials.client.header')
+    @include('partials.site.topbar')
+    @include('partials.site.header')
 
     <main>
         @yield('content')
     </main>
 
-    @include('partials.client.footer')
+    @include('partials.site.footer')
 </body>
 </html>

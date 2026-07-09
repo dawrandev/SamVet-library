@@ -69,7 +69,7 @@
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" :value="$computer?->inventory_number" required :placeholder="__('masalan: KMP-001')"
-                        :help="__('Client saytda ko‘rinmaydi.')" />
+                        :help="__('Ochiq saytda ko‘rinmaydi.')" />
 
                     <x-admin.form.select name="location_id" :label="__('Joylashuv')" :options="$locations" :selected="$computer?->location_id" :placeholder="__('Tanlang')"
                         creatable create-translatable create-type="location" :create-label="__('Yangi joylashuv')" />

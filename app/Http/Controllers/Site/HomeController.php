@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
-use App\Services\Client\HomeService;
+use App\Services\Site\HomeService;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -17,6 +17,6 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        return view('pages.client.home', $this->homeService->homeData());
+        return view('pages.site.home', $this->homeService->homeData());
     }
 }

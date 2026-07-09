@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Client;
+namespace App\Services\Site;
 
 use App\Enums\CopyStatus;
 use App\Enums\PublicationKind;

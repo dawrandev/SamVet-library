@@ -1,4 +1,4 @@
-@extends('layouts.client')
+@extends('layouts.site')
 
 @section('title', __('Bosh sahifa'))
 
@@ -136,7 +136,7 @@
             </div>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($mostRead as $book)
-                    <x-client.book-card :book="$book" />
+                    <x-site.book-card :book="$book" />
                 @endforeach
             </div>
         </section>
@@ -154,7 +154,7 @@
             </div>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($newArrivals as $book)
-                    <x-client.book-card :book="$book" :badge="__('Yangi')" />
+                    <x-site.book-card :book="$book" :badge="__('Yangi')" />
                 @endforeach
             </div>
         </section>

@@ -85,7 +85,7 @@
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.input name="issn" :label="__('ISSN')" :value="$journal?->issn" :placeholder="__('masalan: 2181-1234')" />
                     <x-admin.form.input name="index" :label="__('Indeks')" :value="$journal?->index" :placeholder="__('indeks / raqam')"
-                        :help="__('Client saytda ko‘rinmaydi.')" />
+                        :help="__('Ochiq saytda ko‘rinmaydi.')" />
                 </div>
 
                 <x-admin.form.translatable-input name="publication_place" :label="__('Nashr joyi')"

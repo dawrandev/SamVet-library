@@ -28,7 +28,7 @@
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
                 {{ $editing ? __('Menyuni tahrirlash') : __('Yangi menyu') }}
             </h2>
-            <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Client sayt navbar menyusi elementi') }}</p>
+            <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Sayt navbar menyusi elementi') }}</p>
         </div>
     </div>
 

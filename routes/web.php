@@ -34,13 +34,13 @@ use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
 use App\Http\Controllers\Admin\Lookups\PublisherController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public client site (library portal)
+| Public site (library portal)
 |--------------------------------------------------------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
