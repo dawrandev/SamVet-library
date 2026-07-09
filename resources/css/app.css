@@ -18,20 +18,23 @@ html.a11y-contrast {
     filter: contrast(1.12) saturate(1.05);
 }
 
-/* News body: style the admin-authored rich-text HTML we cannot add classes to. */
-.news-body {
+/* Rich text: style admin-authored HTML (news body, content pages) we cannot add classes to. */
+.rich-text {
     color: var(--color-gray-700);
     line-height: 1.75;
 }
-.news-body > * + * { margin-top: 1rem; }
-.news-body h2 { font-size: 1.375rem; font-weight: 700; color: var(--color-gray-900); margin-top: 1.75rem; }
-.news-body h3 { font-size: 1.125rem; font-weight: 700; color: var(--color-gray-900); margin-top: 1.5rem; }
-.news-body a { color: var(--color-blue-700); text-decoration: underline; }
-.news-body ul { list-style: disc; padding-left: 1.5rem; }
-.news-body ol { list-style: decimal; padding-left: 1.5rem; }
-.news-body li + li { margin-top: 0.375rem; }
-.news-body img { border-radius: 0.75rem; margin-top: 1rem; }
-.news-body blockquote {
+.rich-text > * + * { margin-top: 1rem; }
+.rich-text h2 { font-size: 1.375rem; font-weight: 700; color: var(--color-gray-900); margin-top: 1.75rem; }
+.rich-text h3 { font-size: 1.125rem; font-weight: 700; color: var(--color-gray-900); margin-top: 1.5rem; }
+.rich-text a { color: var(--color-blue-700); text-decoration: underline; }
+.rich-text ul { list-style: disc; padding-left: 1.5rem; }
+.rich-text ol { list-style: decimal; padding-left: 1.5rem; }
+.rich-text li + li { margin-top: 0.375rem; }
+.rich-text img { border-radius: 0.75rem; margin-top: 1rem; }
+.rich-text table { width: 100%; border-collapse: collapse; }
+.rich-text th, .rich-text td { border: 1px solid var(--color-gray-200); padding: 0.5rem 0.75rem; text-align: left; }
+.rich-text th { background: var(--color-gray-50); font-weight: 600; }
+.rich-text blockquote {
     border-left: 3px solid var(--color-blue-500);
     padding-left: 1rem;
     color: var(--color-gray-500);

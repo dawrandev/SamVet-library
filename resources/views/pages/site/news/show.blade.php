@@ -46,7 +46,7 @@
 
         {{-- Body (admin rich-text; authored by librarians) --}}
         @if (filled($body))
-            <div class="news-body mt-8">{!! $body !!}</div>
+            <div class="rich-text mt-8">{!! $body !!}</div>
         @endif
 
         {{-- Gallery --}}

@@ -1,11 +1,18 @@
 @php
-    // Primary navigation. `route` is null for pages not built yet (placeholder '#').
+    // "ARM haqida" links into the first content section (its first child page,
+    // or the section landing). $armSection comes from a view composer.
+    $armChild = $armSection?->children->first();
+    $armUrl = $armChild
+        ? $armChild->publicUrl()
+        : ($armSection ? route('page.show', $armSection->id) : '#');
+
+    // Primary navigation. `#` marks a target not built yet.
     $nav = [
         ['label' => __('Bosh sahifa'), 'url' => route('home'), 'active' => request()->routeIs('home')],
         ['label' => __('Elektron katalog'), 'url' => route('catalog'), 'active' => request()->routeIs('catalog')],
         ['label' => __('Bo‘limlar'), 'url' => '#', 'active' => false],
         ['label' => __('Yangiliklar'), 'url' => route('news.index'), 'active' => request()->routeIs('news.*')],
-        ['label' => __('ARM haqida'), 'url' => '#', 'active' => false],
+        ['label' => __('ARM haqida'), 'url' => $armUrl, 'active' => request()->routeIs('page.show')],
     ];
 @endphp
 

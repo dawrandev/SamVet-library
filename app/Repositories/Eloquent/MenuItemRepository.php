@@ -26,6 +26,34 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return MenuItem::find($id);
     }
 
+    public function primarySection(): ?MenuItem
+    {
+        return MenuItem::query()
+            ->whereNull('parent_id')
+            ->where('is_active', true)
+            ->whereHas('children', fn ($q) => $q->where('is_active', true))
+            ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->first();
+    }
+
+    public function findPublicPage(int $id): ?MenuItem
+    {
+        return MenuItem::query()
+            ->where('is_active', true)
+            ->with(['page', 'parent'])
+            ->find($id);
+    }
+
+    public function sectionChildren(int $sectionId): Collection
+    {
+        return MenuItem::query()
+            ->where('parent_id', $sectionId)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+    }
+
     public function create(array $data): MenuItem
     {
         return MenuItem::create($data);

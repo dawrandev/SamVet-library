@@ -56,4 +56,20 @@ class MenuItem extends Model
     {
         return $this->hasOne(Page::class);
     }
+
+    /**
+     * Public-site URL for this menu item, based on its type:
+     * external → raw url, module → a named route (url = route name),
+     * page/dropdown → the content page renderer.
+     */
+    public function publicUrl(): string
+    {
+        return match ($this->type) {
+            MenuItemType::External => $this->url ?: '#',
+            MenuItemType::Module => $this->url && \Illuminate\Support\Facades\Route::has($this->url)
+                ? route($this->url)
+                : '#',
+            default => route('page.show', $this->id),
+        };
+    }
 }

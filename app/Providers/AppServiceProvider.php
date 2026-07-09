@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Services\LoanService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
             );
 
             $view->with('overdueLoansCount', $count);
+        });
+
+        // Provide the primary content section (e.g. "ARM haqida") to the public
+        // header so its nav item can link into the content pages.
+        View::composer('partials.site.header', function ($view) {
+            $view->with('armSection', app(MenuItemRepositoryInterface::class)->primarySection());
         });
     }
 }

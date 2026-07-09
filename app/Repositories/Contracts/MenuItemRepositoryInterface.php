@@ -17,6 +17,21 @@ interface MenuItemRepositoryInterface
 
     public function find(int $id): ?MenuItem;
 
+    /* ----- Public site reads ----- */
+
+    /** The first active top-level section that has active children (for the nav). */
+    public function primarySection(): ?MenuItem;
+
+    /** An active menu item with its page and parent loaded, or null. */
+    public function findPublicPage(int $id): ?MenuItem;
+
+    /**
+     * Active children of a section, ordered for the sidebar.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public function sectionChildren(int $sectionId): Collection;
+
     /**
      * @param  array<string, mixed>  $data
      */
