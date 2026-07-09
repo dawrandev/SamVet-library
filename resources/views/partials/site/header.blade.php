@@ -4,7 +4,7 @@
         ['label' => __('Bosh sahifa'), 'url' => route('home'), 'active' => request()->routeIs('home')],
         ['label' => __('Elektron katalog'), 'url' => route('catalog'), 'active' => request()->routeIs('catalog')],
         ['label' => __('Bo‘limlar'), 'url' => '#', 'active' => false],
-        ['label' => __('Yangiliklar'), 'url' => '#', 'active' => false],
+        ['label' => __('Yangiliklar'), 'url' => route('news.index'), 'active' => request()->routeIs('news.*')],
         ['label' => __('ARM haqida'), 'url' => '#', 'active' => false],
     ];
 @endphp

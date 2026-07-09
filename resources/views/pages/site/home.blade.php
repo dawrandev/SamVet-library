@@ -165,11 +165,11 @@
         <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
             <div class="mb-6 flex items-end justify-between">
                 <h2 class="text-2xl font-bold text-gray-900">{{ __('So‘nggi yangiliklar') }}</h2>
-                <a href="#" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barcha yangiliklar') }} →</a>
+                <a href="{{ route('news.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barcha yangiliklar') }} →</a>
             </div>
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($latestNews as $item)
-                    <a href="#" class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:shadow-md">
+                    <a href="{{ route('news.show', $item->slug) }}" class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:shadow-md">
                         <div class="relative h-40 overflow-hidden bg-blue-50">
                             @if ($item->cover_image)
                                 <img src="{{ asset('storage/' . $item->cover_image) }}" alt="" class="h-full w-full object-cover" />
