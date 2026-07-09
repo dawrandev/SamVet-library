@@ -26,3 +26,6 @@ yarn-error.log
 
 # Import manba fayllari (Excel) — git'ga kirmaydi
 /_import
+
+# Claude Design reference exports (not app code)
+/*.html

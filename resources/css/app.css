@@ -13,6 +13,11 @@
     display: none !important;
 }
 
+/* Client accessibility: high-contrast mode (toggled from the top bar). */
+html.a11y-contrast {
+    filter: contrast(1.12) saturate(1.05);
+}
+
 /* Import indicator: moving (indeterminate) progress bar */
 @keyframes indeterminate-bar {
     0% { transform: translateX(-100%); }

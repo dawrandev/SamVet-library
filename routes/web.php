@@ -34,12 +34,16 @@ use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
 use App\Http\Controllers\Admin\Lookups\PublisherController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
-// No client site yet — root redirects to the admin panel
-// (auth: dashboard if logged in, otherwise login). Changes once the client is built.
-Route::get('/', fn () => redirect()->route('admin.dashboard'));
+/*
+|--------------------------------------------------------------------------
+| Public client site (library portal)
+|--------------------------------------------------------------------------
+*/
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Language switch (for everyone — including the login page)
 Route::get('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
