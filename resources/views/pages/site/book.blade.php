@@ -14,10 +14,10 @@
         [__('Sarlavhasi'), $book->title],
         [__('Muallifi'), $authors],
         [__('Turi'), $book->type?->name],
-        [__('Nashr joyi'), $book->publication_place],
+        [__('Nashr joyi'), $book->publicationPlace?->name],
         ['ISBN', $book->isbn],
         [__('Tili'), $book->language?->name],
-        [__('Nashriyoti'), $book->publisher?->name],
+        [__('Nashriyoti'), $book->publisher],
         [__('Beti'), $book->pages ? __(':n b.', ['n' => $book->pages]) : null],
         [__('Yili'), $book->publication_year],
     ], fn ($row) => filled($row[1]));

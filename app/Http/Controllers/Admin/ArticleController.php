@@ -56,7 +56,7 @@ class ArticleController extends Controller
     {
         $article->load([
             'journalIssue.journal.type',
-            'journalIssue.journal.publisher',
+            'journalIssue.journal.publicationPlace',
             'language',
             'resourceField',
         ]);

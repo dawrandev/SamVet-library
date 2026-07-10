@@ -18,14 +18,14 @@ class Book extends Model
 
     protected $fillable = [
         'title', 'slug', 'udc', 'author_mark',
-        'book_type_id', 'language_id', 'publisher_id', 'work_id',
-        'publication_year', 'publication_place', 'pages', 'isbn', 'print_run', 'annotation',
+        'book_type_id', 'language_id', 'publisher', 'publication_place_id', 'work_id',
+        'publication_year', 'pages', 'isbn', 'print_run', 'annotation',
         'cover_image', 'electronic_file', 'audio_file',
         'views_count',
     ];
 
-    /** Only the publication place is translatable (title/annotation — single language). */
-    public array $translatable = ['publication_place'];
+    /** Only the publisher is translatable (title/annotation — single language). */
+    public array $translatable = ['publisher'];
 
     protected function casts(): array
     {
@@ -49,9 +49,9 @@ class Book extends Model
         return $this->belongsTo(Language::class);
     }
 
-    public function publisher(): BelongsTo
+    public function publicationPlace(): BelongsTo
     {
-        return $this->belongsTo(Publisher::class);
+        return $this->belongsTo(PublicationPlace::class);
     }
 
     // Work group (editions in different languages)

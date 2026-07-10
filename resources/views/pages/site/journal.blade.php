@@ -12,8 +12,8 @@
         [__('Davriyligi'), $journal->periodicity?->label()],
         ['ISSN', $journal->issn],
         [__('Tili'), $journal->language?->name],
-        [__('Nashr joyi'), $journal->publication_place],
-        [__('Nashriyoti'), $journal->publisher?->name],
+        [__('Nashr joyi'), $journal->publicationPlace?->name],
+        [__('Nashriyoti'), $journal->publisher],
         [__('Yili'), $sinceYear ? __(':y yildan', ['y' => $sinceYear]) : null],
     ], fn ($row) => filled($row[1]));
 @endphp

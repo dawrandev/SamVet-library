@@ -9,13 +9,13 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class ArticleRepository implements ArticleRepositoryInterface
 {
     /**
-     * Eager loads to avoid N+1 (issue → journal → type/publisher, plus lookups).
+     * Eager loads to avoid N+1 (issue → journal → type/place, plus lookups).
      *
      * @var array<int, string>
      */
     private const RELATIONS = [
         'journalIssue.journal.type',
-        'journalIssue.journal.publisher',
+        'journalIssue.journal.publicationPlace',
         'language',
         'resourceField',
     ];

@@ -9,7 +9,10 @@
     $preAuthorIds = $translating ? old('author_ids', $sourceBook->authors->pluck('id')->all()) : ($editing ? $book->authors->pluck('id')->all() : []);
     $preCategoryIds = $translating ? old('category_ids', $sourceBook->categories->pluck('id')->all()) : ($editing ? $book->categories->pluck('id')->all() : []);
     $preBookTypeId = $translating ? old('book_type_id', $sourceBook->book_type_id) : $book?->book_type_id;
-    $prePublisherId = $translating ? old('publisher_id', $sourceBook->publisher_id) : $book?->publisher_id;
+    $prePublicationPlaceId = $translating ? old('publication_place_id', $sourceBook->publication_place_id) : $book?->publication_place_id;
+    $prePublisher = $translating
+        ? old('publisher', $sourceBook->getTranslations('publisher'))
+        : ($editing ? $book->getTranslations('publisher') : []);
     $prePublicationYear = $translating ? old('publication_year', $sourceBook->publication_year) : $book?->publication_year;
 
     $authorOptions = $authors->map(fn ($a) => ['id' => $a->id, 'label' => $a->name])->all();
@@ -81,8 +84,8 @@
                         <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
                             :translations="$typeTranslations" await-locale
                             creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
-                        <x-admin.form.select name="publisher_id" :label="__('Nashriyoti')" :options="$publishers" :selected="$prePublisherId" :placeholder="__('Tanlang')"
-                            creatable create-type="publisher" :create-label="__('Yangi nashriyot')" />
+                        <x-admin.form.select name="publication_place_id" :label="__('Nashriyot joyi')" :options="$publicationPlaces" :selected="$prePublicationPlaceId" :placeholder="__('Tanlang')"
+                            creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
                     </div>
                 </div>
             </x-admin.form.section>
@@ -102,9 +105,9 @@
                         <x-admin.form.input name="print_run" type="number" :label="__('Tiraj')" :value="$book?->print_run" />
                     </div>
 
-                    <x-admin.form.translatable-input name="publication_place" :label="__('Nashriyot joyi')"
-                        :value="$editing ? $book->getTranslations('publication_place') : []"
-                        :placeholders="['uz' => 'masalan: Toshkent', 'ru' => 'например: Ташкент', 'kk' => 'mısalı: Tashkent']" />
+                    <x-admin.form.translatable-input name="publisher" :label="__('Nashriyoti')"
+                        :value="$prePublisher"
+                        :placeholders="['uz' => 'masalan: Iqtisod-moliya', 'ru' => 'например: Иктисод-молия', 'kk' => 'mısalı: Iqtisod-moliya']" />
                 </div>
             </x-admin.form.section>
 

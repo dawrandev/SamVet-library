@@ -6,7 +6,7 @@ use App\Data\JournalData;
 use App\Models\Journal;
 use App\Models\JournalType;
 use App\Models\Language;
-use App\Models\Publisher;
+use App\Models\PublicationPlace;
 use App\Repositories\Contracts\JournalRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +49,7 @@ class JournalService
         return [
             'types' => JournalType::orderBy('id')->get(),
             'languages' => Language::orderBy('name')->get(),
-            'publishers' => Publisher::orderBy('name')->get(),
+            'publicationPlaces' => PublicationPlace::orderBy('name')->get(),
         ];
     }
 

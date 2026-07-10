@@ -36,37 +36,45 @@
                         </a>
                     </li>
 
-                    {{-- Kitoblar --}}
-                    <li>
-                        <a href="{{ route('admin.books.index') }}"
-                           class="menu-item group {{ request()->routeIs('admin.books.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
-                            <svg class="{{ request()->routeIs('admin.books.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.50391 4.25C8.50391 3.83579 8.83969 3.5 9.25391 3.5H15.2777C15.4766 3.5 15.6674 3.57902 15.8081 3.71967L18.2807 6.19234C18.4214 6.333 18.5004 6.52376 18.5004 6.72268V16.75C18.5004 17.1642 18.1646 17.5 17.7504 17.5H16.248V17.4993H14.748V17.5H9.25391C8.83969 17.5 8.50391 17.1642 8.50391 16.75V4.25ZM14.748 19H9.25391C8.01126 19 7.00391 17.9926 7.00391 16.75V6.49854H6.24805C5.83383 6.49854 5.49805 6.83432 5.49805 7.24854V19.75C5.49805 20.1642 5.83383 20.5 6.24805 20.5H13.998C14.4123 20.5 14.748 20.1642 14.748 19.75L14.748 19ZM7.00391 4.99854V4.25C7.00391 3.00736 8.01127 2 9.25391 2H15.2777C15.8745 2 16.4468 2.23705 16.8687 2.659L19.3414 5.13168C19.7634 5.55364 20.0004 6.12594 20.0004 6.72268V16.75C20.0004 17.9926 18.9931 19 17.7504 19H16.248L16.248 19.75C16.248 20.9926 15.2407 22 13.998 22H6.24805C5.00541 22 3.99805 20.9926 3.99805 19.75V7.24854C3.99805 6.00589 5.00541 4.99854 6.24805 4.99854H7.00391Z" fill="" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Kitoblar') }}</span>
-                        </a>
-                    </li>
+                    {{-- Resurs qo'shish (collapsible group: books, journals, articles) --}}
+                    @php
+                        // Parent is active when any of its child resource routes are open
+                        $resourceGroupActive = request()->routeIs('admin.books.*')
+                            || request()->routeIs('admin.journals.*')
+                            || request()->routeIs('admin.articles.*');
 
-                    {{-- Jurnallar --}}
-                    <li>
-                        <a href="{{ route('admin.journals.index') }}"
-                           class="menu-item group {{ request()->routeIs('admin.journals.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
-                            <svg class="{{ request()->routeIs('admin.journals.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5C19.7426 20.75 20.75 19.7426 20.75 18.5V5.5C20.75 4.25736 19.7426 3.25 18.5 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5C18.9142 4.75 19.25 5.08579 19.25 5.5V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM7 7.75C6.58579 7.75 6.25 8.08579 6.25 8.5C6.25 8.91421 6.58579 9.25 7 9.25H17C17.4142 9.25 17.75 8.91421 17.75 8.5C17.75 8.08579 17.4142 7.75 17 7.75H7ZM6.25 12C6.25 11.5858 6.58579 11.25 7 11.25H17C17.4142 11.25 17.75 11.5858 17.75 12C17.75 12.4142 17.4142 12.75 17 12.75H7C6.58579 12.75 6.25 12.4142 6.25 12ZM7 14.75C6.58579 14.75 6.25 15.0858 6.25 15.5C6.25 15.9142 6.58579 16.25 7 16.25H13C13.4142 16.25 13.75 15.9142 13.75 15.5C13.75 15.0858 13.4142 14.75 13 14.75H7Z" fill="" />
+                        $resourceLinks = [
+                            'admin.books.index'    => ['pattern' => 'admin.books.*',    'label' => __('Kitoblar')],
+                            'admin.journals.index' => ['pattern' => 'admin.journals.*', 'label' => __('Jurnallar')],
+                            'admin.articles.index' => ['pattern' => 'admin.articles.*', 'label' => __('Maqolalar')],
+                        ];
+                    @endphp
+                    <li x-data="{ open: {{ $resourceGroupActive ? 'true' : 'false' }} }">
+                        <button type="button" @click="open = !open"
+                                class="menu-item group w-full {{ $resourceGroupActive ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ $resourceGroupActive ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.25C12.4142 3.25 12.75 3.58579 12.75 4V11.25H20C20.4142 11.25 20.75 11.5858 20.75 12C20.75 12.4142 20.4142 12.75 20 12.75H12.75V20C12.75 20.4142 12.4142 20.75 12 20.75C11.5858 20.75 11.25 20.4142 11.25 20V12.75H4C3.58579 12.75 3.25 12.4142 3.25 12C3.25 11.5858 3.58579 11.25 4 11.25H11.25V4C11.25 3.58579 11.5858 3.25 12 3.25Z" fill="" />
                             </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Jurnallar') }}</span>
-                        </a>
-                    </li>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Resurs qo‘shish') }}</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                 :class="[open ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
 
-                    {{-- Maqolalar --}}
-                    <li>
-                        <a href="{{ route('admin.articles.index') }}"
-                           class="menu-item group {{ request()->routeIs('admin.articles.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
-                            <svg class="{{ request()->routeIs('admin.articles.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H18.5C19.7426 20.75 20.75 19.7426 20.75 18.5V5.5C20.75 4.25736 19.7426 3.25 18.5 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H18.5C18.9142 4.75 19.25 5.08579 19.25 5.5V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V5.5ZM7.75 8.5C7.33579 8.5 7 8.83579 7 9.25C7 9.66421 7.33579 10 7.75 10H16.25C16.6642 10 17 9.66421 17 9.25C17 8.83579 16.6642 8.5 16.25 8.5H7.75ZM7 13C7 12.5858 7.33579 12.25 7.75 12.25H16.25C16.6642 12.25 17 12.5858 17 13C17 13.4142 16.6642 13.75 16.25 13.75H7.75C7.33579 13.75 7 13.4142 7 13ZM7.75 16C7.33579 16 7 16.3358 7 16.75C7 17.1642 7.33579 17.5 7.75 17.5H12.25C12.6642 17.5 13 17.1642 13 16.75C13 16.3358 12.6642 16 12.25 16H7.75Z" fill="" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Maqolalar') }}</span>
-                        </a>
+                        <div x-show="open" x-cloak :class="sidebarToggle ? 'lg:hidden' : ''">
+                            <ul class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
+                                @foreach ($resourceLinks as $route => $link)
+                                    <li>
+                                        <a href="{{ route($route) }}"
+                                           class="menu-dropdown-item {{ request()->routeIs($link['pattern']) ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                            {{ $link['label'] }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </li>
 
                     {{-- Yangiliklar --}}
@@ -156,7 +164,7 @@
                                         'news-categories' => __('Yangilik kategoriyalari'),
                                         'languages' => __('Tillar'),
                                         'locations' => __('Joylashuvlar'),
-                                        'publishers' => __('Nashriyotlar'),
+                                        'publication-places' => __('Nashriyot joylari'),
                                         'authors' => __('Mualliflar'),
                                     ];
                                 @endphp

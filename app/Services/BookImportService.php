@@ -11,7 +11,7 @@ use App\Models\BookCopy;
 use App\Models\BookType;
 use App\Models\Language;
 use App\Models\Location;
-use App\Models\Publisher;
+use App\Models\PublicationPlace;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -20,11 +20,11 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * Imports books from Excel.
  *
  * Each row = one COPY (book_copy). Multiple copies of the same book
- * (with different inventory numbers) are grouped under one Book. Lookups (type/language/publisher/
+ * (with different inventory numbers) are grouped under one Book. Lookups (type/language/publication place/
  * location/author) are created automatically if missing. Source text is stored raw
  * (no transliteration); only `uz` is written to the 3-language lookups.
  *
- * @phpstan-type ImportStats array{books:int, copies:int, skipped:int, authors:int, book_types:int, languages:int, publishers:int, locations:int}
+ * @phpstan-type ImportStats array{books:int, copies:int, skipped:int, authors:int, book_types:int, languages:int, publication_places:int, locations:int}
  */
 class BookImportService
 {
@@ -77,7 +77,7 @@ class BookImportService
 
         $this->stats = [
             'books' => 0, 'copies' => 0, 'skipped' => 0,
-            'authors' => 0, 'book_types' => 0, 'languages' => 0, 'publishers' => 0, 'locations' => 0,
+            'authors' => 0, 'book_types' => 0, 'languages' => 0, 'publication_places' => 0, 'locations' => 0,
         ];
         $this->lookupCache = [];
 
@@ -166,9 +166,9 @@ class BookImportService
             'publication_year' => $year,
             'book_type_id' => $this->translatableLookup(BookType::class, 'book_types', $this->clean($row[self::COL['book_type']] ?? null)),
             'language_id' => $this->resolveLanguage($this->clean($row[self::COL['language']] ?? null)),
-            'publisher_id' => $this->plainLookup(Publisher::class, 'publishers', $this->clean($row[self::COL['publisher']] ?? null)),
+            'publisher' => $this->singleLanguage($this->clean($row[self::COL['publisher']] ?? null)),
             'pages' => $this->parseInt($this->clean($row[self::COL['pages']] ?? null)),
-            'publication_place' => $this->placeTranslation($this->clean($row[self::COL['publication_place']] ?? null)),
+            'publication_place_id' => $this->translatableLookup(PublicationPlace::class, 'publication_places', $this->clean($row[self::COL['publication_place']] ?? null)),
             'isbn' => $this->cleanIsbn($this->clean($row[self::COL['isbn']] ?? null)),
             'annotation' => $this->clean($row[self::COL['annotation']] ?? null),
         ]); // slug — BookObserver
@@ -250,30 +250,6 @@ class BookImportService
         $model = $modelClass::where('name->uz', $value)->first();
         if ($model === null) {
             $model = $modelClass::create(['name' => ['uz' => $value]]);
-            $this->stats[$group]++;
-        }
-
-        return $this->lookupCache[$key] = $model->id;
-    }
-
-    /**
-     * Single-value lookup (publisher): finds/creates by plain `name`.
-     *
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
-     */
-    private function plainLookup(string $modelClass, string $group, ?string $value): ?int
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $key = $group.'|'.$value;
-        if (array_key_exists($key, $this->lookupCache)) {
-            return $this->lookupCache[$key];
-        }
-
-        $model = $modelClass::firstOrCreate(['name' => $value]);
-        if ($model->wasRecentlyCreated) {
             $this->stats[$group]++;
         }
 
@@ -383,9 +359,11 @@ class BookImportService
     }
 
     /**
-     * @return array<string, string>|null  {uz: ...} or null
+     * The source file carries one language only — store it as the Uzbek value.
+     *
+     * @return array<string, string>|null
      */
-    private function placeTranslation(?string $value): ?array
+    private function singleLanguage(?string $value): ?array
     {
         return $value === null ? null : ['uz' => $value];
     }

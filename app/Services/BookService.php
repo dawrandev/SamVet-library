@@ -8,7 +8,7 @@ use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Category;
 use App\Models\Language;
-use App\Models\Publisher;
+use App\Models\PublicationPlace;
 use App\Models\Work;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -55,7 +55,7 @@ class BookService
         return [
             'types' => BookType::orderBy('name')->get(),
             'languages' => Language::orderBy('name')->get(),
-            'publishers' => Publisher::orderBy('name')->get(),
+            'publicationPlaces' => PublicationPlace::orderBy('name')->get(),
             'authors' => Author::orderBy('name')->get(),
             'categories' => Category::with('parent')->orderBy('name')->get(),
         ];

@@ -30,7 +30,7 @@ class JournalRepository implements JournalRepositoryInterface
 
     public function find(int $id): ?Journal
     {
-        return Journal::with(['type', 'language', 'publisher', 'issues'])->find($id);
+        return Journal::with(['type', 'language', 'publicationPlace', 'issues'])->find($id);
     }
 
     public function create(array $data): Journal

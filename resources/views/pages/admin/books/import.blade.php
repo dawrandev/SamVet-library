@@ -144,7 +144,7 @@
                     __('Muallif') => $stats['authors'],
                     __('Kitob turi') => $stats['book_types'],
                     __('Til') => $stats['languages'],
-                    __('Nashriyot') => $stats['publishers'],
+                    __('Nashriyot joyi') => $stats['publication_places'],
                     __('Joylashuv') => $stats['locations'],
                 ] as $label => $count)
                     <span class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">

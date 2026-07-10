@@ -29,7 +29,7 @@ class PeriodicalRepository implements PeriodicalRepositoryInterface
             ->with([
                 'type',
                 'language',
-                'publisher',
+                'publicationPlace',
                 'issues' => fn ($q) => $q->withCount('articles'),
             ])
             ->where('slug', $slug)
@@ -52,7 +52,7 @@ class PeriodicalRepository implements PeriodicalRepositoryInterface
             ->with([
                 'journalIssue.journal.type',
                 'journalIssue.journal.language',
-                'journalIssue.journal.publisher',
+                'journalIssue.journal.publicationPlace',
                 'resourceField',
                 'language',
             ])

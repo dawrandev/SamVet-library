@@ -18,8 +18,8 @@
         [__('DOI kodi'), $article->doi],
         [__('Tili'), $article->language?->name],
         [__('Beti'), $article->pages],
-        [__('Nashr joyi'), $journal?->publication_place],
-        [__('Nashriyoti'), $journal?->publisher?->name],
+        [__('Nashr joyi'), $journal?->publicationPlace?->name],
+        [__('Nashriyoti'), $journal?->publisher],
         [__('Yili'), $issue?->year],
     ], fn ($row) => filled($row[1]));
 @endphp

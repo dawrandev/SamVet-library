@@ -31,7 +31,7 @@ class JournalController extends Controller
 
     public function show(Journal $journal): View
     {
-        $journal->load(['type', 'language', 'publisher', 'issues' => fn ($q) => $q->withCount('copies')]);
+        $journal->load(['type', 'language', 'publicationPlace', 'issues' => fn ($q) => $q->withCount('copies')]);
 
         return view('pages.admin.journals.show', ['journal' => $journal]);
     }

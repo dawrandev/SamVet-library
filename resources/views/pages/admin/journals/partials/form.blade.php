@@ -62,8 +62,8 @@
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$journal?->language_id" :placeholder="__('Tanlang')"
                         creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
-                    <x-admin.form.select name="publisher_id" :label="__('Nashriyoti')" :options="$publishers" :selected="$journal?->publisher_id" :placeholder="__('Tanlang')"
-                        creatable create-type="publisher" :create-label="__('Yangi nashriyot')" />
+                    <x-admin.form.select name="publication_place_id" :label="__('Nashriyot joyi')" :options="$publicationPlaces" :selected="$journal?->publication_place_id" :placeholder="__('Tanlang')"
+                        creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
                 </div>
 
                 <div>
@@ -88,8 +88,8 @@
                         :help="__('Ochiq saytda ko‘rinmaydi.')" />
                 </div>
 
-                <x-admin.form.translatable-input name="publication_place" :label="__('Nashr joyi')"
-                    :value="$editing ? $journal->getTranslations('publication_place') : []"
+                <x-admin.form.translatable-input name="publisher" :label="__('Nashriyoti')"
+                    :value="$editing ? $journal->getTranslations('publisher') : []"
                     :placeholders="['uz' => 'masalan: Samarqand', 'ru' => 'например: Самарканд', 'kk' => 'mısalı: Samarqand']" />
             </div>
         </x-admin.form.section>

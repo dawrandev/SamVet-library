@@ -31,7 +31,7 @@ class BookController extends Controller
 
     public function show(Book $book): View
     {
-        $book->load(['type', 'language', 'publisher', 'authors', 'categories.parent', 'copies.location', 'work.editions.language']);
+        $book->load(['type', 'language', 'publicationPlace', 'authors', 'categories.parent', 'copies.location', 'work.editions.language']);
 
         return view('pages.admin.books.show', ['book' => $book]);
     }

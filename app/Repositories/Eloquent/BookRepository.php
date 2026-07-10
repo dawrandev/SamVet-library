@@ -38,7 +38,7 @@ class BookRepository implements BookRepositoryInterface
 
     public function find(int $id): ?Book
     {
-        return Book::with(['type', 'language', 'publisher', 'authors', 'categories', 'copies.location'])
+        return Book::with(['type', 'language', 'publicationPlace', 'authors', 'categories', 'copies.location'])
             ->find($id);
     }
 

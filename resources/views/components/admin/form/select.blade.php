@@ -58,6 +58,11 @@
             open: false, saving: false, err: '',
             form: { uz: '', ru: '', kk: '', single: '' },
             init() {
+                // x-for paints the options after x-model binds, so the initial
+                // value has to be re-applied once they exist — otherwise editing
+                // a record silently clears the select on save.
+                this.$nextTick(() => { this.$refs.select.value = this.selected; });
+
                 if (! this.isLocaleSource) return;
                 this.publishLocale();
                 this.$watch('selected', () => this.publishLocale());
@@ -121,7 +126,7 @@
                     class="text-theme-xs font-medium text-brand-500 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40">+ {{ __('Yangi') }}</button>
         </div>
 
-        <select name="{{ $name }}" x-model="selected" :disabled="locked" @required($required)
+        <select name="{{ $name }}" x-ref="select" x-model="selected" :disabled="locked" @required($required)
                 :class="locked && 'cursor-not-allowed opacity-60'" class="{{ $base }} {{ $border }}">
             @if ($placeholder)<option value="">{{ $placeholder }}</option>@endif
             <template x-for="o in visibleOptions" :key="o.id">

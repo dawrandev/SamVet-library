@@ -9,11 +9,11 @@ use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
 use App\Models\NewsCategory;
-use App\Models\Publisher;
+use App\Models\PublicationPlace;
 use App\Models\ResourceField;
 
 /**
- * Creates a lookup (type, language, publisher, author, category, location)
+ * Creates a lookup (type, language, publication place, author, category, location)
  * "on the fly" from a form. Security: only whitelisted types.
  */
 class LookupService
@@ -23,7 +23,7 @@ class LookupService
         'book_type' => BookType::class,
         'journal_type' => JournalType::class,
         'language' => Language::class,
-        'publisher' => Publisher::class,
+        'publication_place' => PublicationPlace::class,
         'author' => Author::class,
         'category' => Category::class,
         'location' => Location::class,
@@ -36,7 +36,7 @@ class LookupService
      *
      * @var list<string>
      */
-    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'category', 'location', 'news_category', 'resource_field'];
+    private const TRANSLATABLE = ['book_type', 'journal_type', 'language', 'publication_place', 'category', 'location', 'news_category', 'resource_field'];
 
     /**
      * @return list<string>

@@ -19,8 +19,8 @@
         $inherited = array_filter([
             __('Jurnal') => $journal?->name,
             __('Jurnal turi') => $journal?->type?->name,
-            __('Nashriyoti') => $journal?->publisher?->name,
-            __('Nashr joyi') => $journal?->publication_place,
+            __('Nashriyoti') => $journal?->publisher,
+            __('Nashriyot joyi') => $journal?->publicationPlace?->name,
             __('Yili') => $article->journalIssue?->year,
             __('Soni') => $article->journalIssue?->issue_number,
         ], fn ($v) => filled($v));

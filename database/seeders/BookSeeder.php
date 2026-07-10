@@ -11,7 +11,7 @@ use App\Models\BookType;
 use App\Models\Category;
 use App\Models\Language;
 use App\Models\Location;
-use App\Models\Publisher;
+use App\Models\PublicationPlace;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -26,8 +26,8 @@ class BookSeeder extends Seeder
             'author_mark' => 'O-56',
             'type' => 'Darslik',
             'language' => 'O‘zbek',
-            'publisher' => 'Iqtisod-moliya',
-            'publication_place' => ['uz' => 'Toshkent', 'ru' => 'Ташкент', 'kk' => 'Tashkent'],
+            'publisher' => ['uz' => 'Iqtisod-moliya', 'ru' => 'Иктисод-молия', 'kk' => 'Iqtisod-moliya'],
+            'publication_place' => 'Toshkent',
             'publication_year' => 2020,
             'pages' => 480,
             'isbn' => '978-9943-13-456-7',
@@ -49,8 +49,8 @@ class BookSeeder extends Seeder
             'author_mark' => 'X-72',
             'type' => 'Darslik',
             'language' => 'O‘zbek',
-            'publisher' => 'Fan',
-            'publication_place' => ['uz' => 'Samarqand', 'ru' => 'Самарканд', 'kk' => 'Samarqand'],
+            'publisher' => ['uz' => 'Fan', 'ru' => 'Фан', 'kk' => 'Fan'],
+            'publication_place' => 'Samarqand',
             'publication_year' => 2019,
             'pages' => 320,
             'isbn' => '978-9943-11-222-3',
@@ -75,8 +75,8 @@ class BookSeeder extends Seeder
                 'author_mark' => $data['author_mark'],
                 'book_type_id' => BookType::where('name->uz', $data['type'])->value('id'),
                 'language_id' => Language::where('name->uz', $data['language'])->value('id'),
-                'publisher_id' => Publisher::where('name', $data['publisher'])->value('id'),
-                'publication_place' => $data['publication_place'],
+                'publisher' => $data['publisher'],
+                'publication_place_id' => PublicationPlace::where('name->uz', $data['publication_place'])->value('id'),
                 'publication_year' => $data['publication_year'],
                 'pages' => $data['pages'],
                 'isbn' => $data['isbn'],

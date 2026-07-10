@@ -31,7 +31,7 @@ use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
 use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
-use App\Http\Controllers\Admin\Lookups\PublisherController;
+use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Site\ArticleController as SiteArticleController;
@@ -195,7 +195,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('journal-types', JournalTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['journal-types' => 'journalType']);
         Route::resource('languages', LanguageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('locations', LocationController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('publishers', PublisherController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('publication-places', PublicationPlaceController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('authors', AuthorController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['news-categories' => 'newsCategory']);
         Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);

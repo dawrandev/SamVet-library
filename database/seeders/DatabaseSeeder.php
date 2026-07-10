@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BookTypeSeeder::class,
             LanguageSeeder::class,
-            PublisherSeeder::class,
+            PublicationPlaceSeeder::class,
             LocationSeeder::class,
             AuthorSeeder::class,
             CategorySeeder::class,

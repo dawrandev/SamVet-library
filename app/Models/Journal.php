@@ -19,12 +19,12 @@ class Journal extends Model
 
     protected $fillable = [
         'name', 'kind', 'slug', 'journal_type_id', 'founder',
-        'language_id', 'publisher_id', 'publication_place',
+        'language_id', 'publisher', 'publication_place_id',
         'issn', 'index', 'periodicity',
     ];
 
-    /** Only the publication place is translatable (name — single language). */
-    public array $translatable = ['publication_place'];
+    /** Only the publisher is translatable (name — single language). */
+    public array $translatable = ['publisher'];
 
     protected function casts(): array
     {
@@ -46,9 +46,9 @@ class Journal extends Model
         return $this->belongsTo(Language::class);
     }
 
-    public function publisher(): BelongsTo
+    public function publicationPlace(): BelongsTo
     {
-        return $this->belongsTo(Publisher::class);
+        return $this->belongsTo(PublicationPlace::class);
     }
 
     public function issues(): HasMany

@@ -17,10 +17,10 @@ class BookData
         public readonly ?string $author_mark,
         public readonly ?int $book_type_id,
         public readonly ?int $language_id,
-        public readonly ?int $publisher_id,
+        /** @var array<string, string>|null Publisher (translation: uz/ru/kk) */
+        public readonly ?array $publisher,
+        public readonly ?int $publication_place_id,
         public readonly ?int $publication_year,
-        /** @var array<string, string>|null Publication place (translation: uz/ru/kk) */
-        public readonly ?array $publication_place,
         public readonly ?int $pages,
         public readonly ?string $isbn,
         public readonly ?int $print_run,
@@ -36,9 +36,9 @@ class BookData
 
     public static function fromRequest(Request $request): self
     {
-        // Publication place: {uz,ru,kk} — empty values are dropped, null if all are empty
-        $place = array_filter(
-            array_map('trim', (array) $request->input('publication_place', [])),
+        // Publisher: {uz,ru,kk} — empty values are dropped, null if all are empty
+        $publisher = array_filter(
+            array_map('trim', (array) $request->input('publisher', [])),
             static fn (string $v): bool => $v !== '',
         );
 
@@ -48,9 +48,9 @@ class BookData
             author_mark: $request->input('author_mark'),
             book_type_id: $request->integer('book_type_id') ?: null,
             language_id: $request->integer('language_id') ?: null,
-            publisher_id: $request->integer('publisher_id') ?: null,
+            publisher: $publisher ?: null,
+            publication_place_id: $request->integer('publication_place_id') ?: null,
             publication_year: $request->integer('publication_year') ?: null,
-            publication_place: $place ?: null,
             pages: $request->integer('pages') ?: null,
             isbn: $request->input('isbn'),
             print_run: $request->integer('print_run') ?: null,
@@ -76,9 +76,9 @@ class BookData
             'author_mark' => $this->author_mark,
             'book_type_id' => $this->book_type_id,
             'language_id' => $this->language_id,
-            'publisher_id' => $this->publisher_id,
+            'publisher' => $this->publisher,
+            'publication_place_id' => $this->publication_place_id,
             'publication_year' => $this->publication_year,
-            'publication_place' => $this->publication_place,
             'pages' => $this->pages,
             'isbn' => $this->isbn,
             'print_run' => $this->print_run,
