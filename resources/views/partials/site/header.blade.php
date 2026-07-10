@@ -44,10 +44,32 @@
         </nav>
 
         <div class="flex items-center gap-2">
-            <a href="#" class="hidden items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 sm:inline-flex">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
-                {{ __('Kirish') }}
-            </a>
+            @auth('reader')
+                @php $reader = auth('reader')->user(); @endphp
+                <div x-data="{ open: false }" class="relative hidden sm:block">
+                    <button type="button" @click="open = ! open" class="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                        <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                        <span class="max-w-[10rem] truncate">{{ \Illuminate\Support\Str::of($reader->full_name)->explode(' ')->first() }}</span>
+                    </button>
+
+                    <div x-show="open" x-cloak @click.outside="open = false"
+                         class="absolute right-0 z-50 mt-2 w-60 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                        <div class="border-b border-gray-100 px-3 pb-2.5 pt-1.5">
+                            <p class="truncate text-sm font-semibold text-gray-900">{{ $reader->full_name }}</p>
+                            <p class="mt-0.5 text-xs text-gray-500">{{ $reader->id_number }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('reader.logout') }}" class="pt-1">
+                            @csrf
+                            <button type="submit" class="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50">{{ __('Chiqish') }}</button>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('reader.login') }}" class="hidden items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 sm:inline-flex">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                    {{ __('Kirish') }}
+                </a>
+            @endauth
 
             {{-- Mobile toggle --}}
             <button type="button" @click="open = !open" class="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-600 lg:hidden" aria-label="{{ __('Menyu') }}">
@@ -67,7 +89,17 @@
                        'text-gray-700 hover:bg-gray-50' => ! $item['active'],
                    ])>{{ $item['label'] }}</a>
             @endforeach
-            <a href="#" class="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white">{{ __('Kirish') }}</a>
+            @auth('reader')
+                <div class="mt-2 border-t border-gray-100 pt-2">
+                    <p class="px-3 py-1 text-xs text-gray-500">{{ auth('reader')->user()->id_number }}</p>
+                    <form method="POST" action="{{ route('reader.logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600">{{ __('Chiqish') }}</button>
+                    </form>
+                </div>
+            @else
+                <a href="{{ route('reader.login') }}" class="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white">{{ __('Kirish') }}</a>
+            @endauth
         </nav>
     </div>
 </header>

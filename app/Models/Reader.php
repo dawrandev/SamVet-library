@@ -6,13 +6,21 @@ use App\Enums\Gender;
 use App\Enums\LoanStatus;
 use App\Enums\ReaderStatus;
 use App\Enums\ReaderType;
+use App\Observers\ReaderObserver;
+use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Reader extends Model
+#[ObservedBy([ReaderObserver::class])]
+class Reader extends Model implements Authenticatable
 {
-    use HasFactory;
+    use AuthenticatableTrait, HasFactory;
+
+    /** Password is never mass-assigned — the observer/admin sets it explicitly. */
+    protected $hidden = ['password'];
 
     protected $fillable = [
         'id_number', 'registration_number', 'issued_date',
@@ -27,6 +35,7 @@ class Reader extends Model
     protected function casts(): array
     {
         return [
+            'password' => 'hashed',
             'type' => ReaderType::class,
             'status' => ReaderStatus::class,
             'gender' => Gender::class,
@@ -80,5 +89,22 @@ class Reader extends Model
     public function canBorrow(): bool
     {
         return $this->status === ReaderStatus::Active && ! $this->isBlocked();
+    }
+
+    /**
+     * Only an active, non-blocked reader may sign in and read materials online.
+     */
+    public function canSignIn(): bool
+    {
+        return $this->status === ReaderStatus::Active && ! $this->isBlocked();
+    }
+
+    /**
+     * "Remember me" is not offered to readers, so there is no token column.
+     * Returning null makes the Authenticatable trait skip the token entirely.
+     */
+    public function getRememberTokenName(): ?string
+    {
+        return null;
     }
 }

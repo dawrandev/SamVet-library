@@ -29,3 +29,5 @@ yarn-error.log
 
 # Claude Design reference exports (not app code)
 /*.html
+
+/.claude/settings.local.json

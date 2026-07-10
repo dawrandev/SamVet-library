@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureReaderIsAuthenticated;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,9 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Har web so'rovда tanlangan tilни o'rnatish
+        // Apply the selected locale on every web request.
         $middleware->web(append: [
             SetLocale::class,
+        ]);
+
+        // Reading endpoints require a signed-in reader (not an admin user).
+        $middleware->alias([
+            'reader.auth' => EnsureReaderIsAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

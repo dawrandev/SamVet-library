@@ -36,9 +36,16 @@ return [
     */
 
     'guards' => [
+        // Librarians / admins.
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+
+        // Public-site readers (sign in with their ID number to read online).
+        'reader' => [
+            'driver' => 'session',
+            'provider' => 'readers',
         ],
     ],
 
@@ -65,10 +72,10 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'readers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Reader::class,
+        ],
     ],
 
     /*
