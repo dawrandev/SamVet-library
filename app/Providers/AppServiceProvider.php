@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Services\LoanService;
+use App\Services\Site\SectionService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,10 +36,25 @@ class AppServiceProvider extends ServiceProvider
             $view->with('overdueLoansCount', $count);
         });
 
-        // Provide the primary content section (e.g. "ARM haqida") to the public
-        // header so its nav item can link into the content pages.
-        View::composer('partials.site.header', function ($view) {
-            $view->with('armSection', app(MenuItemRepositoryInterface::class)->primarySection());
+        // The public header and footer both link into the first content section
+        // ("ARM haqida"): its first child page, or the section landing. Null when
+        // no menu has been set up yet — the callers then hide the link.
+        View::composer(['partials.site.header', 'partials.site.footer'], function ($view) {
+            $section = app(MenuItemRepositoryInterface::class)->primarySection();
+            $child = $section?->children->first();
+
+            $view->with('armUrl', match (true) {
+                $child !== null => $child->publicUrl(),
+                $section !== null => route('page.show', $section->id),
+                default => null,
+            });
+        });
+
+        // Footer's "Bo'limlar" column: the fund's sections, so every link is real.
+        View::composer('partials.site.footer', function ($view) {
+            $tiles = app(SectionService::class)->tiles();
+
+            $view->with('footerSections', $tiles->take(2)->concat($tiles->slice(-2))->values());
         });
     }
 }

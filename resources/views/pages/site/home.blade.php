@@ -103,12 +103,12 @@
         <p class="text-xs font-semibold uppercase tracking-wider text-blue-700">{{ __('Fond tarkibi') }}</p>
         <div class="mt-1 flex items-end justify-between">
             <h2 class="text-2xl font-bold text-gray-900">{{ __('Elektron kutubxona bo‘limlari') }}</h2>
-            <a href="#" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barcha bo‘limlar') }} →</a>
+            <a href="{{ route('sections') }}" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barcha bo‘limlar') }} →</a>
         </div>
 
         <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($collectionTiles as $tile)
-                <a href="#" class="group rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-md">
+                <a href="{{ $tile['url'] }}" class="group rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-md">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
                     </span>
@@ -117,7 +117,7 @@
                 </a>
             @endforeach
 
-            <a href="#" class="flex flex-col justify-between rounded-2xl bg-blue-700 p-5 text-white transition hover:bg-blue-800">
+            <a href="{{ route('catalog') }}" class="flex flex-col justify-between rounded-2xl bg-blue-700 p-5 text-white transition hover:bg-blue-800">
                 <h3 class="font-semibold">{{ __('Barcha resurslar katalogi') }}</h3>
                 <span class="mt-6 text-sm font-medium text-blue-100">{{ __('Katalogga o‘tish') }} →</span>
             </a>
@@ -132,7 +132,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">{{ __('Eng ko‘p o‘qilgan') }}</h2>
                     <p class="mt-1 text-sm text-gray-500">{{ __('Foydalanuvchilar orasida eng talabgir manbalar') }}</p>
                 </div>
-                <a href="#" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barchasi') }} →</a>
+                <a href="{{ route('catalog', ['sort' => \App\Enums\CatalogSort::Popular->value]) }}" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barchasi') }} →</a>
             </div>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($mostRead as $book)
@@ -150,7 +150,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">{{ __('Yangi kelgan kitoblar') }}</h2>
                     <p class="mt-1 text-sm text-gray-500">{{ __('Fondga so‘nggi qo‘shilgan nashrlar') }}</p>
                 </div>
-                <a href="#" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barchasi') }} →</a>
+                <a href="{{ route('catalog', ['sort' => \App\Enums\CatalogSort::Newest->value]) }}" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barchasi') }} →</a>
             </div>
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 @foreach ($newArrivals as $book)

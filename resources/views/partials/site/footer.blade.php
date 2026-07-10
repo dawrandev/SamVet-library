@@ -19,21 +19,23 @@
             <div>
                 <h3 class="text-sm font-semibold text-white">{{ __('Tezkor havolalar') }}</h3>
                 <ul class="mt-4 space-y-2.5 text-sm text-white/70">
-                    <li><a href="#" class="transition hover:text-white">{{ __('Elektron katalog') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('Bo‘limlar') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('Yangiliklar') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('ARM haqida') }}</a></li>
+                    <li><a href="{{ route('catalog') }}" class="transition hover:text-white">{{ __('Elektron katalog') }}</a></li>
+                    <li><a href="{{ route('sections') }}" class="transition hover:text-white">{{ __('Bo‘limlar') }}</a></li>
+                    <li><a href="{{ route('news.index') }}" class="transition hover:text-white">{{ __('Yangiliklar') }}</a></li>
+                    <li><a href="{{ route('statistics') }}" class="transition hover:text-white">{{ __('Statistika') }}</a></li>
+                    @if ($armUrl)
+                        <li><a href="{{ $armUrl }}" class="transition hover:text-white">{{ __('ARM haqida') }}</a></li>
+                    @endif
                 </ul>
             </div>
 
-            {{-- Sections --}}
+            {{-- Sections (built from the fund, so the links always resolve) --}}
             <div>
                 <h3 class="text-sm font-semibold text-white">{{ __('Bo‘limlar') }}</h3>
                 <ul class="mt-4 space-y-2.5 text-sm text-white/70">
-                    <li><a href="#" class="transition hover:text-white">{{ __('Darsliklar') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('Dissertatsiyalar') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('Jurnallar') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('Gazetalar') }}</a></li>
+                    @foreach ($footerSections as $section)
+                        <li><a href="{{ $section['url'] }}" class="transition hover:text-white">{{ $section['label'] }}</a></li>
+                    @endforeach
                 </ul>
             </div>
 

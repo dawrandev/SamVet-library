@@ -6,11 +6,23 @@ use App\Models\Article;
 use App\Models\Journal;
 use App\Models\JournalIssue;
 use App\Repositories\Contracts\PeriodicalRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class PeriodicalRepository implements PeriodicalRepositoryInterface
 {
+    public function paginateJournals(?string $kind, int $perPage): LengthAwarePaginator
+    {
+        return Journal::query()
+            ->with(['type', 'language'])
+            ->withCount('issues')
+            ->when($kind, fn (Builder $q, string $k) => $q->where('kind', $k))
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
     public function findJournalBySlug(string $slug): ?Journal
     {
         return Journal::query()

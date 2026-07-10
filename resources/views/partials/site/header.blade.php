@@ -1,19 +1,13 @@
 @php
-    // "ARM haqida" links into the first content section (its first child page,
-    // or the section landing). $armSection comes from a view composer.
-    $armChild = $armSection?->children->first();
-    $armUrl = $armChild
-        ? $armChild->publicUrl()
-        : ($armSection ? route('page.show', $armSection->id) : '#');
-
-    // Primary navigation. `#` marks a target not built yet.
-    $nav = [
+    // Primary navigation. $armUrl comes from a view composer; it is null while
+    // no content menu exists, in which case that item is not rendered.
+    $nav = array_values(array_filter([
         ['label' => __('Bosh sahifa'), 'url' => route('home'), 'active' => request()->routeIs('home')],
         ['label' => __('Elektron katalog'), 'url' => route('catalog'), 'active' => request()->routeIs('catalog')],
-        ['label' => __('Bo‘limlar'), 'url' => '#', 'active' => false],
+        ['label' => __('Bo‘limlar'), 'url' => route('sections'), 'active' => request()->routeIs('sections', 'periodicals.*', 'journal.show')],
         ['label' => __('Yangiliklar'), 'url' => route('news.index'), 'active' => request()->routeIs('news.*')],
-        ['label' => __('ARM haqida'), 'url' => $armUrl, 'active' => request()->routeIs('page.show')],
-    ];
+        $armUrl ? ['label' => __('ARM haqida'), 'url' => $armUrl, 'active' => request()->routeIs('page.show')] : null,
+    ]));
 @endphp
 
 <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">

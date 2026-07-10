@@ -5,6 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Models\Article;
 use App\Models\Journal;
 use App\Models\JournalIssue;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
@@ -13,6 +14,9 @@ use Illuminate\Support\Collection;
  */
 interface PeriodicalRepositoryInterface
 {
+    /** Paginated periodicals, optionally narrowed to one kind (journal / newspaper). */
+    public function paginateJournals(?string $kind, int $perPage): LengthAwarePaginator;
+
     /** A single public journal (by slug) with issues (article counts) eager-loaded. */
     public function findJournalBySlug(string $slug): ?Journal;
 

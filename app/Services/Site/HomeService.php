@@ -23,6 +23,10 @@ class HomeService
     private const FEATURED_LIMIT = 5;
     private const NEWS_LIMIT = 4;
 
+    public function __construct(
+        private readonly SectionService $sections,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -30,7 +34,7 @@ class HomeService
     {
         return [
             'stats' => $this->stats(),
-            'collectionTiles' => $this->collectionTiles(),
+            'collectionTiles' => $this->sections->tiles(),
             'mostRead' => $this->mostRead(),
             'newArrivals' => $this->newArrivals(),
             'latestNews' => $this->latestNews(),
@@ -51,48 +55,6 @@ class HomeService
             'periodicals' => Journal::count(),
             'articles' => Article::count(),
         ];
-    }
-
-    /**
-     * "Elektron kutubxona bo'limlari" tiles: book counts per type + periodicals by kind.
-     *
-     * @return Collection<int, array{label: string, count: int, key: string}>
-     */
-    private function collectionTiles(): Collection
-    {
-        // One grouped query instead of a count per type.
-        $countsByType = Book::query()
-            ->selectRaw('book_type_id, COUNT(*) as c')
-            ->groupBy('book_type_id')
-            ->pluck('c', 'book_type_id');
-
-        $tiles = BookType::query()
-            ->orderBy('id')
-            ->get(['id', 'name'])
-            ->map(fn (BookType $type): array => [
-                'key' => 'type-'.$type->id,
-                'label' => $type->getTranslation('name', app()->getLocale(), false) ?: $type->getTranslation('name', 'uz', false),
-                'count' => (int) ($countsByType[$type->id] ?? 0),
-            ]);
-
-        // Periodicals by kind (journals / newspapers).
-        $periodicalCounts = Journal::query()
-            ->selectRaw('kind, COUNT(*) as c')
-            ->groupBy('kind')
-            ->pluck('c', 'kind');
-
-        return $tiles
-            ->push([
-                'key' => 'journals',
-                'label' => __('Jurnallar'),
-                'count' => (int) ($periodicalCounts[PublicationKind::Journal->value] ?? 0),
-            ])
-            ->push([
-                'key' => 'newspapers',
-                'label' => __('Gazetalar'),
-                'count' => (int) ($periodicalCounts[PublicationKind::Newspaper->value] ?? 0),
-            ])
-            ->values();
     }
 
     /**
