@@ -9,7 +9,7 @@
             <div class="flex w-full flex-1 flex-col lg:w-1/2">
                 <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
                     <div class="mb-5 sm:mb-8">
-                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU logotipi') }}"
+                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF logotipi') }}"
                              class="mb-5 h-16 w-16 object-contain" width="64" height="64" />
                         <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
                             {{ __('Tizimga kirish') }}
@@ -82,7 +82,7 @@
                 <div class="z-1 flex items-center justify-center">
                     <div class="flex max-w-xs flex-col items-center">
                         <span class="mb-5 flex h-28 w-28 items-center justify-center rounded-2xl bg-white/95 p-3">
-                            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU logotipi') }}"
+                            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF logotipi') }}"
                                  class="h-full w-full object-contain" width="112" height="112" />
                         </span>
                         <h2 class="mb-2 text-2xl font-bold text-white">{{ config('app.name') }}</h2>

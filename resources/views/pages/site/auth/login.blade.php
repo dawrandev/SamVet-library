@@ -6,11 +6,11 @@
     {{-- Brand --}}
     <a href="{{ route('home') }}" class="mb-7 flex items-center gap-3">
         <span class="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-white/95 p-1.5">
-            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU Nukus filiali logotipi') }}"
+            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF Nukus filiali logotipi') }}"
                  class="h-full w-full object-contain" width="56" height="56" />
         </span>
         <span class="leading-tight">
-            <span class="block text-base font-bold text-white">SamVMChBTU · {{ __('Nukus filiali') }}</span>
+            <span class="block text-base font-bold text-white">SDVUNF · {{ __('Nukus filiali') }}</span>
             <span class="block text-xs text-blue-100/70">{{ __('Axborot resurs markazi (ARM)') }}</span>
         </span>
     </a>

@@ -5,10 +5,10 @@
             <div>
                 <div class="flex items-center gap-3">
                     <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-white/95 p-1">
-                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU Nukus filiali logotipi') }}"
+                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF Nukus filiali logotipi') }}"
                              class="h-full w-full object-contain" width="44" height="44" />
                     </span>
-                    <span class="text-base font-bold">SamVMChBTU · {{ __('Nukus filiali') }}</span>
+                    <span class="text-base font-bold">SDVUNF · {{ __('Nukus filiali') }}</span>
                 </div>
                 <p class="mt-4 text-sm leading-relaxed text-white/60">
                     {{ __('Axborot resurs markazi (ARM). Nukus shahri, universitet filiali hududi. Ta‘lim va ilm-fan uchun ochiq raqamli fond.') }}

@@ -20,10 +20,10 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
         {{-- Brand --}}
         <a href="{{ route('home') }}" class="flex items-center gap-3">
-            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU Nukus filiali logotipi') }}"
+            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF Nukus filiali logotipi') }}"
                  class="h-12 w-12 flex-none object-contain" width="48" height="48" />
             <span class="leading-tight">
-                <span class="block text-base font-bold text-gray-900">SamVMChBTU · {{ __('Nukus filiali') }}</span>
+                <span class="block text-base font-bold text-gray-900">SDVUNF · {{ __('Nukus filiali') }}</span>
                 <span class="block text-xs text-gray-500">{{ __('Axborot resurs markazi (ARM)') }}</span>
             </span>
         </a>
