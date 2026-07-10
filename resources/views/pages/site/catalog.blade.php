@@ -1,5 +1,65 @@
 @extends('layouts.site')
 
+@php
+    use App\Enums\CatalogSort;
+
+    // Current query, so a chip can drop just its own value and keep the rest.
+    $query = array_filter([
+        'q' => $filters->search,
+        'categories' => $filters->categories,
+        'types' => $filters->types,
+        'languages' => $filters->languages,
+        'year_from' => $filters->yearFrom,
+        'year_to' => $filters->yearTo,
+        'author' => $filters->author,
+        'sort' => $filters->sort !== CatalogSort::Newest ? $filters->sort->value : null,
+    ]);
+
+    /** Link to the same listing with one filter removed. */
+    $without = function (string $key, ?int $id = null) use ($query): string {
+        if ($id !== null) {
+            $query[$key] = array_values(array_diff($query[$key] ?? [], [$id]));
+            if ($query[$key] === []) {
+                unset($query[$key]);
+            }
+        } else {
+            unset($query[$key]);
+        }
+
+        return route('catalog', $query);
+    };
+
+    /** Selected ids of a facet group, resolved to their labels. */
+    $labelsFor = fn (iterable $facets, array $selected): array => collect($facets)
+        ->whereIn('id', $selected)
+        ->map(fn ($facet) => ['id' => $facet['id'], 'label' => $facet['label']])
+        ->all();
+
+    $chips = [];
+
+    foreach ($labelsFor($types, $filters->types) as $facet) {
+        $chips[] = ['label' => $facet['label'], 'url' => $without('types', $facet['id'])];
+    }
+    foreach ($labelsFor($categories, $filters->categories) as $facet) {
+        $chips[] = ['label' => $facet['label'], 'url' => $without('categories', $facet['id'])];
+    }
+    foreach ($labelsFor($languages, $filters->languages) as $facet) {
+        $chips[] = ['label' => $facet['label'], 'url' => $without('languages', $facet['id'])];
+    }
+    if ($filters->search) {
+        $chips[] = ['label' => '“'.$filters->search.'”', 'url' => $without('q')];
+    }
+    if ($filters->author) {
+        $chips[] = ['label' => __('Muallif').': '.$filters->author, 'url' => $without('author')];
+    }
+    if ($filters->yearFrom) {
+        $chips[] = ['label' => __('Yildan').' '.$filters->yearFrom, 'url' => $without('year_from')];
+    }
+    if ($filters->yearTo) {
+        $chips[] = ['label' => __('Yilgacha').' '.$filters->yearTo, 'url' => $without('year_to')];
+    }
+@endphp
+
 @section('title', __('Elektron katalog'))
 
 @section('content')
@@ -21,6 +81,25 @@
                 {{ __(':n ta natija', ['n' => number_format($total, 0, '.', ' ')]) }}
             </span>
         </div>
+
+        {{-- Active filters: without these the page reads as the full catalog --}}
+        @if ($chips !== [])
+            <div class="mt-5 flex flex-wrap items-center gap-2">
+                <span class="text-xs font-medium uppercase tracking-wide text-gray-400">{{ __('Tanlangan') }}:</span>
+
+                @foreach ($chips as $chip)
+                    <a href="{{ $chip['url'] }}"
+                       class="group inline-flex items-center gap-1.5 rounded-full bg-blue-50 py-1.5 pl-3 pr-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100">
+                        {{ $chip['label'] }}
+                        <svg class="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                    </a>
+                @endforeach
+
+                <a href="{{ route('catalog') }}" class="ml-1 text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-800 hover:underline">
+                    {{ __('Barchasini tozalash') }}
+                </a>
+            </div>
+        @endif
 
         {{-- Everything below submits as one GET form (filters + sort share state) --}}
         <form method="GET" action="{{ route('catalog') }}" class="mt-7 grid gap-7 lg:grid-cols-[280px_minmax(0,1fr)]">
