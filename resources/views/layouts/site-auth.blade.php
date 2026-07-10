@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="robots" content="noindex" />
 
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/samvet/favicon-32.png') }}" />
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/samvet/favicon-192.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('images/samvet/apple-touch-icon.png') }}" />
+
     <title>@yield('title') — {{ config('app.name') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

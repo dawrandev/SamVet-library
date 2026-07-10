@@ -4,8 +4,9 @@
             {{-- Brand --}}
             <div>
                 <div class="flex items-center gap-3">
-                    <span class="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-blue-700 text-white">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
+                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-white/95 p-1">
+                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU Nukus filiali logotipi') }}"
+                             class="h-full w-full object-contain" width="44" height="44" />
                     </span>
                     <span class="text-base font-bold">SamVMChBTU · {{ __('Nukus filiali') }}</span>
                 </div>

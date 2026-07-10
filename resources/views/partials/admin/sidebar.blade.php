@@ -8,7 +8,8 @@
         class="sidebar-header flex items-center gap-2 pt-8 pb-7"
     >
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
-            <x-admin.icon name="book" class="h-6 w-6 shrink-0 text-brand-500" />
+            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU logotipi') }}"
+                 class="h-9 w-9 shrink-0 object-contain" width="36" height="36" />
             <span class="text-lg font-bold text-gray-900 dark:text-white" :class="sidebarToggle ? 'lg:hidden' : ''">
                 {{ config('app.name') }}
             </span>

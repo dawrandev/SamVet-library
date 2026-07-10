@@ -5,10 +5,9 @@
 @section('content')
     {{-- Brand --}}
     <a href="{{ route('home') }}" class="mb-7 flex items-center gap-3">
-        <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-white/10 text-white ring-1 ring-white/15">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-            </svg>
+        <span class="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-white/95 p-1.5">
+            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU Nukus filiali logotipi') }}"
+                 class="h-full w-full object-contain" width="56" height="56" />
         </span>
         <span class="leading-tight">
             <span class="block text-base font-bold text-white">SamVMChBTU · {{ __('Nukus filiali') }}</span>

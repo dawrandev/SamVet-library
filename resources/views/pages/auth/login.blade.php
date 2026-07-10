@@ -9,6 +9,8 @@
             <div class="flex w-full flex-1 flex-col lg:w-1/2">
                 <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
                     <div class="mb-5 sm:mb-8">
+                        <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU logotipi') }}"
+                             class="mb-5 h-16 w-16 object-contain" width="64" height="64" />
                         <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
                             {{ __('Tizimga kirish') }}
                         </h1>
@@ -79,7 +81,10 @@
             <div class="bg-brand-950 relative hidden h-full w-full items-center dark:bg-white/5 lg:grid lg:w-1/2">
                 <div class="z-1 flex items-center justify-center">
                     <div class="flex max-w-xs flex-col items-center">
-                        <x-admin.icon name="book" class="mb-4 h-16 w-16 text-white" />
+                        <span class="mb-5 flex h-28 w-28 items-center justify-center rounded-2xl bg-white/95 p-3">
+                            <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SamVMChBTU logotipi') }}"
+                                 class="h-full w-full object-contain" width="112" height="112" />
+                        </span>
                         <h2 class="mb-2 text-2xl font-bold text-white">{{ config('app.name') }}</h2>
                         <p class="text-center text-gray-400 dark:text-white/60">
                             {{ __('Samarqand veterinariya universiteti elektron kutubxonasi') }}
