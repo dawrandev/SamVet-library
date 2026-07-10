@@ -67,11 +67,20 @@
                         :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
                         creatable create-type="author" :create-label="__('Yangi muallif...')" />
 
+                    @php
+                        // The language is picked first: it decides which translation
+                        // the book type options are labelled with.
+                        $languageLocales = collect($languages)->mapWithKeys(fn ($l) => [(string) $l->id => $l->locale]);
+                        $typeTranslations = collect($types)->mapWithKeys(fn ($t) => [(string) $t->id => $t->getTranslations('name')]);
+                    @endphp
+
                     <div class="grid gap-5 sm:grid-cols-3">
-                        <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
-                            creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
                         <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
+                            :locale-map="$languageLocales"
                             creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
+                        <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
+                            :translations="$typeTranslations" await-locale
+                            creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
                         <x-admin.form.select name="publisher_id" :label="__('Nashriyoti')" :options="$publishers" :selected="$prePublisherId" :placeholder="__('Tanlang')"
                             creatable create-type="publisher" :create-label="__('Yangi nashriyot')" />
                     </div>

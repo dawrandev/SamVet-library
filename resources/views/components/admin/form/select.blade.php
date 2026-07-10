@@ -10,6 +10,11 @@
     'createType' => null,    // LookupService type (e.g. 'book_type')
     'createLabel' => null,   // modal title / single-language input label
     'createTranslatable' => false, // 3-language (uz/ru/kk) modal
+
+    // --- Language-aware labelling (used by the book form) ---
+    'localeMap' => [],       // [option id => 'uz'|'ru'|'kk'] — this select drives the shared locale
+    'translations' => [],    // [option id => ['uz'=>..,'ru'=>..,'kk'=>..]] — label options in that locale
+    'awaitLocale' => false,  // stay disabled until a language has been picked
 ])
 
 @php
@@ -40,13 +45,43 @@
     @php
         $optionsArray = collect($options)->map(fn ($o) => ['id' => (string) $o->id, 'name' => $o->name])->values();
         $translatable = (bool) $createTranslatable;
+        $isLocaleSource = ! empty($localeMap);
     @endphp
     <div x-data="{
             options: @js($optionsArray),
             selected: @js((string) $current),
             translatable: {{ $translatable ? 'true' : 'false' }},
+            localeMap: @js((object) $localeMap),
+            labels: @js((object) $translations),
+            isLocaleSource: {{ $isLocaleSource ? 'true' : 'false' }},
+            awaitLocale: {{ $awaitLocale ? 'true' : 'false' }},
             open: false, saving: false, err: '',
             form: { uz: '', ru: '', kk: '', single: '' },
+            init() {
+                if (! this.isLocaleSource) return;
+                this.publishLocale();
+                this.$watch('selected', () => this.publishLocale());
+            },
+            /** Share the chosen language's locale; an unmapped language falls back to uz. */
+            publishLocale() {
+                this.$store.lookupLocale.value = this.selected
+                    ? (this.localeMap[this.selected] || 'uz')
+                    : null;
+            },
+            /** Option label in the shared locale, falling back to the stored name. */
+            label(o) {
+                const locale = this.$store.lookupLocale.value;
+                const translated = locale && this.labels[o.id] ? this.labels[o.id][locale] : null;
+                return translated || o.name;
+            },
+            get locked() {
+                return this.awaitLocale && ! this.$store.lookupLocale.value;
+            },
+            /** Sort by what the user actually reads (only when labels are translated). */
+            get visibleOptions() {
+                if (! Object.keys(this.labels).length) return this.options;
+                return [...this.options].sort((a, b) => this.label(a).localeCompare(this.label(b)));
+            },
             openModal() {
                 this.err = '';
                 this.form = { uz: '', ru: '', kk: '', single: '' };
@@ -69,6 +104,7 @@
                 try {
                     const o = await window.lookupCreate('{{ $createType }}', name);
                     this.options.push({ id: String(o.id), name: o.name });
+                    if (this.translatable) this.labels[String(o.id)] = name;
                     this.selected = String(o.id);
                     this.open = false;
                 } catch (e) {
@@ -81,18 +117,22 @@
             @if ($label)
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">{{ $label }}@if ($required)<span class="text-error-500">*</span>@endif</label>
             @endif
-            <button type="button" @click="openModal()"
-                    class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">+ {{ __('Yangi') }}</button>
+            <button type="button" @click="openModal()" :disabled="locked"
+                    class="text-theme-xs font-medium text-brand-500 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40">+ {{ __('Yangi') }}</button>
         </div>
 
-        <select name="{{ $name }}" x-model="selected" @required($required) class="{{ $base }} {{ $border }}">
+        <select name="{{ $name }}" x-model="selected" :disabled="locked" @required($required)
+                :class="locked && 'cursor-not-allowed opacity-60'" class="{{ $base }} {{ $border }}">
             @if ($placeholder)<option value="">{{ $placeholder }}</option>@endif
-            <template x-for="o in options" :key="o.id">
-                <option :value="o.id" x-text="o.name"></option>
+            <template x-for="o in visibleOptions" :key="o.id">
+                <option :value="o.id" x-text="label(o)"></option>
             </template>
         </select>
 
         @error($name)<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+        @if ($awaitLocale)
+            <p x-show="locked" x-cloak class="mt-1 text-theme-xs text-gray-400">{{ __('Avval tilni tanlang.') }}</p>
+        @endif
         @if ($help && ! $errors->has($name))<p class="mt-1 text-theme-xs text-gray-400">{{ $help }}</p>@endif
 
         {{-- Modal --}}

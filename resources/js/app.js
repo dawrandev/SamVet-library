@@ -43,6 +43,13 @@ Alpine.data('richEditor', () => ({
     },
 }));
 
+/**
+ * Locale of the language currently selected in a form (uz/ru/kk, or null when
+ * no language is chosen). Translatable lookup selects — e.g. the book type —
+ * label their options in this locale.
+ */
+Alpine.store('lookupLocale', { value: null });
+
 // Shared modal for confirming deletion (instead of native confirm)
 Alpine.store('confirm', {
     open: false,

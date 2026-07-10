@@ -11,7 +11,8 @@ class Language extends Model
 {
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['name'];
+    /** `locale` maps this language to a translation key (uz/ru/kk); null = unknown. */
+    protected $fillable = ['name', 'locale'];
 
     /** @var array<int, string> */
     public array $translatable = ['name'];
