@@ -40,6 +40,7 @@ use App\Http\Controllers\Site\CatalogController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\JournalController as SiteJournalController;
 use App\Http\Controllers\Site\NewsController as SiteNewsController;
+use App\Http\Controllers\Site\OnlineReaderController;
 use App\Http\Controllers\Site\PageController as SitePageController;
 use App\Http\Controllers\Site\ReaderAuthController;
 use App\Http\Controllers\Site\StatisticsController as SiteStatisticsController;
@@ -69,6 +70,18 @@ Route::get('/statistika', [SiteStatisticsController::class, 'index'])->name('sta
 Route::get('/kirish', [ReaderAuthController::class, 'create'])->name('reader.login');
 Route::post('/kirish', [ReaderAuthController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/chiqish', [ReaderAuthController::class, 'destroy'])->middleware('reader.auth')->name('reader.logout');
+
+/*
+|--------------------------------------------------------------------------
+| Protected online reading — signed-in readers only, no download
+|--------------------------------------------------------------------------
+*/
+Route::middleware('reader.auth')->prefix('oqish')->group(function () {
+    Route::get('kitob/{slug}', [OnlineReaderController::class, 'book'])->name('read.book');
+    Route::get('kitob/{slug}/fayl', [OnlineReaderController::class, 'bookFile'])->name('read.book.file');
+    Route::get('maqola/{slug}', [OnlineReaderController::class, 'article'])->name('read.article');
+    Route::get('maqola/{slug}/fayl', [OnlineReaderController::class, 'articleFile'])->name('read.article.file');
+});
 
 // Language switch (for everyone — including the login page)
 Route::get('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');

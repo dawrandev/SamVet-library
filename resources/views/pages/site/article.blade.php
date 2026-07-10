@@ -105,7 +105,7 @@
                     <h2 class="text-sm font-bold text-gray-900">{{ __('To‘liq matn') }}</h2>
                     @if ($hasOnline)
                         <p class="mt-1.5 text-xs leading-relaxed text-gray-500">{{ __('Maqola to‘liq matni tizimga kirgan holda online o‘qiladi.') }}</p>
-                        <a href="#" class="mt-4 flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
+                        <a href="{{ route('read.article', $article->slug) }}" class="mt-4 flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                             {{ __('Online o‘qish') }}
                         </a>

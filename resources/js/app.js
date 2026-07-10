@@ -75,6 +75,11 @@ if (document.querySelector('[data-dashboard]')) {
     import('./admin/charts.js').then((m) => m.initDashboardCharts());
 }
 
+// PDF.js is heavy — load it only on the protected online reader page (code-split).
+if (document.querySelector('[data-reader]')) {
+    import('./site/reader.js').then((m) => m.initReader());
+}
+
 // TinyMCE is heavy (~1MB) — load it dynamically only on pages with a rich editor (code-split).
 if (document.querySelector('[data-rich-editor]')) {
     import('./admin/editor.js').then(() => {

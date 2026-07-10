@@ -7,8 +7,12 @@
     "file": "assets/outfit-latin-wght-normal-Bc-8i84L.woff2",
     "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2"
   },
+  "node_modules/pdfjs-dist/build/pdf.worker.min.mjs": {
+    "file": "assets/pdf.worker.min-DEtVeC4l.mjs",
+    "src": "node_modules/pdfjs-dist/build/pdf.worker.min.mjs"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-RO_VC-Yr.css",
+    "file": "assets/app-C3NQqMTl.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -28,16 +32,26 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-IWHzTg5z.js",
+    "file": "assets/app-CCWNDeCn.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
       "resources/js/admin/charts.js",
+      "resources/js/site/reader.js",
       "resources/js/admin/editor.js"
     ],
     "css": [
       "assets/app-BsM4JrO0.css"
+    ]
+  },
+  "resources/js/site/reader.js": {
+    "file": "assets/reader-VavcNpBj.js",
+    "name": "reader",
+    "src": "resources/js/site/reader.js",
+    "isDynamicEntry": true,
+    "assets": [
+      "assets/pdf.worker.min-DEtVeC4l.mjs"
     ]
   }
 }
