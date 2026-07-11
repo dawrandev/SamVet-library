@@ -1,8 +1,11 @@
+import uploadForm from './upload-form';
+
 /**
  * Article form Alpine component.
  *
  * Journal live-search autocomplete + a dependent issue select:
  * pick a journal (fetched by name), then choose one of its issues.
+ * Also mixes in uploadForm so its (possibly large) PDF shows upload progress.
  *
  * @param {object} config
  * @param {string} config.searchUrl          Journal live-search endpoint
@@ -12,6 +15,8 @@
  */
 export default function articleForm(config) {
     return {
+        ...uploadForm(),
+
         searchUrl: config.searchUrl,
         issuesUrlTemplate: config.issuesUrlTemplate,
         newJournalUrl: config.newJournalUrl,

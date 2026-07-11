@@ -6,6 +6,7 @@
     'image' => false,       // rasm bo'lsa preview ko'rsatiladi
     'currentUrl' => null,    // tahrirda mavjud fayl (rasm URL yoki nom)
     'currentName' => null,   // mavjud fayl nomi (rasm bo'lmasa)
+    'withProgress' => false, // show an upload progress bar (form must use x-data="uploadForm")
 ])
 
 <div>
@@ -43,6 +44,22 @@
                 <p class="mt-1 text-theme-xs text-gray-400">{{ $help }}</p>
             @endif
         </label>
+
+        @if ($withProgress)
+            {{-- Upload progress (reads state from the parent x-data="uploadForm"). --}}
+            <div x-show="uploading" x-cloak class="mt-3">
+                <div class="mb-1 flex items-center justify-between text-theme-xs">
+                    <span class="font-medium text-gray-600 dark:text-gray-300" x-text="processing ? '{{ __('Serverda saqlanmoqda...') }}' : '{{ __('Yuklanmoqda...') }}'"></span>
+                    <span class="text-gray-500 dark:text-gray-400" x-text="progress + '%' + (progressText ? ' · ' + progressText : '')"></span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                    <div class="h-full rounded-full bg-brand-500 transition-all duration-150"
+                         :class="processing && 'animate-pulse'"
+                         :style="`width: ${progress}%`"></div>
+                </div>
+                <p x-show="processing" x-cloak class="mt-1.5 text-theme-xs text-gray-400">{{ __('Fayl yuklandi. Katta fayl saqlanishi biroz vaqt olishi mumkin — sahifani yopmang.') }}</p>
+            </div>
+        @endif
     </div>
 
     @error($name)

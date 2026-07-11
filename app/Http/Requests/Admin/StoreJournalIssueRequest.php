@@ -24,7 +24,7 @@ class StoreJournalIssueRequest extends FormRequest
             'issue_number' => ['required', 'string', 'max:100'],
             'pages' => ['nullable', 'integer', 'min:1'],
             'cover' => ['nullable', 'image', 'max:2048'],                 // 2 MB
-            'electronic_file' => ['nullable', 'mimes:pdf', 'max:51200'],  // 50 MB
+            'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'],  // 950 MB
         ];
     }
 

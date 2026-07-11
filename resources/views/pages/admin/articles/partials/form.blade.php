@@ -13,6 +13,7 @@
     method="POST"
     action="{{ $editing ? route('admin.articles.update', $article) : route('admin.articles.store') }}"
     enctype="multipart/form-data"
+    @submit="submitUpload($event)"
     x-data="articleForm({
         searchUrl: '{{ route('admin.journals.search') }}',
         issuesUrlTemplate: '{{ route('admin.journals.issues.lookup', ['journal' => '__JID__']) }}',
@@ -26,6 +27,9 @@
 >
     @csrf
     @if ($editing) @method('PUT') @endif
+
+    <x-admin.form.upload-errors />
+    <x-admin.form.uploading-overlay />
 
     {{-- Keeps the chosen journal across a validation error (even when no issue was picked). --}}
     <input type="hidden" name="journal_id" x-model="journalId" />
@@ -131,9 +135,9 @@
 
                 <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$article?->annotation" :rows="4" :placeholder="__('Maqola annotatsiyasi')" />
 
-                <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf"
+                <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress
                     :currentName="$article?->electronic_file ? __('Fayl mavjud') : null"
-                    :help="$article?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 50 MB gacha')" />
+                    :help="$article?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
             </div>
         </x-admin.form.section>
     </div>

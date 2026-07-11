@@ -44,7 +44,7 @@ class StoreBookRequest extends FormRequest
             'category_ids.*' => ['integer', 'exists:categories,id'],
 
             'cover' => ['nullable', 'image', 'max:2048'],                 // 2 MB
-            'electronic_file' => ['nullable', 'mimes:pdf', 'max:51200'],  // 50 MB
+            'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'],  // 950 MB
             'audio_file' => ['nullable', 'mimes:mp3,mpga,wav', 'max:102400'], // 100 MB
         ];
     }

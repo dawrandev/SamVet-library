@@ -26,9 +26,14 @@
     method="POST"
     action="{{ $editing ? route('admin.books.update', $book) : route('admin.books.store') }}"
     enctype="multipart/form-data"
+    x-data="uploadForm"
+    @submit="submitUpload($event)"
 >
     @csrf
     @if ($editing) @method('PUT') @endif
+
+    <x-admin.form.upload-errors />
+    <x-admin.form.uploading-overlay />
     @if ($translating)
         <input type="hidden" name="translation_of" value="{{ $sourceBook->id }}">
     @endif
@@ -133,8 +138,8 @@
 
             <x-admin.form.section :title="__('Raqamli fayllar')" :description="__('Onlayn o‘qish/tinglash (login bilan)')">
                 <div class="space-y-5">
-                    <x-admin.form.file name="electronic_file" :label="__('Elektron kitob (PDF)')" accept="application/pdf"
-                        :currentName="$book?->electronic_file ? basename($book->electronic_file) : null" :help="__('PDF, 50 MB gacha')" />
+                    <x-admin.form.file name="electronic_file" :label="__('Elektron kitob (PDF)')" accept="application/pdf" with-progress
+                        :currentName="$book?->electronic_file ? basename($book->electronic_file) : null" :help="__('PDF, 950 MB gacha')" />
                     <x-admin.form.file name="audio_file" :label="__('Audio (mp3)')" accept="audio/*"
                         :currentName="$book?->audio_file ? basename($book->audio_file) : null" :help="__('MP3, 100 MB gacha')" />
                 </div>

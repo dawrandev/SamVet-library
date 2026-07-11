@@ -26,7 +26,7 @@ class StoreArticleRequest extends FormRequest
             'doi' => ['nullable', 'string', 'max:255'],
             'pages' => ['nullable', 'string', 'max:50'],
             'annotation' => ['nullable', 'string'],
-            'electronic_file' => ['nullable', 'mimes:pdf', 'max:51200'], // 50 MB
+            'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
         ];
     }
 

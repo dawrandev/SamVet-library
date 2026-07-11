@@ -128,9 +128,12 @@
                             <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Yangi son') }}</h4>
                             <button type="button" @click="showStore = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                         </div>
-                        <form method="POST" action="{{ route('admin.journals.issues.store', $journal) }}" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('admin.journals.issues.store', $journal) }}" enctype="multipart/form-data" class="space-y-4"
+                              x-data="uploadForm" @submit="submitUpload($event)">
                             @csrf
                             <input type="hidden" name="_issue_form" value="store" />
+                            <x-admin.form.upload-errors />
+                            <x-admin.form.uploading-overlay />
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <x-admin.form.input name="year" type="number" :label="__('Nashr yili')" required placeholder="{{ date('Y') }}" />
@@ -138,7 +141,7 @@
                             </div>
                             <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" />
                             <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*" :help="__('JPG/PNG, 2 MB gacha')" />
-                            <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" :help="__('PDF, 50 MB gacha')" />
+                            <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress :help="__('PDF, 950 MB gacha')" />
 
                             <div class="flex justify-end gap-3 pt-2">
                                 <button type="button" @click="showStore = false"
@@ -162,10 +165,13 @@
                                 <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Sonni tahrirlash') }}</h4>
                                 <button type="button" @click="editId = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                             </div>
-                            <form method="POST" action="{{ route('admin.journals.issues.update', [$journal, $issue]) }}" enctype="multipart/form-data" class="space-y-4">
+                            <form method="POST" action="{{ route('admin.journals.issues.update', [$journal, $issue]) }}" enctype="multipart/form-data" class="space-y-4"
+                                  x-data="uploadForm" @submit="submitUpload($event)">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="_issue_form" value="edit" />
                                 <input type="hidden" name="_issue_id" value="{{ $issue->id }}" />
+                                <x-admin.form.upload-errors />
+                                <x-admin.form.uploading-overlay />
 
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <x-admin.form.input name="year" type="number" :label="__('Nashr yili')" required
@@ -178,9 +184,9 @@
                                 <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*"
                                     :currentUrl="$issue->cover_image ? asset('storage/' . $issue->cover_image) : null"
                                     :help="$issue->cover_image ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('JPG/PNG, 2 MB gacha')" />
-                                <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf"
+                                <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress
                                     :currentName="$issue->electronic_file ? __('Fayl mavjud') : null"
-                                    :help="$issue->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 50 MB gacha')" />
+                                    :help="$issue->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
 
                                 <div class="flex justify-end gap-3 pt-2">
                                     <button type="button" @click="editId = null"
