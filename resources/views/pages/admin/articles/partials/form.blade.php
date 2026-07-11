@@ -83,7 +83,7 @@
                         <template x-if="! searching && results.length === 0 && journalName.trim() !== ''">
                             <div class="px-4 py-3 text-sm">
                                 <p class="mb-2 text-gray-500 dark:text-gray-400">{{ __('Jurnal topilmadi.') }}</p>
-                                <a :href="newJournalUrl" target="_blank"
+                                <a :href="newJournalUrl"
                                    class="text-brand-500 hover:text-brand-600 font-medium">+ {{ __('Yangi jurnal qo‘shish') }}</a>
                             </div>
                         </template>
