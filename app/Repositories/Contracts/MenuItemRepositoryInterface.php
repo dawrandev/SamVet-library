@@ -22,6 +22,14 @@ interface MenuItemRepositoryInterface
     /** The first active top-level section that has active children (for the nav). */
     public function primarySection(): ?MenuItem;
 
+    /**
+     * The public navbar tree: active top-level items, each with its active
+     * children (one level) loaded and ordered.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public function publicTree(): Collection;
+
     /** An active menu item with its page and parent loaded, or null. */
     public function findPublicPage(int $id): ?MenuItem;
 

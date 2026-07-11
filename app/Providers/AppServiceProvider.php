@@ -36,10 +36,16 @@ class AppServiceProvider extends ServiceProvider
             $view->with('overdueLoansCount', $count);
         });
 
-        // The public header and footer both link into the first content section
-        // ("ARM haqida"): its first child page, or the section landing. Null when
-        // no menu has been set up yet — the callers then hide the link.
-        View::composer(['partials.site.header', 'partials.site.footer'], function ($view) {
+        // The public navbar renders the admin-built menu tree: active top-level
+        // items, each with its active children as a dropdown. Empty when no menu
+        // has been set up yet — the header then shows only its fixed anchors.
+        View::composer('partials.site.header', function ($view) {
+            $view->with('navMenu', app(MenuItemRepositoryInterface::class)->publicTree());
+        });
+
+        // The footer still links into the first content section ("ARM haqida"):
+        // its first child page, or the section landing. Null when no menu exists.
+        View::composer('partials.site.footer', function ($view) {
             $section = app(MenuItemRepositoryInterface::class)->primarySection();
             $child = $section?->children->first();
 

@@ -1,13 +1,12 @@
 @php
-    // Primary navigation. $armUrl comes from a view composer; it is null while
-    // no content menu exists, in which case that item is not rendered.
-    $nav = array_values(array_filter([
-        ['label' => __('Bosh sahifa'), 'url' => route('home'), 'active' => request()->routeIs('home')],
-        ['label' => __('Elektron katalog'), 'url' => route('catalog'), 'active' => request()->routeIs('catalog')],
-        ['label' => __('Bo‘limlar'), 'url' => route('sections'), 'active' => request()->routeIs('sections', 'periodicals.*', 'journal.show')],
-        ['label' => __('Yangiliklar'), 'url' => route('news.index'), 'active' => request()->routeIs('news.*')],
-        $armUrl ? ['label' => __('ARM haqida'), 'url' => $armUrl, 'active' => request()->routeIs('page.show')] : null,
-    ]));
+    // Fixed anchors that are always present, then the admin-built menu tree
+    // ($navMenu, from a view composer). A top-level item with active children
+    // renders as a dropdown; a leaf renders as a direct link (publicUrl()).
+    $current = url()->current();
+
+    // A dropdown parent is highlighted when one of its children is the open page.
+    $isParentActive = fn ($item) => collect($item->children)
+        ->contains(fn ($child) => $child->publicUrl() === $current);
 @endphp
 
 <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -24,13 +23,63 @@
 
         {{-- Desktop nav --}}
         <nav class="hidden items-center gap-1 lg:flex">
-            @foreach ($nav as $item)
-                <a href="{{ $item['url'] }}"
-                   @class([
-                       'rounded-lg px-3.5 py-2 text-sm font-medium transition',
-                       'text-blue-700' => $item['active'],
-                       'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! $item['active'],
-                   ])>{{ $item['label'] }}</a>
+            {{-- Fixed anchors: the core app is always reachable. --}}
+            <a href="{{ route('home') }}"
+               @class([
+                   'rounded-lg px-3.5 py-2 text-sm font-medium transition',
+                   'text-blue-700' => request()->routeIs('home'),
+                   'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('home'),
+               ])>{{ __('Bosh sahifa') }}</a>
+            <a href="{{ route('catalog') }}"
+               @class([
+                   'rounded-lg px-3.5 py-2 text-sm font-medium transition',
+                   'text-blue-700' => request()->routeIs('catalog'),
+                   'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('catalog'),
+               ])>{{ __('Elektron katalog') }}</a>
+
+            {{-- Admin-built menu tree --}}
+            @foreach ($navMenu as $item)
+                @if ($item->children->isNotEmpty())
+                    {{-- Dropdown: opens on hover (desktop) or click (keyboard/touch). --}}
+                    <div x-data="{ open: false }" class="relative"
+                         @mouseenter="open = true" @mouseleave="open = false">
+                        <button type="button" @click="open = ! open"
+                                @class([
+                                    'flex items-center gap-1 rounded-lg px-3.5 py-2 text-sm font-medium transition',
+                                    'text-blue-700' => $isParentActive($item),
+                                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! $isParentActive($item),
+                                ])>
+                            {{ $item->title }}
+                            <svg class="h-3.5 w-3.5 transition" :class="open && 'rotate-180'"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-cloak @click.outside="open = false"
+                             x-transition.origin.top.left
+                             class="absolute left-0 z-50 mt-1 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                            @foreach ($item->children as $child)
+                                <a href="{{ $child->publicUrl() }}"
+                                   @if ($child->target_blank) target="_blank" rel="noopener noreferrer" @endif
+                                   @class([
+                                       'block rounded-lg px-3 py-2 text-sm transition',
+                                       'bg-blue-50 font-medium text-blue-700' => $child->publicUrl() === $current,
+                                       'text-gray-700 hover:bg-gray-50 hover:text-gray-900' => $child->publicUrl() !== $current,
+                                   ])>{{ $child->title }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    {{-- Leaf: a page, a module route, or an external link. --}}
+                    <a href="{{ $item->publicUrl() }}"
+                       @if ($item->target_blank) target="_blank" rel="noopener noreferrer" @endif
+                       @class([
+                           'rounded-lg px-3.5 py-2 text-sm font-medium transition',
+                           'text-blue-700' => $item->publicUrl() === $current,
+                           'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => $item->publicUrl() !== $current,
+                       ])>{{ $item->title }}</a>
+                @endif
             @endforeach
         </nav>
 
@@ -72,14 +121,54 @@
     {{-- Mobile nav --}}
     <div x-show="open" x-cloak class="border-t border-gray-100 lg:hidden">
         <nav class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
-            @foreach ($nav as $item)
-                <a href="{{ $item['url'] }}"
-                   @class([
-                       'rounded-lg px-3 py-2.5 text-sm font-medium',
-                       'bg-blue-50 text-blue-700' => $item['active'],
-                       'text-gray-700 hover:bg-gray-50' => ! $item['active'],
-                   ])>{{ $item['label'] }}</a>
+            <a href="{{ route('home') }}"
+               @class([
+                   'rounded-lg px-3 py-2.5 text-sm font-medium',
+                   'bg-blue-50 text-blue-700' => request()->routeIs('home'),
+                   'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('home'),
+               ])>{{ __('Bosh sahifa') }}</a>
+            <a href="{{ route('catalog') }}"
+               @class([
+                   'rounded-lg px-3 py-2.5 text-sm font-medium',
+                   'bg-blue-50 text-blue-700' => request()->routeIs('catalog'),
+                   'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('catalog'),
+               ])>{{ __('Elektron katalog') }}</a>
+
+            {{-- Admin-built menu tree as accordions --}}
+            @foreach ($navMenu as $item)
+                @if ($item->children->isNotEmpty())
+                    <div x-data="{ sub: {{ $isParentActive($item) ? 'true' : 'false' }} }">
+                        <button type="button" @click="sub = ! sub"
+                                class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <span>{{ $item->title }}</span>
+                            <svg class="h-4 w-4 transition" :class="sub && 'rotate-180'"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div x-show="sub" x-cloak class="ml-3 mt-0.5 flex flex-col gap-0.5 border-l border-gray-100 pl-3">
+                            @foreach ($item->children as $child)
+                                <a href="{{ $child->publicUrl() }}"
+                                   @if ($child->target_blank) target="_blank" rel="noopener noreferrer" @endif
+                                   @class([
+                                       'rounded-lg px-3 py-2 text-sm',
+                                       'bg-blue-50 font-medium text-blue-700' => $child->publicUrl() === $current,
+                                       'text-gray-600 hover:bg-gray-50' => $child->publicUrl() !== $current,
+                                   ])>{{ $child->title }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ $item->publicUrl() }}"
+                       @if ($item->target_blank) target="_blank" rel="noopener noreferrer" @endif
+                       @class([
+                           'rounded-lg px-3 py-2.5 text-sm font-medium',
+                           'bg-blue-50 text-blue-700' => $item->publicUrl() === $current,
+                           'text-gray-700 hover:bg-gray-50' => $item->publicUrl() !== $current,
+                       ])>{{ $item->title }}</a>
+                @endif
             @endforeach
+
             @auth('reader')
                 <div class="mt-2 border-t border-gray-100 pt-2">
                     <p class="px-3 py-1 text-xs text-gray-500">{{ auth('reader')->user()->id_number }}</p>
