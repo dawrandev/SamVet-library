@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CopyController;
 use App\Http\Controllers\Admin\CopyLookupController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DissertationController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
 use App\Http\Controllers\Admin\JournalIssueController;
@@ -129,6 +130,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Journal articles CRUD
     Route::resource('articles', ArticleController::class);
+
+    // Dissertations CRUD (catalogued like an article — belongs to a journal issue)
+    Route::resource('dissertations', DissertationController::class);
 
     // Journal issues (modal on the journal show page + issue page)
     Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);

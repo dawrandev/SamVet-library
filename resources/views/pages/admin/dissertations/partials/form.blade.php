@@ -1,6 +1,6 @@
 @php
-    $article = $article ?? null;
-    $editing = ! is_null($article);
+    $dissertation = $dissertation ?? null;
+    $editing = ! is_null($dissertation);
 
     // The controller resolves the pre-selected journal/issue (edit mode or redisplay
     // after a validation error) and passes them in — no DB query in the view.
@@ -11,7 +11,7 @@
 
 <form
     method="POST"
-    action="{{ $editing ? route('admin.articles.update', $article) : route('admin.articles.store') }}"
+    action="{{ $editing ? route('admin.dissertations.update', $dissertation) : route('admin.dissertations.store') }}"
     enctype="multipart/form-data"
     @submit="submitUpload($event)"
     x-data="articleForm({
@@ -37,13 +37,13 @@
     {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.articles.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
+            <a href="{{ route('admin.dissertations.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                {{ $editing ? __('Maqolani tahrirlash') : __('Yangi maqola') }}
+                {{ $editing ? __('Dissertatsiyani tahrirlash') : __('Yangi dissertatsiya') }}
             </h2>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.articles.index') }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
+            <a href="{{ route('admin.dissertations.index') }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
             <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>
         </div>
     </div>
@@ -114,30 +114,20 @@
             </div>
         </x-admin.form.section>
 
-        {{-- Right: article details --}}
-        <x-admin.form.section :title="__('Maqola ma’lumotlari')">
+        {{-- Right: dissertation details --}}
+        <x-admin.form.section :title="__('Dissertatsiya ma’lumotlari')">
             <div class="space-y-5">
-                <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$article?->title" required :placeholder="__('Maqola sarlavhasi')" />
-                <x-admin.form.input name="author" :label="__('Muallif(lar)')" :value="$article?->author" required :placeholder="__('masalan: Aliyev A., Valiyev B.')"
-                    :help="__('Bir nechta muallif vergul bilan ajratiladi.')" />
+                <x-admin.form.input name="title" :label="__('Dissertatsiya nomi')" :value="$dissertation?->title" required :placeholder="__('Dissertatsiya nomi')" />
+                <x-admin.form.input name="author" :label="__('Muallifi')" :value="$dissertation?->author" required :placeholder="__('masalan: Aliyev A.')" />
 
-                <div class="grid gap-5 sm:grid-cols-2">
-                    <x-admin.form.select name="resource_field_id" :label="__('Resurs sohasi')" :options="$resourceFields" :selected="$article?->resource_field_id" :placeholder="__('Tanlang')"
-                        creatable create-translatable create-type="resource_field" :create-label="__('Yangi soha')" />
-                    <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$article?->language_id" :placeholder="__('Tanlang')"
-                        creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
-                </div>
+                <x-admin.form.select name="resource_field_id" :label="__('Resurs sohasi')" :options="$resourceFields" :selected="$dissertation?->resource_field_id" :placeholder="__('Tanlang')"
+                    creatable create-translatable create-type="resource_field" :create-label="__('Yangi soha')" />
 
-                <div class="grid gap-5 sm:grid-cols-2">
-                    <x-admin.form.input name="doi" :label="__('DOI')" :value="$article?->doi" :placeholder="__('masalan: 10.1000/xyz')" />
-                    <x-admin.form.input name="pages" :label="__('Sahifalar')" :value="$article?->pages" :placeholder="__('masalan: 45-52')" />
-                </div>
-
-                <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$article?->annotation" :rows="4" :placeholder="__('Maqola annotatsiyasi')" />
+                <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$dissertation?->annotation" :rows="4" :placeholder="__('Dissertatsiya annotatsiyasi')" />
 
                 <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress
-                    :currentName="$article?->electronic_file ? __('Fayl mavjud') : null"
-                    :help="$article?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
+                    :currentName="$dissertation?->electronic_file ? __('Fayl mavjud') : null"
+                    :help="$dissertation?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
             </div>
         </x-admin.form.section>
     </div>

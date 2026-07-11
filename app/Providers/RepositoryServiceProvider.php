@@ -8,6 +8,7 @@ use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\ComputerRepositoryInterface;
 use App\Repositories\Contracts\ComputerSessionRepositoryInterface;
 use App\Repositories\Contracts\CopyRepositoryInterface;
+use App\Repositories\Contracts\DissertationRepositoryInterface;
 use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\Contracts\JournalCopyRepositoryInterface;
 use App\Repositories\Contracts\JournalIssueRepositoryInterface;
@@ -27,6 +28,7 @@ use App\Repositories\Eloquent\CatalogRepository;
 use App\Repositories\Eloquent\ComputerRepository;
 use App\Repositories\Eloquent\ComputerSessionRepository;
 use App\Repositories\Eloquent\CopyRepository;
+use App\Repositories\Eloquent\DissertationRepository;
 use App\Repositories\Eloquent\EventRepository;
 use App\Repositories\Eloquent\JournalCopyRepository;
 use App\Repositories\Eloquent\JournalIssueRepository;
@@ -57,6 +59,7 @@ class RepositoryServiceProvider extends ServiceProvider
         ComputerRepositoryInterface::class => ComputerRepository::class,
         ComputerSessionRepositoryInterface::class => ComputerSessionRepository::class,
         CopyRepositoryInterface::class => CopyRepository::class,
+        DissertationRepositoryInterface::class => DissertationRepository::class,
         EventRepositoryInterface::class => EventRepository::class,
         JournalRepositoryInterface::class => JournalRepository::class,
         JournalIssueRepositoryInterface::class => JournalIssueRepository::class,

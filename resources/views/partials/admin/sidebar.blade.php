@@ -36,17 +36,19 @@
                         </a>
                     </li>
 
-                    {{-- Resurs qo'shish (collapsible group: books, journals, articles) --}}
+                    {{-- Resurs qo'shish (collapsible group: books, journals, articles, dissertations) --}}
                     @php
                         // Parent is active when any of its child resource routes are open
                         $resourceGroupActive = request()->routeIs('admin.books.*')
                             || request()->routeIs('admin.journals.*')
-                            || request()->routeIs('admin.articles.*');
+                            || request()->routeIs('admin.articles.*')
+                            || request()->routeIs('admin.dissertations.*');
 
                         $resourceLinks = [
-                            'admin.books.index'    => ['pattern' => 'admin.books.*',    'label' => __('Kitoblar')],
-                            'admin.journals.index' => ['pattern' => 'admin.journals.*', 'label' => __('Jurnallar')],
-                            'admin.articles.index' => ['pattern' => 'admin.articles.*', 'label' => __('Maqolalar')],
+                            'admin.books.index'        => ['pattern' => 'admin.books.*',        'label' => __('Kitoblar')],
+                            'admin.journals.index'     => ['pattern' => 'admin.journals.*',     'label' => __('Jurnallar')],
+                            'admin.articles.index'     => ['pattern' => 'admin.articles.*',     'label' => __('Maqolalar')],
+                            'admin.dissertations.index' => ['pattern' => 'admin.dissertations.*', 'label' => __('Dissertatsiyalar')],
                         ];
                     @endphp
                     <li x-data="{ open: {{ $resourceGroupActive ? 'true' : 'false' }} }">

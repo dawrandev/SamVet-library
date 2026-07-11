@@ -85,11 +85,18 @@ export default function articleForm(config) {
                 this.issues = [];
             }
             this.loadingIssues = false;
+
             // Keep the previously selected issue if it still exists in the loaded list.
-            this.issueId =
-                preselectId && this.issues.some((i) => String(i.id) === String(preselectId))
-                    ? String(preselectId)
-                    : '';
+            const keep = preselectId && this.issues.some((i) => String(i.id) === String(preselectId))
+                ? String(preselectId)
+                : '';
+            this.issueId = keep;
+
+            // x-model may set the native value before x-for has painted the matching
+            // <option>, leaving the select empty on edit — force it once options exist.
+            this.$nextTick(() => {
+                if (this.$refs.issueSelect) this.$refs.issueSelect.value = keep;
+            });
         },
     };
 }
