@@ -1,7 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// Inline the worker as a Blob instead of a separate .mjs file. Apache (and some
+// other servers) serve .mjs with an empty MIME type, which strict module-MIME
+// checking rejects — inlining sidesteps server MIME config entirely.
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&inline';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+pdfjsLib.GlobalWorkerOptions.workerPort = new PdfWorker();
 
 /**
  * Protected online reader.

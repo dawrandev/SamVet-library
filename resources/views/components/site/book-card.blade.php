@@ -11,14 +11,18 @@
 <a href="{{ route('book.show', $book->slug) }}" {{ $attributes->merge(['class' => 'group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg']) }}>
     {{-- Cover --}}
     <div class="relative flex h-52 items-end justify-center overflow-hidden border-b-2 border-blue-600 bg-blue-50">
-        <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 10px, #dbeafe 10px 20px);"></div>
+        @if ($book->cover_image)
+            <img src="{{ asset('storage/'.$book->cover_image) }}" alt="{{ $book->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+        @else
+            <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 10px, #dbeafe 10px 20px);"></div>
+            <span class="relative mb-2 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
+        @endif
         @if ($book->type)
             <span class="absolute left-2.5 top-2.5 rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-blue-700">{{ $book->type->name }}</span>
         @endif
         @if ($badge)
             <span class="absolute right-2.5 top-2.5 rounded-md bg-amber-400 px-2 py-0.5 text-[11px] font-semibold text-amber-950">{{ $badge }}</span>
         @endif
-        <span class="relative mb-2 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
     </div>
 
     {{-- Body --}}

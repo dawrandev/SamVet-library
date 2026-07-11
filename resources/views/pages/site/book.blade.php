@@ -39,11 +39,15 @@
             <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
                 {{-- Cover --}}
                 <div class="relative flex h-96 items-end justify-center overflow-hidden rounded-2xl border-t-2 border-blue-600 bg-blue-50">
-                    <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 12px, #dbeafe 12px 24px);"></div>
+                    @if ($book->cover_image)
+                        <img src="{{ asset('storage/'.$book->cover_image) }}" alt="{{ $book->title }}" class="absolute inset-0 h-full w-full object-cover" />
+                    @else
+                        <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 12px, #dbeafe 12px 24px);"></div>
+                        <span class="relative mb-3 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
+                    @endif
                     @if ($book->type)
                         <span class="absolute left-3 top-3 rounded-md bg-white/90 px-2.5 py-1 text-xs font-semibold text-blue-700">{{ $book->type->name }}</span>
                     @endif
-                    <span class="relative mb-3 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
                 </div>
 
                 {{-- Actions --}}
