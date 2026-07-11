@@ -1,0 +1,180 @@
+name: CI
+
+# Run the full test pyramid on every push to main and every pull request,
+# so a broken build is caught before it ever reaches the server.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch cancels the previous, still-running run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Unit + Feature (Pest) ────────────────────────────────────────────────
+  # Fast, reliable layer: pure logic + HTTP/DB against a throwaway MySQL.
+  tests:
+    name: Pest (unit + feature)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: samvet_test
+        ports:
+          - 3306:3306
+        # Wait until MySQL actually answers before the steps start.
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psecret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, gd, zip, bcmath, intl
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+        env:
+          # config/database.php reads these; phpunit.xml pins the schema name.
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: samvet_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+
+      - name: Run Pest
+        run: vendor/bin/pest
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+
+  # ── E2E (Laravel Dusk) ───────────────────────────────────────────────────
+  # Real headless Chrome against a live server: PDF.js render, Alpine filters.
+  browser:
+    name: Dusk (e2e)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: samvet_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psecret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, gd, zip, bcmath, intl
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Build front-end assets (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          # In CI the only database is the throwaway test schema, so point the
+          # served app straight at it. migrate:fresh guarantees a clean slate.
+          php artisan migrate:fresh --force
+        env:
+          APP_URL: http://127.0.0.1:8000
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: samvet_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+
+      - name: Install matching ChromeDriver
+        run: php artisan dusk:chrome-driver --detect
+
+      - name: Start the application server
+        run: php artisan serve --no-reload --port=8000 &
+        env:
+          APP_URL: http://127.0.0.1:8000
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: samvet_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+
+      - name: Wait for the server
+        run: |
+          for i in $(seq 1 15); do
+            curl -sSf http://127.0.0.1:8000 >/dev/null && break
+            sleep 1
+          done
+
+      - name: Run Dusk
+        run: php artisan dusk
+        env:
+          APP_URL: http://127.0.0.1:8000
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: samvet_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+
+      # On failure, keep the screenshots/console logs Dusk captured so a red
+      # build can be diagnosed without reproducing it locally.
+      - name: Upload Dusk artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dusk-failures
+          path: |
+            tests/Browser/screenshots
+            tests/Browser/console
+          retention-days: 7
