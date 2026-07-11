@@ -178,3 +178,33 @@ jobs:
             tests/Browser/screenshots
             tests/Browser/console
           retention-days: 7
+
+  # ── Deploy (CD) ──────────────────────────────────────────────────────────
+  # Only runs when BOTH test jobs are green AND this is a push to main — never
+  # on a pull request, never when a test failed. Broken code cannot ship.
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    needs: [tests, browser]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+            # Pull the new code plus the committed Vite build (server has no Node).
+            git pull origin main
+            # Bring in any new/updated PHP deps (prod only), then run migrations.
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan migrate --force
+            # Refresh cached config/views so the new code takes effect.
+            php artisan config:clear
+            php artisan view:clear
+            php artisan config:cache
