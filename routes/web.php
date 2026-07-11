@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\AvtoreferatController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ComputerSessionController;
@@ -133,6 +134,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Dissertations CRUD (catalogued like an article — belongs to a journal issue)
     Route::resource('dissertations', DissertationController::class);
+
+    // Avtoreferats CRUD (same shape as a dissertation)
+    Route::resource('avtoreferats', AvtoreferatController::class);
 
     // Journal issues (modal on the journal show page + issue page)
     Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);

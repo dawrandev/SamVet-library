@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\ArticleRepositoryInterface;
+use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\ComputerRepositoryInterface;
@@ -23,6 +24,7 @@ use App\Repositories\Contracts\StatisticsRepositoryInterface;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\ArticleRepository;
+use App\Repositories\Eloquent\AvtoreferatRepository;
 use App\Repositories\Eloquent\BookRepository;
 use App\Repositories\Eloquent\CatalogRepository;
 use App\Repositories\Eloquent\ComputerRepository;
@@ -54,6 +56,7 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public array $bindings = [
         ArticleRepositoryInterface::class => ArticleRepository::class,
+        AvtoreferatRepositoryInterface::class => AvtoreferatRepository::class,
         BookRepositoryInterface::class => BookRepository::class,
         CatalogRepositoryInterface::class => CatalogRepository::class,
         ComputerRepositoryInterface::class => ComputerRepository::class,
