@@ -31,3 +31,5 @@ yarn-error.log
 /*.html
 
 /.claude/settings.local.json
+
+.env.dusk.local

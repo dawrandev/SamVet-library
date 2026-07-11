@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\DuskTestCase;
 use Tests\TestCase;
 
 /*
@@ -10,13 +12,20 @@ use Tests\TestCase;
 |
 | Feature and Unit tests both boot the Laravel app (so __(), config and
 | container work). Only Feature tests touch the database — RefreshDatabase
-| migrates the dedicated `samvet_test` schema fresh for each test.
+| migrates the dedicated `samvet_test` schema fresh for each test. Browser
+| (Dusk) tests run against a live server with their own env.
 |
 */
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 
 pest()->use(RefreshDatabase::class)->in('Feature');
+
+// Dusk runs against a live server, so transactions can't roll back — truncate
+// the (dedicated) test schema between browser tests instead.
+pest()->extend(DuskTestCase::class)
+    ->use(DatabaseTruncation::class)
+    ->in('Browser');
 
 /*
 |--------------------------------------------------------------------------

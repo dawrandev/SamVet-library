@@ -37,6 +37,21 @@ Helperlar (`tests/Pest.php`): `actingAsAdmin()`, `actingAsReader()`.
 
 ## Dusk (E2E)
 
+Dusk **jonli** serverga qarshi ishlaydi, shu sabab u ham `samvet_test` bazasidan
+foydalanadi (`.env.dusk.local` — gitignore'da). Ketma-ketlik:
+
 ```bash
-php artisan dusk         # Chrome kerak; ChromeDriver avtomatik
+# 1) test bazasini tayyorla
+DB_DATABASE=samvet_test php artisan migrate:fresh --force
+
+# 2) test env bilan serverni yoq (alohida terminalda)
+php artisan serve --env=dusk.local --port=8001
+
+# 3) brauzer testlarini ishga tushir
+php artisan dusk         # Chrome kerak; ChromeDriver vendor/laravel/dusk/bin da
 ```
+
+`.env.dusk.local` da: `DB_DATABASE=samvet_test`, `APP_URL=http://127.0.0.1:8001`.
+Chrome versiyasi yangilансa, mos ChromeDriver'ni `vendor/laravel/dusk/bin/` ga
+qo'ying (PHP CLI'da CA sertifikat muammosi bo'lsa `php artisan dusk:chrome-driver`
+ishlamasligi mumkin — qo'lda yuklab qo'yiladi).
