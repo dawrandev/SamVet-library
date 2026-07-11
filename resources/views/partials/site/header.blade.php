@@ -1,14 +1,9 @@
-@php
-    // Fixed anchors that are always present, then the admin-built menu tree
-    // ($navMenu, from a view composer). A top-level item with active children
-    // renders as a dropdown; a leaf renders as a direct link (publicUrl()).
-    $current = url()->current();
-
-    // A dropdown parent is highlighted when one of its children is the open page.
-    $isParentActive = fn ($item) => collect($item->children)
-        ->contains(fn ($child) => $child->publicUrl() === $current);
-@endphp
-
+{{--
+    Site header. Fixed anchors (home, catalog) are always present, then the
+    admin-built menu tree ($navMenu, from a view composer) renders recursively:
+    <x-site.nav-item> for desktop (dropdown + nested flyouts) and
+    <x-site.nav-item-mobile> for the mobile accordion. Both walk arbitrary depth.
+--}}
 <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
         {{-- Brand --}}
@@ -37,49 +32,9 @@
                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('catalog'),
                ])>{{ __('Elektron katalog') }}</a>
 
-            {{-- Admin-built menu tree --}}
+            {{-- Admin-built menu tree (recursive: dropdowns + nested flyouts). --}}
             @foreach ($navMenu as $item)
-                @if ($item->children->isNotEmpty())
-                    {{-- Dropdown: opens on hover (desktop) or click (keyboard/touch). --}}
-                    <div x-data="{ open: false }" class="relative"
-                         @mouseenter="open = true" @mouseleave="open = false">
-                        <button type="button" @click="open = ! open"
-                                @class([
-                                    'flex items-center gap-1 rounded-lg px-3.5 py-2 text-sm font-medium transition',
-                                    'text-blue-700' => $isParentActive($item),
-                                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! $isParentActive($item),
-                                ])>
-                            {{ $item->title }}
-                            <svg class="h-3.5 w-3.5 transition" :class="open && 'rotate-180'"
-                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-                            </svg>
-                        </button>
-
-                        <div x-show="open" x-cloak @click.outside="open = false"
-                             x-transition.origin.top.left
-                             class="absolute left-0 z-50 mt-1 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-                            @foreach ($item->children as $child)
-                                <a href="{{ $child->publicUrl() }}"
-                                   @if ($child->target_blank) target="_blank" rel="noopener noreferrer" @endif
-                                   @class([
-                                       'block rounded-lg px-3 py-2 text-sm transition',
-                                       'bg-blue-50 font-medium text-blue-700' => $child->publicUrl() === $current,
-                                       'text-gray-700 hover:bg-gray-50 hover:text-gray-900' => $child->publicUrl() !== $current,
-                                   ])>{{ $child->title }}</a>
-                            @endforeach
-                        </div>
-                    </div>
-                @else
-                    {{-- Leaf: a page, a module route, or an external link. --}}
-                    <a href="{{ $item->publicUrl() }}"
-                       @if ($item->target_blank) target="_blank" rel="noopener noreferrer" @endif
-                       @class([
-                           'rounded-lg px-3.5 py-2 text-sm font-medium transition',
-                           'text-blue-700' => $item->publicUrl() === $current,
-                           'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => $item->publicUrl() !== $current,
-                       ])>{{ $item->title }}</a>
-                @endif
+                <x-site.nav-item :item="$item" />
             @endforeach
         </nav>
 
@@ -134,39 +89,9 @@
                    'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('catalog'),
                ])>{{ __('Elektron katalog') }}</a>
 
-            {{-- Admin-built menu tree as accordions --}}
+            {{-- Admin-built menu tree as nested accordions. --}}
             @foreach ($navMenu as $item)
-                @if ($item->children->isNotEmpty())
-                    <div x-data="{ sub: {{ $isParentActive($item) ? 'true' : 'false' }} }">
-                        <button type="button" @click="sub = ! sub"
-                                class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            <span>{{ $item->title }}</span>
-                            <svg class="h-4 w-4 transition" :class="sub && 'rotate-180'"
-                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-                            </svg>
-                        </button>
-                        <div x-show="sub" x-cloak class="ml-3 mt-0.5 flex flex-col gap-0.5 border-l border-gray-100 pl-3">
-                            @foreach ($item->children as $child)
-                                <a href="{{ $child->publicUrl() }}"
-                                   @if ($child->target_blank) target="_blank" rel="noopener noreferrer" @endif
-                                   @class([
-                                       'rounded-lg px-3 py-2 text-sm',
-                                       'bg-blue-50 font-medium text-blue-700' => $child->publicUrl() === $current,
-                                       'text-gray-600 hover:bg-gray-50' => $child->publicUrl() !== $current,
-                                   ])>{{ $child->title }}</a>
-                            @endforeach
-                        </div>
-                    </div>
-                @else
-                    <a href="{{ $item->publicUrl() }}"
-                       @if ($item->target_blank) target="_blank" rel="noopener noreferrer" @endif
-                       @class([
-                           'rounded-lg px-3 py-2.5 text-sm font-medium',
-                           'bg-blue-50 text-blue-700' => $item->publicUrl() === $current,
-                           'text-gray-700 hover:bg-gray-50' => $item->publicUrl() !== $current,
-                       ])>{{ $item->title }}</a>
-                @endif
+                <x-site.nav-item-mobile :item="$item" />
             @endforeach
 
             @auth('reader')

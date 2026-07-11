@@ -18,6 +18,19 @@ it('renders the admin-built menu tree with its children in the navbar', function
         ->assertSee('Tuzilma');
 });
 
+it('renders deeply nested menu items (grandchildren) too', function () {
+    $about = MenuItem::factory()->dropdown()->create(['title' => ['uz' => 'ARM haqida']]);
+    $child = MenuItem::factory()->childOf($about)->create(['title' => ['uz' => 'ARM nizomi']]);
+    // A child inside a child — the admin allows arbitrary depth, so must the site.
+    MenuItem::factory()->childOf($child)->create(['title' => ['uz' => 'Nizom ilovasi']]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('ARM haqida')
+        ->assertSee('ARM nizomi')
+        ->assertSee('Nizom ilovasi'); // grandchild must be present in the markup
+});
+
 it('hides inactive menu items and inactive children', function () {
     $active = MenuItem::factory()->dropdown()->create(['title' => ['uz' => 'Korinadigan menyu']]);
     MenuItem::factory()->childOf($active)->create(['title' => ['uz' => 'Korinadigan bola']]);

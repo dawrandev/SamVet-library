@@ -23,14 +23,15 @@ class MenuItemRepository implements MenuItemRepositoryInterface
 
     /**
      * The public navbar tree: every active top-level item with its active
-     * children (one level, ordered). Drives the site header dropdowns.
+     * children loaded recursively (arbitrary depth). Drives the site header
+     * dropdowns and their nested submenus.
      */
     public function publicTree(): Collection
     {
         return MenuItem::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
-            ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
+            ->with('activeChildrenRecursive')
             ->orderBy('sort_order')
             ->get();
     }

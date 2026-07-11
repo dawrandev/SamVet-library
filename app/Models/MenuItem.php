@@ -52,6 +52,23 @@ class MenuItem extends Model
         return $this->hasMany(MenuItem::class, 'parent_id')->orderBy('sort_order');
     }
 
+    /** Active children only, ordered — for the public navbar. */
+    public function activeChildren(): HasMany
+    {
+        return $this->hasMany(MenuItem::class, 'parent_id')
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+    }
+
+    /**
+     * Active children eager-loaded recursively (arbitrary depth), so the public
+     * navbar can render nested submenus. Loading stops when a level has none.
+     */
+    public function activeChildrenRecursive(): HasMany
+    {
+        return $this->activeChildren()->with('activeChildrenRecursive');
+    }
+
     public function page(): HasOne
     {
         return $this->hasOne(Page::class);
