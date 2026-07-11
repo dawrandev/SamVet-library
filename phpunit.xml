@@ -19,6 +19,11 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Pin the test locale to the app's real default (uz) so translatable
+             output is deterministic regardless of the CI .env. force=true beats
+             any .env/shell value. -->
+        <env name="APP_LOCALE" value="uz" force="true"/>
+        <env name="APP_FALLBACK_LOCALE" value="uz" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
