@@ -9,7 +9,7 @@
 
     // Bibliographic rows — empty values are dropped so the table only shows real data.
     $rows = array_filter([
-        ['UO‘K', $book->udc],
+        [__('UO‘K'), $book->udc],
         [__('Avtorlik belgisi'), $book->author_mark],
         [__('Sarlavhasi'), $book->title],
         [__('Muallifi'), $authors],
