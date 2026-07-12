@@ -122,7 +122,7 @@ document.addEventListener('submit', (event) => {
         return;
     }
 
-    const editors = (window.tinymce?.editors ?? []).filter((ed) => form.contains(ed.getElement()));
+    const editors = (window.tinymce?.get() ?? []).filter((ed) => form.contains(ed.getElement()));
     if (editors.length === 0) {
         return;
     }
