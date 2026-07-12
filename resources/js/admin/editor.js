@@ -37,6 +37,41 @@ const CONTENT_STYLE = `${contentUiCss}\n${contentDefaultCss}\n`
     + 'img{max-width:100%;height:auto}table{border-collapse:collapse}table td,table th{border:1px solid #d1d5db;padding:6px 10px}';
 
 /**
+ * Uploads one pasted/dropped/inserted image to the server and resolves with
+ * its public URL. Required so `paste_data_images` uploads real files instead
+ * of embedding base64 blobs straight into the saved HTML.
+ */
+function uploadEditorImage(blobInfo) {
+    const formData = new FormData();
+    formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+    return fetch('/admin/editor/images', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData,
+    })
+        .then((response) => {
+            if (! response.ok) {
+                throw new Error(`Serverda xatolik (${response.status}).`);
+            }
+            return response.json();
+        })
+        .then((json) => {
+            if (! json.location) {
+                throw new Error('Server javobida rasm manzili topilmadi.');
+            }
+            return json.location;
+        })
+        .catch((error) => {
+            // TinyMCE shows this as a plain-text notification — keep it a string.
+            throw error instanceof Error ? error.message : 'Rasmni yuklashda xatolik yuz berdi.';
+        });
+}
+
+/**
  * Binds TinyMCE to a single textarea (or DOM element).
  * Content is written back to the textarea on every change (for form submit).
  */
@@ -61,7 +96,8 @@ export function initTinyEditor(el) {
         statusbar: true,
         height: 520,          // fixed height (no autoresize) — fullscreen works correctly
         language: 'en',
-        paste_data_images: true,       // converts pasted images to base64
+        paste_data_images: true,       // allow pasting images — uploaded via images_upload_handler below, not embedded as base64
+        images_upload_handler: (blobInfo) => uploadEditorImage(blobInfo),
         image_caption: true,
         image_advtab: true,
         table_default_attributes: { border: '1' },
@@ -73,3 +109,30 @@ export function initTinyEditor(el) {
 }
 
 window.initTinyEditor = initTinyEditor;
+
+/**
+ * Flush any still-uploading editor images before the form actually submits —
+ * otherwise a paste immediately followed by "Saqlash" could save a blob:
+ * placeholder instead of the real uploaded URL. Runs once per form (delegated
+ * so it also covers forms rendered after this module loads).
+ */
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (! (form instanceof HTMLFormElement) || form.dataset.tinyFlushed) {
+        return;
+    }
+
+    const editors = (window.tinymce?.editors ?? []).filter((ed) => form.contains(ed.getElement()));
+    if (editors.length === 0) {
+        return;
+    }
+
+    event.preventDefault();
+
+    Promise.all(editors.map((ed) => ed.uploadImages()))
+        .catch(() => {}) // a failed upload still leaves valid content (blob removed); let the server-side validation catch anything missing
+        .then(() => {
+            form.dataset.tinyFlushed = '1';
+            form.requestSubmit();
+        });
+});

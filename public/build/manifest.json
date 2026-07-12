@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/js/admin/editor.js": {
-    "file": "assets/editor-BufD0PUH.js",
+    "file": "assets/editor-YidP6135.js",
     "name": "editor",
     "src": "resources/js/admin/editor.js",
     "isDynamicEntry": true,
@@ -28,7 +28,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CejpaSdu.js",
+    "file": "assets/app-CUTQmkVR.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

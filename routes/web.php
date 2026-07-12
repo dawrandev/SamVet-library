@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CopyLookupController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DissertationController;
+use App\Http\Controllers\Admin\EditorImageController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
 use App\Http\Controllers\Admin\JournalIssueController;
@@ -195,6 +196,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Instant lookup creation (AJAX, in the book form)
     Route::post('lookups', [LookupController::class, 'store'])->name('lookups.store');
+
+    // Inline image upload for the TinyMCE rich-text editor (news/page body)
+    Route::post('editor/images', [EditorImageController::class, 'store'])->name('editor-images.store');
 
     // Lookups management (CRUD)
     Route::prefix('lookups')->name('lookups.')->group(function () {
