@@ -36,7 +36,11 @@ it('streams the pdf inline, no-store, and never as a download', function () {
     expect($res->headers->get('content-type'))->toContain('application/pdf')
         ->and($res->headers->get('content-disposition'))->toContain('inline')
         ->and($res->headers->get('content-disposition'))->not->toContain('attachment')
-        ->and($res->headers->get('cache-control'))->toContain('no-store');
+        ->and($res->headers->get('cache-control'))->toContain('no-store')
+        // Exercises the manual chunked-read callback, not just the headers —
+        // a 600MB file crashed the old fpassthru()-based stream() outright,
+        // so this path staying correct matters more than most.
+        ->and($res->streamedContent())->toBe('%PDF-1.7 fake');
 });
 
 it('404s when a reader opens a book that has no stored pdf', function () {

@@ -55,6 +55,13 @@ class OnlineReaderController extends Controller
     /**
      * Stream a private PDF for in-browser rendering. `inline` plus a private,
      * no-store cache keeps it out of the browser's download flow and disk cache.
+     *
+     * Reads and flushes in manual chunks instead of Storage::response()
+     * (fpassthru): verified that on this stack, fpassthru() doesn't reliably
+     * flush PHP's own output buffer, so the whole file silently accumulates
+     * in memory — a 600MB PDF crashed a 512MB memory_limit worker outright.
+     * The explicit flush() after every chunk keeps memory flat regardless of
+     * file size (confirmed on the same 600MB file, no crash).
      */
     private function stream(string $path): StreamedResponse
     {
@@ -62,10 +69,19 @@ class OnlineReaderController extends Controller
 
         abort_unless($disk->exists($path), 404);
 
-        return $disk->response($path, 'document.pdf', [
+        return response()->stream(function () use ($disk, $path) {
+            $stream = $disk->readStream($path);
+            while (! feof($stream)) {
+                echo fread($stream, 1024 * 1024); // 1 MB chunks
+                flush();
+            }
+            fclose($stream);
+        }, 200, [
             'Content-Type' => 'application/pdf',
+            'Content-Length' => $disk->size($path),
+            'Content-Disposition' => 'inline; filename="document.pdf"',
             'Cache-Control' => 'private, no-store, max-age=0',
             'X-Content-Type-Options' => 'nosniff',
-        ], 'inline');
+        ]);
     }
 }
