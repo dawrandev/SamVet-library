@@ -43,6 +43,24 @@ it('rejects an invalid issue date', function () {
         ->assertSessionHasErrors('issue_date');
 });
 
+it('shows the parent journal/newspaper\'s own info on the issue page (self-contained view)', function () {
+    $journal = Journal::factory()->create([
+        'name' => 'Nukus tongi', 'kind' => 'newspaper', 'issn' => '1111-2222',
+    ]);
+    $issue = JournalIssue::factory()->create([
+        'journal_id' => $journal->id, 'issue_number' => '9-son', 'issue_date' => '2025-02-01',
+    ]);
+
+    $this->get(route('admin.journals.issues.show', [$journal, $issue]))
+        ->assertOk()
+        ->assertSee('Gazeta haqida ma’lumot') // newspaper kind → "Gazeta", not "Jurnal"
+        ->assertSee('Nukus tongi')
+        ->assertSee('1111-2222')
+        ->assertSee('Son haqida ma’lumot')
+        ->assertSee('9-son')
+        ->assertSee('01.02.2025');
+});
+
 it('updates a journal issue’s date', function () {
     $issue = JournalIssue::factory()->create(['issue_date' => '2024-01-01']);
 

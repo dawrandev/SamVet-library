@@ -23,6 +23,7 @@ class JournalIssueController extends Controller
     {
         $this->ensureIssueBelongsToJournal($journal, $issue);
 
+        $journal->load(['type', 'language', 'publicationPlace']);
         $issue->load(['journal', 'copies.location']);
 
         return view('pages.admin.journals.issues.show', [
