@@ -36,13 +36,12 @@ class MenuSeeder extends Seeder
                 ],
             ],
             [
+                // Links straight to the real News module — it already has its
+                // own category tabs (E'lonlar/Tadbirlar/Tanlovlar), so this is
+                // NOT a dropdown with sub-pages (that duplicated/broke it before).
                 'title' => ['uz' => 'Yangilik', 'ru' => 'Новости', 'kk' => 'Jańalıqlar'],
-                'children' => [
-                    ['title' => ['uz' => 'Tanlovlar', 'ru' => 'Конкурсы', 'kk' => 'Tańlawlar']],
-                    ['title' => ['uz' => 'Tadbirlar', 'ru' => 'Мероприятия', 'kk' => 'Ilajlar']],
-                    ['title' => ['uz' => 'E‘lonlar', 'ru' => 'Объявления', 'kk' => 'Járiyalawlar']],
-                    ['title' => ['uz' => 'Ko‘rgazmalar', 'ru' => 'Выставки', 'kk' => 'Kórgizbeler']],
-                ],
+                'type' => 'module',
+                'url' => 'news.index',
             ],
             [
                 'title' => ['uz' => 'Elektron kutubxona', 'ru' => 'Электронная библиотека', 'kk' => 'Elektron kitapxana'],
@@ -66,9 +65,13 @@ class MenuSeeder extends Seeder
                 $item = MenuItem::create([
                     'title' => $node['title'],
                     'parent_id' => $parentId,
-                    'url' => null,
+                    'type' => $node['type'] ?? 'dropdown',
+                    'url' => $node['url'] ?? null,
                     'is_active' => true,
                 ]);
+            } elseif (isset($node['type']) && $item->type->value === 'dropdown' && $item->url === null) {
+                // Only touch still-default items — never overwrite an admin's manual edit.
+                $item->update(['type' => $node['type'], 'url' => $node['url'] ?? null]);
             }
 
             if (! empty($node['children'])) {

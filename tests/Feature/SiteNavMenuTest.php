@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\MenuItemType;
 use App\Models\MenuItem;
+use App\Models\News;
 
 it('renders the admin-built menu tree with its children in the navbar', function () {
     $about = MenuItem::factory()->dropdown()->create([
@@ -52,4 +54,31 @@ it('always shows the fixed catalog anchor even with no menu configured', functio
         ->assertOk()
         ->assertSee('Elektron katalog')
         ->assertSee('Bosh sahifa');
+});
+
+it('renders a childless module-type menu item as a direct link, not an empty dropdown', function () {
+    MenuItem::factory()->create([
+        'title' => ['uz' => 'Yangilik'],
+        'type' => MenuItemType::Module,
+        'url' => 'news.index',
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('Yangilik')
+        ->assertSee(route('news.index'), false);
+});
+
+it('follows the Yangilik navbar link to the real news catalog, not an empty content-page placeholder', function () {
+    MenuItem::factory()->create([
+        'title' => ['uz' => 'Yangilik'],
+        'type' => MenuItemType::Module,
+        'url' => 'news.index',
+    ]);
+    News::factory()->create(['title' => ['uz' => 'Filialda yangi laboratoriya ochildi']]);
+
+    $this->get(route('news.index'))
+        ->assertOk()
+        ->assertSee('Filialda yangi laboratoriya ochildi')
+        ->assertDontSee('Sahifa matni tez orada qo‘shiladi');
 });
