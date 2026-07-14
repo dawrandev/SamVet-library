@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\CopyCondition;
+use App\Enums\DissertationDegree;
 use App\Observers\AvtoreferatObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,27 +18,32 @@ class Avtoreferat extends Model
     // `slug` (set by the observer) and `views_count` (DB default) are intentionally
     // NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
-        'journal_issue_id', 'title', 'author',
-        'resource_field_id', 'annotation',
-        'electronic_file',
+        'title', 'author', 'specialty', 'degree', 'council_number',
+        'defense_institution', 'performed_institution', 'advisor',
+        'udc', 'registration_number', 'condition',
+        'publication_place_id', 'publication_year', 'inventory_number',
+        'resource_field_id', 'annotation', 'electronic_file',
     ];
 
     protected function casts(): array
     {
         return [
+            'degree' => DissertationDegree::class,
+            'condition' => CopyCondition::class,
+            'publication_year' => 'integer',
             'views_count' => 'integer',
         ];
     }
 
     // --- Relationships ---
 
-    public function journalIssue(): BelongsTo
-    {
-        return $this->belongsTo(JournalIssue::class);
-    }
-
     public function resourceField(): BelongsTo
     {
         return $this->belongsTo(ResourceField::class);
+    }
+
+    public function publicationPlace(): BelongsTo
+    {
+        return $this->belongsTo(PublicationPlace::class);
     }
 }

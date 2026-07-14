@@ -4,22 +4,30 @@
 
 @section('content')
     @php
-        $journal = $avtoreferat->journalIssue?->journal;
-
         // Avtoreferat's own fields
         $details = array_filter([
             __('Muallifi') => $avtoreferat->author,
+            __('Ixtisoslik shifri va nomi') => $avtoreferat->specialty,
+            __('Turi') => $avtoreferat->degree?->label(),
+            __('Ilmiy rahbar') => $avtoreferat->advisor,
             __('Resurs sohasi') => $avtoreferat->resourceField?->name,
         ], fn ($v) => filled($v));
 
-        // Inherited meta (from the parent issue → journal — displayed, not stored)
-        $inherited = array_filter([
-            __('Jurnal nomi') => $journal?->name,
-            __('Jurnal turi') => $journal?->type?->name,
-            __('Nashriyoti') => $journal?->publisher,
-            __('Nashriyot joyi') => $journal?->publicationPlace?->name,
-            __('Yili') => $avtoreferat->journalIssue?->year,
-            __('Soni') => $avtoreferat->journalIssue?->issue_number,
+        // Dissertation defense details
+        $defense = array_filter([
+            __('Ilmiy kengash raqami') => $avtoreferat->council_number,
+            __('Dissertatsiya himoya muassasi') => $avtoreferat->defense_institution,
+            __('Dissertatsiya bajarilgan muassasi') => $avtoreferat->performed_institution,
+        ], fn ($v) => filled($v));
+
+        // Bibliographic details
+        $bibliographic = array_filter([
+            __('UO‘K') => $avtoreferat->udc,
+            __('Ro‘yxat raqami') => $avtoreferat->registration_number,
+            __('Holati') => $avtoreferat->condition?->label(),
+            __('Nashr joyi') => $avtoreferat->publicationPlace?->name,
+            __('Nashr yili') => $avtoreferat->publication_year,
+            __('Inventari') => $avtoreferat->inventory_number,
         ], fn ($v) => filled($v));
     @endphp
 
@@ -76,21 +84,29 @@
             </div>
         </div>
 
-        {{-- Right: inherited journal meta + location --}}
+        {{-- Right: defense details, bibliographic meta + location --}}
         <div class="col-span-12 space-y-6 xl:col-span-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jurnal ma’lumotlari') }}</h3>
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Dissertatsiya himoyasi') }}</h3>
                 <dl class="space-y-3">
-                    @forelse ($inherited as $label => $value)
+                    @forelse ($defense as $label => $value)
                         <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
                             <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">
-                                @if ($label === __('Jurnal nomi') && $journal)
-                                    <a href="{{ route('admin.journals.show', $journal) }}" class="text-brand-600 hover:underline dark:text-brand-400">{{ $value }}</a>
-                                @else
-                                    {{ $value }}
-                                @endif
-                            </dd>
+                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                        </div>
+                    @empty
+                        <p class="text-theme-sm text-gray-400">{{ __('Ma’lumot yo‘q') }}</p>
+                    @endforelse
+                </dl>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Bibliografik ma’lumotlar') }}</h3>
+                <dl class="space-y-3">
+                    @forelse ($bibliographic as $label => $value)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
                         </div>
                     @empty
                         <p class="text-theme-sm text-gray-400">{{ __('Ma’lumot yo‘q') }}</p>

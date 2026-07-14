@@ -4,8 +4,7 @@ namespace App\Services;
 
 use App\Data\AvtoreferatData;
 use App\Models\Avtoreferat;
-use App\Models\Journal;
-use App\Models\JournalIssue;
+use App\Models\PublicationPlace;
 use App\Models\ResourceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -40,7 +39,6 @@ class AvtoreferatService
     public function filterOptions(): array
     {
         return [
-            'journals' => Journal::orderBy('name')->get(),
             'resourceFields' => ResourceField::orderBy('id')->get(),
         ];
     }
@@ -54,30 +52,7 @@ class AvtoreferatService
     {
         return [
             'resourceFields' => ResourceField::orderBy('id')->get(),
-        ];
-    }
-
-    /**
-     * Resolve the pre-selected journal (id + name) and issue id for the form —
-     * from an explicit journal id and/or an issue id (edit mode or redisplay after
-     * a validation error). Keeps the DB query out of the Blade view.
-     *
-     * @return array{selectedJournalId: int|null, selectedJournalName: string|null, selectedIssueId: int|null}
-     */
-    public function formSelection(?int $journalId, ?int $issueId): array
-    {
-        $journal = null;
-
-        if ($journalId !== null) {
-            $journal = Journal::find($journalId);
-        } elseif ($issueId !== null) {
-            $journal = JournalIssue::with('journal')->find($issueId)?->journal;
-        }
-
-        return [
-            'selectedJournalId' => $journal?->id,
-            'selectedJournalName' => $journal?->name,
-            'selectedIssueId' => $issueId,
+            'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
         ];
     }
 

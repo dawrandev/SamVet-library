@@ -19,7 +19,7 @@ class AvtoreferatController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'journal_id', 'resource_field_id']);
+        $filters = $request->only(['search', 'resource_field_id']);
 
         return view('pages.admin.avtoreferats.index', [
             'avtoreferats' => $this->avtoreferatService->paginate($filters),
@@ -28,17 +28,10 @@ class AvtoreferatController extends Controller
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(): View
     {
-        // After a validation error, re-select the journal/issue the user had chosen.
-        $selection = $this->avtoreferatService->formSelection(
-            $this->intOldInput($request, 'journal_id'),
-            $this->intOldInput($request, 'journal_issue_id'),
-        );
-
         return view('pages.admin.avtoreferats.create', [
             ...$this->avtoreferatService->formOptions(),
-            ...$selection,
         ]);
     }
 
@@ -53,29 +46,16 @@ class AvtoreferatController extends Controller
 
     public function show(Avtoreferat $avtoreferat): View
     {
-        $avtoreferat->load([
-            'journalIssue.journal.type',
-            'journalIssue.journal.publicationPlace',
-            'resourceField',
-        ]);
+        $avtoreferat->load(['resourceField', 'publicationPlace']);
 
         return view('pages.admin.avtoreferats.show', ['avtoreferat' => $avtoreferat]);
     }
 
-    public function edit(Request $request, Avtoreferat $avtoreferat): View
+    public function edit(Avtoreferat $avtoreferat): View
     {
-        $avtoreferat->load('journalIssue.journal.type');
-
-        // Old input (after a validation error) wins over the stored value.
-        $selection = $this->avtoreferatService->formSelection(
-            $this->intOldInput($request, 'journal_id') ?? $avtoreferat->journalIssue?->journal_id,
-            $this->intOldInput($request, 'journal_issue_id') ?? $avtoreferat->journal_issue_id,
-        );
-
         return view('pages.admin.avtoreferats.edit', [
             'avtoreferat' => $avtoreferat,
             ...$this->avtoreferatService->formOptions(),
-            ...$selection,
         ]);
     }
 
@@ -95,15 +75,5 @@ class AvtoreferatController extends Controller
         return redirect()
             ->route('admin.avtoreferats.index')
             ->with('success', __('Avtoreferat o‘chirildi.'));
-    }
-
-    /**
-     * Read a flashed old-input value as a positive int, or null when absent.
-     */
-    private function intOldInput(Request $request, string $key): ?int
-    {
-        $value = $request->old($key);
-
-        return ($value === null || $value === '') ? null : (int) $value;
     }
 }

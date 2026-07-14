@@ -2,6 +2,8 @@
 
 namespace App\Data;
 
+use App\Enums\CopyCondition;
+use App\Enums\DissertationDegree;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
@@ -12,9 +14,20 @@ use Illuminate\Http\UploadedFile;
 class AvtoreferatData
 {
     public function __construct(
-        public readonly int $journal_issue_id,
         public readonly string $title,
         public readonly string $author,
+        public readonly ?string $specialty,
+        public readonly ?DissertationDegree $degree,
+        public readonly ?string $council_number,
+        public readonly ?string $defense_institution,
+        public readonly ?string $performed_institution,
+        public readonly string $advisor,
+        public readonly ?string $udc,
+        public readonly ?string $registration_number,
+        public readonly ?CopyCondition $condition,
+        public readonly ?int $publication_place_id,
+        public readonly ?int $publication_year,
+        public readonly ?string $inventory_number,
         public readonly ?int $resource_field_id,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
@@ -23,9 +36,20 @@ class AvtoreferatData
     public static function fromRequest(Request $request): self
     {
         return new self(
-            journal_issue_id: $request->integer('journal_issue_id'),
             title: $request->string('title')->toString(),
             author: $request->string('author')->toString(),
+            specialty: $request->input('specialty') ?: null,
+            degree: $request->filled('degree') ? DissertationDegree::from($request->string('degree')->toString()) : null,
+            council_number: $request->input('council_number') ?: null,
+            defense_institution: $request->input('defense_institution') ?: null,
+            performed_institution: $request->input('performed_institution') ?: null,
+            advisor: $request->string('advisor')->toString(),
+            udc: $request->input('udc') ?: null,
+            registration_number: $request->input('registration_number') ?: null,
+            condition: $request->filled('condition') ? CopyCondition::from($request->string('condition')->toString()) : null,
+            publication_place_id: $request->integer('publication_place_id') ?: null,
+            publication_year: $request->integer('publication_year') ?: null,
+            inventory_number: $request->input('inventory_number') ?: null,
             resource_field_id: $request->integer('resource_field_id') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
@@ -40,9 +64,20 @@ class AvtoreferatData
     public function toAttributes(): array
     {
         return [
-            'journal_issue_id' => $this->journal_issue_id,
             'title' => $this->title,
             'author' => $this->author,
+            'specialty' => $this->specialty,
+            'degree' => $this->degree,
+            'council_number' => $this->council_number,
+            'defense_institution' => $this->defense_institution,
+            'performed_institution' => $this->performed_institution,
+            'advisor' => $this->advisor,
+            'udc' => $this->udc,
+            'registration_number' => $this->registration_number,
+            'condition' => $this->condition,
+            'publication_place_id' => $this->publication_place_id,
+            'publication_year' => $this->publication_year,
+            'inventory_number' => $this->inventory_number,
             'resource_field_id' => $this->resource_field_id,
             'annotation' => $this->annotation,
         ];
