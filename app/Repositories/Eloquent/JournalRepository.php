@@ -23,6 +23,9 @@ class JournalRepository implements JournalRepositoryInterface
             ->when($filters['journal_type_id'] ?? null, function ($query, int $typeId) {
                 $query->where('journal_type_id', $typeId);
             })
+            ->when($filters['kind'] ?? null, function ($query, string $kind) {
+                $query->where('kind', $kind);
+            })
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

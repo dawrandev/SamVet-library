@@ -6,7 +6,11 @@
     $currentPeriodicity = old('periodicity', $editing ? $journal->periodicity?->value : null);
 
     $kindOptions = \App\Enums\PublicationKind::cases();
-    $currentKind = old('kind', $editing ? $journal->kind?->value : \App\Enums\PublicationKind::Journal->value);
+    $currentKind = old('kind', $editing ? $journal->kind?->value : ($kind ?? \App\Enums\PublicationKind::Journal->value));
+    $isNewspaperForm = $currentKind === \App\Enums\PublicationKind::Newspaper->value;
+
+    // Preserve the journal/newspaper list scope when navigating back/cancel.
+    $backParams = array_filter(['kind' => $editing ? $journal->kind?->value : $currentKind]);
 @endphp
 
 <form
@@ -19,13 +23,17 @@
     {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.journals.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
+            <a href="{{ route('admin.journals.index', $backParams) }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                {{ $editing ? __('Jurnalni tahrirlash') : __('Yangi jurnal') }}
+                @if ($editing)
+                    {{ $isNewspaperForm ? __('Gazetani tahrirlash') : __('Jurnalni tahrirlash') }}
+                @else
+                    {{ $isNewspaperForm ? __('Yangi gazeta') : __('Yangi jurnal') }}
+                @endif
             </h2>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.journals.index') }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
+            <a href="{{ route('admin.journals.index', $backParams) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
             <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>
         </div>
     </div>

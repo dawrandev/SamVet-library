@@ -1,18 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', __('Jurnallar'))
+@php
+    $isNewspaper = ($filters['kind'] ?? null) === \App\Enums\PublicationKind::Newspaper->value;
+    $pageTitle = $isNewspaper ? __('Gazetalar') : __('Jurnallar');
+    $filtersWithoutKind = collect($filters)->except('kind')->all();
+@endphp
+
+@section('title', $pageTitle)
 
 @section('content')
-    {{-- Title + New journal --}}
+    {{-- Title + New journal/newspaper --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Jurnallar') }}</h2>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $pageTitle }}</h2>
             <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $journals->total() }}</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.journals.create') }}"
+            <a href="{{ route('admin.journals.create', array_filter(['kind' => $filters['kind'] ?? null])) }}"
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-                <span class="text-lg leading-none">+</span> {{ __('Yangi jurnal') }}
+                <span class="text-lg leading-none">+</span> {{ $isNewspaper ? __('Yangi gazeta') : __('Yangi jurnal') }}
             </a>
         </div>
     </div>
@@ -25,6 +31,7 @@
     {{-- Search / filter --}}
     <form method="GET" action="{{ route('admin.journals.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
+        <input type="hidden" name="kind" value="{{ $filters['kind'] ?? '' }}" />
         <div class="flex-1">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qidirish') }}</label>
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
@@ -43,8 +50,8 @@
         </div>
         <div class="flex gap-2">
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
-            @if (array_filter($filters))
-                <a href="{{ route('admin.journals.index') }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
+            @if (array_filter($filtersWithoutKind))
+                <a href="{{ route('admin.journals.index', array_filter(['kind' => $filters['kind'] ?? null])) }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
             @endif
         </div>
     </form>
@@ -92,7 +99,7 @@
                                     <a href="{{ route('admin.journals.edit', $journal) }}"
                                        class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</a>
                                     <button type="button"
-                                            @click="$store.confirm.ask('{{ route('admin.journals.destroy', $journal) }}', '{{ __('Jurnalni o‘chirishni tasdiqlaysizmi?') }}')"
+                                            @click="$store.confirm.ask('{{ route('admin.journals.destroy', $journal) }}', '{{ $journal->kind === \App\Enums\PublicationKind::Newspaper ? __('Gazetani o‘chirishni tasdiqlaysizmi?') : __('Jurnalni o‘chirishni tasdiqlaysizmi?') }}')"
                                             class="text-theme-xs rounded-lg border border-red-200 px-3 py-1.5 font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
                                 </div>
                             </td>
@@ -101,7 +108,7 @@
                         <tr>
                             <td colspan="6" class="px-5 py-12 text-center">
                                 <x-admin.icon name="newspaper" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
-                                <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Jurnallar topilmadi.') }}</p>
+                                <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ $isNewspaper ? __('Gazetalar topilmadi.') : __('Jurnallar topilmadi.') }}</p>
                             </td>
                         </tr>
                     @endforelse

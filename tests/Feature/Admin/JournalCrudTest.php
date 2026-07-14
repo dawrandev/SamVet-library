@@ -75,3 +75,24 @@ it('deletes a journal', function () {
 
     $this->assertDatabaseMissing('journals', ['id' => $journal->id]);
 });
+
+it('separates journals and newspapers in the index list (?kind=)', function () {
+    Journal::factory()->create(['name' => 'Ilmiy jurnal', 'kind' => 'journal']);
+    Journal::factory()->create(['name' => 'Kunlik gazeta', 'kind' => 'newspaper']);
+
+    $this->get(route('admin.journals.index', ['kind' => 'journal']))
+        ->assertSee('Ilmiy jurnal')
+        ->assertDontSee('Kunlik gazeta')
+        ->assertSee('Jurnallar');
+
+    $this->get(route('admin.journals.index', ['kind' => 'newspaper']))
+        ->assertSee('Kunlik gazeta')
+        ->assertDontSee('Ilmiy jurnal')
+        ->assertSee('Gazetalar');
+});
+
+it('pre-selects the newspaper kind when creating via ?kind=newspaper', function () {
+    $this->get(route('admin.journals.create', ['kind' => 'newspaper']))
+        ->assertSee('Yangi gazeta')
+        ->assertSee('value="newspaper" selected', false);
+});

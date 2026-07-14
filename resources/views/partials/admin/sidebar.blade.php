@@ -36,7 +36,7 @@
                         </a>
                     </li>
 
-                    {{-- Resurs qo'shish (collapsible group: books, journals, articles, dissertations) --}}
+                    {{-- Resurs qo'shish (collapsible group: books, journals, newspapers, articles, dissertations) --}}
                     @php
                         // Parent is active when any of its child resource routes are open
                         $resourceGroupActive = request()->routeIs('admin.books.*')
@@ -45,12 +45,23 @@
                             || request()->routeIs('admin.dissertations.*')
                             || request()->routeIs('admin.avtoreferats.*');
 
+                        // Journals and newspapers share the same routes/table (kind=journal|newspaper),
+                        // so "active" for either sidebar entry depends on which kind is in play — the
+                        // bound Journal model on show/edit/issues pages, or the ?kind= query on index/create.
+                        $boundJournal = request()->route('journal');
+                        $journalKindInPlay = $boundJournal instanceof \App\Models\Journal
+                            ? $boundJournal->kind?->value
+                            : request()->query('kind', \App\Enums\PublicationKind::Journal->value);
+
+                        $onJournalRoute = request()->routeIs('admin.journals.*');
+
                         $resourceLinks = [
-                            'admin.books.index'         => ['pattern' => 'admin.books.*',         'label' => __('Kitoblar')],
-                            'admin.journals.index'      => ['pattern' => 'admin.journals.*',      'label' => __('Jurnallar')],
-                            'admin.articles.index'      => ['pattern' => 'admin.articles.*',      'label' => __('Maqolalar')],
-                            'admin.dissertations.index' => ['pattern' => 'admin.dissertations.*', 'label' => __('Dissertatsiyalar')],
-                            'admin.avtoreferats.index'  => ['pattern' => 'admin.avtoreferats.*',  'label' => __('Avtoreferatlar')],
+                            ['route' => 'admin.books.index', 'params' => [], 'active' => request()->routeIs('admin.books.*'), 'label' => __('Kitoblar')],
+                            ['route' => 'admin.journals.index', 'params' => ['kind' => 'journal'], 'active' => $onJournalRoute && $journalKindInPlay !== \App\Enums\PublicationKind::Newspaper->value, 'label' => __('Jurnallar')],
+                            ['route' => 'admin.journals.index', 'params' => ['kind' => 'newspaper'], 'active' => $onJournalRoute && $journalKindInPlay === \App\Enums\PublicationKind::Newspaper->value, 'label' => __('Gazetalar')],
+                            ['route' => 'admin.articles.index', 'params' => [], 'active' => request()->routeIs('admin.articles.*'), 'label' => __('Maqolalar')],
+                            ['route' => 'admin.dissertations.index', 'params' => [], 'active' => request()->routeIs('admin.dissertations.*'), 'label' => __('Dissertatsiyalar')],
+                            ['route' => 'admin.avtoreferats.index', 'params' => [], 'active' => request()->routeIs('admin.avtoreferats.*'), 'label' => __('Avtoreferatlar')],
                         ];
                     @endphp
                     <li x-data="{ open: {{ $resourceGroupActive ? 'true' : 'false' }} }">
@@ -69,10 +80,10 @@
 
                         <div x-show="open" x-cloak :class="sidebarToggle ? 'lg:hidden' : ''">
                             <ul class="menu-dropdown mt-2 flex flex-col gap-1 pl-9">
-                                @foreach ($resourceLinks as $route => $link)
+                                @foreach ($resourceLinks as $link)
                                     <li>
-                                        <a href="{{ route($route) }}"
-                                           class="menu-dropdown-item {{ request()->routeIs($link['pattern']) ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                        <a href="{{ route($link['route'], $link['params']) }}"
+                                           class="menu-dropdown-item {{ $link['active'] ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
                                             {{ $link['label'] }}
                                         </a>
                                     </li>
