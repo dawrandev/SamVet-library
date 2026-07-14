@@ -49,17 +49,30 @@
             <div class="space-y-5">
                 <x-admin.form.input name="name" :label="__('Nomi')" :value="$journal?->name" required :placeholder="__('Jurnal nomi')" />
 
-                {{-- Publication kind (journal / newspaper) --}}
-                <div>
-                    <label for="kind" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi (jurnal/gazeta)') }}<span class="text-error-500">*</span></label>
-                    <select name="kind" id="kind" required
-                            class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('kind') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                        @foreach ($kindOptions as $opt)
-                            <option value="{{ $opt->value }}" @selected($currentKind === $opt->value)>{{ $opt->label() }}</option>
-                        @endforeach
-                    </select>
-                    @error('kind')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                </div>
+                {{-- Publication kind (journal / newspaper). On create, the sidebar/button
+                     you came from ("Yangi jurnal" vs "Yangi gazeta") already decided this —
+                     asking again here is redundant, so it's fixed and just displayed. Only
+                     editable when correcting an existing record's kind. --}}
+                @if ($editing)
+                    <div>
+                        <label for="kind" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi (jurnal/gazeta)') }}<span class="text-error-500">*</span></label>
+                        <select name="kind" id="kind" required
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('kind') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            @foreach ($kindOptions as $opt)
+                                <option value="{{ $opt->value }}" @selected($currentKind === $opt->value)>{{ $opt->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('kind')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                    </div>
+                @else
+                    <input type="hidden" name="kind" value="{{ $currentKind }}" />
+                    <div>
+                        <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</span>
+                        <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-3 py-1.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                            {{ $isNewspaperForm ? __('Gazeta') : __('Jurnal') }}
+                        </span>
+                    </div>
+                @endif
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"

@@ -91,8 +91,19 @@ it('separates journals and newspapers in the index list (?kind=)', function () {
         ->assertSee('Gazetalar');
 });
 
-it('pre-selects the newspaper kind when creating via ?kind=newspaper', function () {
+it('fixes the kind on create instead of asking again (navigation already decided it)', function () {
+    // Coming from "Gazetalar" → "Yangi gazeta": the kind dropdown is redundant
+    // (you already told the system your intent), so it's a hidden field, not a select.
     $this->get(route('admin.journals.create', ['kind' => 'newspaper']))
         ->assertSee('Yangi gazeta')
+        ->assertDontSee('<select name="kind"', false)
+        ->assertSee('<input type="hidden" name="kind" value="newspaper"', false);
+});
+
+it('keeps the kind select editable when correcting an existing journal', function () {
+    $journal = Journal::factory()->create(['kind' => 'newspaper']);
+
+    $this->get(route('admin.journals.edit', $journal))
+        ->assertSee('<select name="kind"', false)
         ->assertSee('value="newspaper" selected', false);
 });
