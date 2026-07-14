@@ -77,13 +77,13 @@
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"
                         creatable create-translatable create-type="journal_type" :create-label="__('Yangi tur')" />
-                    <x-admin.form.input name="founder" :label="__('Muassis')" :value="$journal?->founder" :placeholder="__('masalan: SamVMU')" />
+                    <x-admin.form.input name="founder" :label="__('Muassislar')" :value="$journal?->founder" :placeholder="__('masalan: SamVMU')" />
                 </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$journal?->language_id" :placeholder="__('Tanlang')"
                         creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
-                    <x-admin.form.select name="publication_place_id" :label="__('Nashriyot joyi')" :options="$publicationPlaces" :selected="$journal?->publication_place_id" :placeholder="__('Tanlang')"
+                    <x-admin.form.select name="publication_place_id" :label="__('Nashr joyi')" :options="$publicationPlaces" :selected="$journal?->publication_place_id" :placeholder="__('Tanlang')"
                         creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
                 </div>
 

@@ -4,18 +4,6 @@
 
 @section('content')
     @php
-        $meta = array_filter([
-            __('Nashr turi') => $journal->kind?->label(),
-            __('Turi') => $journal->type?->name,
-            __('Muassis') => $journal->founder,
-            __('Tili') => $journal->language?->name,
-            __('Nashriyoti') => $journal->publisher,
-            __('Nashriyot joyi') => $journal->publicationPlace?->name,
-            __('ISSN') => $journal->issn,
-            __('Indeks') => $journal->index,
-            __('Davriyligi') => $journal->periodicity?->label(),
-        ], fn ($v) => filled($v));
-
         // Flag to keep the issue form open on server errors
         $openStore = $errors->any() && old('_issue_form') === 'store';
         $openEditId = $errors->any() && old('_issue_form') === 'edit' ? (int) old('_issue_id') : null;
@@ -42,19 +30,7 @@
     <div class="grid grid-cols-12 gap-6">
         {{-- Left: journal details --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jurnal ma’lumotlari') }}</h3>
-                <dl class="space-y-3">
-                    @forelse ($meta as $label => $value)
-                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                        </div>
-                    @empty
-                        <p class="text-theme-sm text-gray-400">{{ __('Ma’lumot yo‘q') }}</p>
-                    @endforelse
-                </dl>
-            </div>
+            <x-admin.journal-info-panel :journal="$journal" class="sm:p-6" />
         </div>
 
         {{-- Right: issues --}}

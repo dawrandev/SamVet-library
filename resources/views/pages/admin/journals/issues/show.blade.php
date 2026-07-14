@@ -16,22 +16,6 @@
 
         $openStore = $errors->any() && old('_copy_form') === 'store';
         $openEditId = $errors->any() && old('_copy_form') === 'edit' ? (int) old('_copy_id') : null;
-
-        $isNewspaper = $journal->kind === \App\Enums\PublicationKind::Newspaper;
-
-        // Parent's own info ("Gazeta/Jurnal haqida ma'lumot") — displayed here too so
-        // this page is self-contained, not stored (the journal owns these fields).
-        $journalDetails = array_filter([
-            __('Nomi') => $journal->name,
-            __('Turi') => $journal->type?->name,
-            __('Indeks') => $journal->index,
-            __('Nashr joyi') => $journal->publicationPlace?->name,
-            __('Nashriyoti') => $journal->publisher,
-            __('Davriyligi') => $journal->periodicity?->label(),
-            __('Tili') => $journal->language?->name,
-            __('ISSN') => $journal->issn,
-            __('Muassislar') => $journal->founder,
-        ], fn ($v) => filled($v));
     @endphp
 
     {{-- Header --}}
@@ -52,24 +36,9 @@
     <div class="grid grid-cols-12 gap-6">
         {{-- Left: parent (journal/newspaper) info + issue details --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
-            {{-- "Gazeta/Jurnal haqida ma'lumot" — the parent's own fields, shown here too
-                 so this page is self-contained (edit them via the journal's own form). --}}
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
-                        {{ $isNewspaper ? __('Gazeta haqida ma’lumot') : __('Jurnal haqida ma’lumot') }}
-                    </h3>
-                    <a href="{{ route('admin.journals.edit', $journal) }}" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">{{ __('Tahrirlash') }}</a>
-                </div>
-                <dl class="space-y-3">
-                    @foreach ($journalDetails as $label => $value)
-                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-            </div>
+            {{-- Parent's own info, shown here too so this page is self-contained
+                 (edit those fields via the journal's own form). --}}
+            <x-admin.journal-info-panel :journal="$journal" :edit-url="route('admin.journals.edit', $journal)" />
 
             {{-- "Son haqida ma'lumot" — this issue's own fields. --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
