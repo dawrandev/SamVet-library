@@ -8,9 +8,11 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface ArticleRepositoryInterface
 {
     /**
-     * Filtered, paginated list of articles.
+     * Filtered, paginated list of articles. `kind` scopes to articles whose
+     * parent journal is a journal-only or newspaper-only (App\Enums\PublicationKind)
+     * — omitted shows both.
      *
-     * @param  array{search?: string, journal_id?: int, resource_field_id?: int}  $filters
+     * @param  array{search?: string, journal_id?: int, resource_field_id?: int, kind?: string}  $filters
      */
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator;
 

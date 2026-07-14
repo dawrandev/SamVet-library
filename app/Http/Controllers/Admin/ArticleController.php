@@ -20,12 +20,12 @@ class ArticleController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'journal_id', 'resource_field_id']);
+        $filters = $request->only(['search', 'journal_id', 'resource_field_id', 'kind']);
 
         return view('pages.admin.articles.index', [
             'articles' => $this->articleService->paginate($filters),
             'filters' => $filters,
-            ...$this->articleService->filterOptions(),
+            ...$this->articleService->filterOptions($filters['kind'] ?? null),
         ]);
     }
 
@@ -38,6 +38,7 @@ class ArticleController extends Controller
         );
 
         return view('pages.admin.articles.create', [
+            'kind' => $request->string('kind')->toString() ?: null,
             ...$this->articleService->formOptions(),
             ...$selection,
         ]);
@@ -92,10 +93,12 @@ class ArticleController extends Controller
 
     public function destroy(Article $article): RedirectResponse
     {
+        $kind = $article->journalIssue?->journal?->kind?->value;
+
         $this->articleService->delete($article);
 
         return redirect()
-            ->route('admin.articles.index')
+            ->route('admin.articles.index', array_filter(['kind' => $kind]))
             ->with('success', __('Maqola o‘chirildi.'));
     }
 

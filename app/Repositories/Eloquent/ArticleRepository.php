@@ -40,6 +40,9 @@ class ArticleRepository implements ArticleRepositoryInterface
             ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {
                 $query->where('resource_field_id', $fieldId);
             })
+            ->when($filters['kind'] ?? null, function ($query, string $kind) {
+                $query->whereHas('journalIssue.journal', fn ($q) => $q->where('kind', $kind));
+            })
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

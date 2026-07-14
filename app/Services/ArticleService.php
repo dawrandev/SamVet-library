@@ -34,14 +34,18 @@ class ArticleService
     }
 
     /**
-     * For the filter dropdowns on the list page.
+     * For the filter dropdowns on the list page. `kind` scopes the journal
+     * dropdown to journals or newspapers only, matching the current section.
      *
      * @return array<string, mixed>
      */
-    public function filterOptions(): array
+    public function filterOptions(?string $kind = null): array
     {
         return [
-            'journals' => Journal::orderBy('name')->get(),
+            'journals' => Journal::query()
+                ->when($kind, fn ($q) => $q->where('kind', $kind))
+                ->orderBy('name')
+                ->get(),
             'resourceFields' => ResourceField::orderBy('id')->get(),
         ];
     }

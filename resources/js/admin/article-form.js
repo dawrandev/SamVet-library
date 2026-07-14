@@ -11,6 +11,7 @@ import uploadForm from './upload-form';
  * @param {string} config.searchUrl          Journal live-search endpoint
  * @param {string} config.issuesUrlTemplate  Issues endpoint with a `__JID__` placeholder
  * @param {string} config.newJournalUrl      Link to create a new journal
+ * @param {string|null} config.kind          Restrict search to 'journal'|'newspaper' (or null for both)
  * @param {object} config.initial            Pre-selected {journalId, journalName, issueId}
  */
 export default function articleForm(config) {
@@ -20,6 +21,7 @@ export default function articleForm(config) {
         searchUrl: config.searchUrl,
         issuesUrlTemplate: config.issuesUrlTemplate,
         newJournalUrl: config.newJournalUrl,
+        kind: config.kind ?? null,
 
         journalId: config.initial.journalId,
         journalName: config.initial.journalName,
@@ -54,7 +56,8 @@ export default function articleForm(config) {
             this.searching = true;
             this.showResults = true;
             try {
-                const res = await fetch(`${this.searchUrl}?q=${encodeURIComponent(term)}`, {
+                const kindParam = this.kind ? `&kind=${encodeURIComponent(this.kind)}` : '';
+                const res = await fetch(`${this.searchUrl}?q=${encodeURIComponent(term)}${kindParam}`, {
                     headers: { Accept: 'application/json' },
                 });
                 const json = await res.json();

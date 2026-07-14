@@ -25,6 +25,12 @@ class JournalLookupController extends Controller
             $query->where('name', 'like', "%{$term}%");
         }
 
+        // Scopes results to journals or newspapers only — used when the form
+        // was reached via a kind-specific "Yangi ... maqolasi" button.
+        if ($request->filled('kind')) {
+            $query->where('kind', $request->string('kind')->toString());
+        }
+
         $journals = $query->orderBy('name')->limit(10)->get();
 
         return JournalSearchResource::collection($journals);

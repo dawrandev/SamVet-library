@@ -5,6 +5,8 @@
 @section('content')
     @php
         $journal = $article->journalIssue?->journal;
+        $isNewspaper = $journal?->kind === \App\Enums\PublicationKind::Newspaper;
+        $backParams = array_filter(['kind' => $journal?->kind?->value]);
 
         // Article's own fields
         $details = array_filter([
@@ -18,26 +20,28 @@
 
         // Inherited meta (from the parent issue → journal — displayed, not stored)
         $inherited = array_filter([
-            __('Jurnal') => $journal?->name,
-            __('Jurnal turi') => $journal?->type?->name,
+            ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal?->name,
+            ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $journal?->type?->name,
             __('Nashriyoti') => $journal?->publisher,
-            __('Nashriyot joyi') => $journal?->publicationPlace?->name,
+            __('Nashr joyi') => $journal?->publicationPlace?->name,
             __('Yili') => $article->journalIssue?->year,
-            __('Soni') => $article->journalIssue?->issue_number,
+            ($isNewspaper ? __('Gazeta soni') : __('Soni')) => $article->journalIssue?->issue_number,
             __('Chiqqan sanasi') => $article->journalIssue?->issue_date?->format('d.m.Y'),
         ], fn ($v) => filled($v));
+
+        $journalNameLabel = $isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi');
     @endphp
 
     {{-- Header --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.articles.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
+            <a href="{{ route('admin.articles.index', $backParams) }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $article->title }}</h2>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.articles.edit', $article) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Tahrirlash') }}</a>
             <button type="button"
-                    @click="$store.confirm.ask('{{ route('admin.articles.destroy', $article) }}', '{{ __('Maqolani o‘chirishni tasdiqlaysizmi?') }}')"
+                    @click="$store.confirm.ask('{{ route('admin.articles.destroy', $article) }}', '{{ $isNewspaper ? __('Gazeta maqolasini o‘chirishni tasdiqlaysizmi?') : __('Maqolani o‘chirishni tasdiqlaysizmi?') }}')"
                     class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
         </div>
     </div>
@@ -50,7 +54,7 @@
         {{-- Left: article details --}}
         <div class="col-span-12 space-y-6 xl:col-span-7">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Maqola ma’lumotlari') }}</h3>
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Maqola haqida ma’lumot') }}</h3>
                 <dl class="space-y-3">
                     @foreach ($details as $label => $value)
                         <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
@@ -84,13 +88,15 @@
         {{-- Right: inherited journal meta + location --}}
         <div class="col-span-12 space-y-6 xl:col-span-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jurnal ma’lumotlari') }}</h3>
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+                    {{ $isNewspaper ? __('Gazeta haqida ma’lumot') : __('Jurnal haqida ma’lumot') }}
+                </h3>
                 <dl class="space-y-3">
                     @forelse ($inherited as $label => $value)
                         <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
                             <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
                             <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">
-                                @if ($label === __('Jurnal') && $journal)
+                                @if ($label === $journalNameLabel && $journal)
                                     <a href="{{ route('admin.journals.show', $journal) }}" class="text-brand-600 hover:underline dark:text-brand-400">{{ $value }}</a>
                                 @else
                                     {{ $value }}

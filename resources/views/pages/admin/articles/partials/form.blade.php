@@ -10,6 +10,12 @@
 
     $categoryOptions = \App\Enums\ArticleCategory::cases();
     $currentCategory = old('category', $article?->category?->value);
+
+    // The "Yangi maqola" vs "Yangi gazeta maqolasi" button already declared intent;
+    // on edit, the article's actual parent journal decides which wording to use.
+    $currentKind = $editing ? $article->journalIssue?->journal?->kind?->value : ($kind ?? null);
+    $isNewspaperForm = $currentKind === \App\Enums\PublicationKind::Newspaper->value;
+    $backParams = array_filter(['kind' => $currentKind]);
 @endphp
 
 <form
@@ -20,7 +26,8 @@
     x-data="articleForm({
         searchUrl: '{{ route('admin.journals.search') }}',
         issuesUrlTemplate: '{{ route('admin.journals.issues.lookup', ['journal' => '__JID__']) }}',
-        newJournalUrl: '{{ route('admin.journals.create') }}',
+        newJournalUrl: '{{ route('admin.journals.create', $backParams) }}',
+        kind: {{ $editing ? 'null' : ($currentKind ? "'{$currentKind}'" : 'null') }},
         initial: {
             journalId: {{ $selectedJournalId ?? 'null' }},
             journalName: @js($selectedJournalName ?? ''),
@@ -40,13 +47,17 @@
     {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.articles.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
+            <a href="{{ route('admin.articles.index', $backParams) }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                {{ $editing ? __('Maqolani tahrirlash') : __('Yangi maqola') }}
+                @if ($editing)
+                    {{ $isNewspaperForm ? __('Gazeta maqolasini tahrirlash') : __('Maqolani tahrirlash') }}
+                @else
+                    {{ $isNewspaperForm ? __('Yangi gazeta maqolasi') : __('Yangi maqola') }}
+                @endif
             </h2>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.articles.index') }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
+            <a href="{{ route('admin.articles.index', $backParams) }}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</a>
             <button type="submit" class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>
         </div>
     </div>
@@ -58,15 +69,15 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {{-- Left: journal & issue --}}
-        <x-admin.form.section :title="__('Jurnal va son')">
+        <x-admin.form.section :title="$isNewspaperForm ? __('Gazeta va son') : __('Jurnal va son')">
             <div class="space-y-5">
                 {{-- Journal autocomplete --}}
                 <div class="relative" @click.outside="showResults = false">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                        {{ __('Jurnal') }}<span class="text-error-500">*</span>
+                        {{ $isNewspaperForm ? __('Gazeta') : __('Jurnal') }}<span class="text-error-500">*</span>
                     </label>
                     <input type="text" x-model="journalName" @input.debounce.300ms="search()" @focus="showResults = results.length > 0"
-                           placeholder="{{ __('Jurnal nomini yozing...') }}"
+                           placeholder="{{ $isNewspaperForm ? __('Gazeta nomini yozing...') : __('Jurnal nomini yozing...') }}"
                            autocomplete="off"
                            class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
 
@@ -85,15 +96,15 @@
                         </template>
                         <template x-if="! searching && results.length === 0 && journalName.trim() !== ''">
                             <div class="px-4 py-3 text-sm">
-                                <p class="mb-2 text-gray-500 dark:text-gray-400">{{ __('Jurnal topilmadi.') }}</p>
+                                <p class="mb-2 text-gray-500 dark:text-gray-400">{{ $isNewspaperForm ? __('Gazeta topilmadi.') : __('Jurnal topilmadi.') }}</p>
                                 <a :href="newJournalUrl"
-                                   class="text-brand-500 hover:text-brand-600 font-medium">+ {{ __('Yangi jurnal qo‘shish') }}</a>
+                                   class="text-brand-500 hover:text-brand-600 font-medium">+ {{ $isNewspaperForm ? __('Yangi gazeta qo‘shish') : __('Yangi jurnal qo‘shish') }}</a>
                             </div>
                         </template>
                     </div>
 
                     @error('journal_issue_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                    <p class="mt-1 text-theme-xs text-gray-400">{{ __('Jurnalni tanlagach, uning sonini tanlang.') }}</p>
+                    <p class="mt-1 text-theme-xs text-gray-400">{{ $isNewspaperForm ? __('Gazetani tanlagach, uning sonini tanlang.') : __('Jurnalni tanlagach, uning sonini tanlang.') }}</p>
                 </div>
 
                 {{-- Issue select (dependent on journal) --}}

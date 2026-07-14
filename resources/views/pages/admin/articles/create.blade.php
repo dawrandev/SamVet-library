@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Yangi maqola'))
+@section('title', ($kind ?? null) === \App\Enums\PublicationKind::Newspaper->value ? __('Yangi gazeta maqolasi') : __('Yangi maqola'))
 
 @section('content')
     @include('pages.admin.articles.partials.form')
