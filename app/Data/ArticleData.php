@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\ArticleCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
@@ -17,6 +18,7 @@ class ArticleData
         public readonly string $author,
         public readonly ?int $resource_field_id,
         public readonly ?int $language_id,
+        public readonly ?ArticleCategory $category,
         public readonly ?string $doi,
         public readonly ?string $pages,
         public readonly ?string $annotation,
@@ -31,6 +33,7 @@ class ArticleData
             author: $request->string('author')->toString(),
             resource_field_id: $request->integer('resource_field_id') ?: null,
             language_id: $request->integer('language_id') ?: null,
+            category: $request->filled('category') ? ArticleCategory::from($request->string('category')->toString()) : null,
             doi: $request->input('doi') ?: null,
             pages: $request->input('pages') ?: null,
             annotation: $request->input('annotation') ?: null,
@@ -51,6 +54,7 @@ class ArticleData
             'author' => $this->author,
             'resource_field_id' => $this->resource_field_id,
             'language_id' => $this->language_id,
+            'category' => $this->category,
             'doi' => $this->doi,
             'pages' => $this->pages,
             'annotation' => $this->annotation,

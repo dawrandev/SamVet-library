@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ArticleCategory;
 use App\Observers\ArticleObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ class Article extends Model
     // intentionally NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
         'journal_issue_id', 'title', 'author',
-        'resource_field_id', 'language_id',
+        'resource_field_id', 'language_id', 'category',
         'doi', 'pages', 'annotation',
         'electronic_file',
     ];
@@ -25,6 +26,7 @@ class Article extends Model
     protected function casts(): array
     {
         return [
+            'category' => ArticleCategory::class,
             'views_count' => 'integer',
         ];
     }

@@ -12,6 +12,7 @@ class JournalIssueData
 {
     public function __construct(
         public readonly int $year,
+        public readonly ?string $issue_date,
         public readonly string $issue_number,
         public readonly ?int $pages,
         public readonly ?UploadedFile $cover,
@@ -22,6 +23,7 @@ class JournalIssueData
     {
         return new self(
             year: $request->integer('year'),
+            issue_date: $request->input('issue_date') ?: null,
             issue_number: $request->string('issue_number')->toString(),
             pages: $request->integer('pages') ?: null,
             cover: $request->file('cover'),
@@ -38,6 +40,7 @@ class JournalIssueData
     {
         return [
             'year' => $this->year,
+            'issue_date' => $this->issue_date,
             'issue_number' => $this->issue_number,
             'pages' => $this->pages,
         ];

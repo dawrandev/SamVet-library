@@ -11,6 +11,7 @@
             __('Muallif(lar)') => $article->author,
             __('Resurs sohasi') => $article->resourceField?->name,
             __('Tili') => $article->language?->name,
+            __('Kategoriyasi') => $article->category?->label(),
             __('DOI') => $article->doi,
             __('Sahifalar') => $article->pages,
         ], fn ($v) => filled($v));
@@ -23,6 +24,7 @@
             __('Nashriyot joyi') => $journal?->publicationPlace?->name,
             __('Yili') => $article->journalIssue?->year,
             __('Soni') => $article->journalIssue?->issue_number,
+            __('Chiqqan sanasi') => $article->journalIssue?->issue_date?->format('d.m.Y'),
         ], fn ($v) => filled($v));
     @endphp
 

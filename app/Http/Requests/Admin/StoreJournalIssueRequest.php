@@ -21,6 +21,7 @@ class StoreJournalIssueRequest extends FormRequest
 
         return [
             'year' => ['required', 'integer', 'min:1000', "max:{$maxYear}"],
+            'issue_date' => ['nullable', 'date'],
             'issue_number' => ['required', 'string', 'max:100'],
             'pages' => ['nullable', 'integer', 'min:1'],
             'cover' => ['nullable', 'image', 'max:2048'],                 // 2 MB
@@ -35,6 +36,7 @@ class StoreJournalIssueRequest extends FormRequest
     {
         return [
             'year' => __('Nashr yili'),
+            'issue_date' => __('Sanasi'),
             'issue_number' => __('Soni'),
             'pages' => __('Sahifalar soni'),
             'cover' => __('Muqova rasmi'),

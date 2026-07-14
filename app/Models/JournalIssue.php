@@ -12,7 +12,7 @@ class JournalIssue extends Model
     use HasFactory;
 
     protected $fillable = [
-        'journal_id', 'year', 'issue_number', 'pages',
+        'journal_id', 'year', 'issue_date', 'issue_number', 'pages',
         'cover_image', 'electronic_file',
     ];
 
@@ -20,6 +20,7 @@ class JournalIssue extends Model
     {
         return [
             'year' => 'integer',
+            'issue_date' => 'date',
             'pages' => 'integer',
         ];
     }

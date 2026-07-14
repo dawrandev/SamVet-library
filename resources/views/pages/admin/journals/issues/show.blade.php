@@ -49,6 +49,12 @@
                         <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Nashr yili') }}</dt>
                         <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $issue->year }}</dd>
                     </div>
+                    @if ($issue->issue_date)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Sanasi') }}</dt>
+                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $issue->issue_date->format('d.m.Y') }}</dd>
+                        </div>
+                    @endif
                     <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
                         <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Soni') }}</dt>
                         <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $issue->issue_number }}</dd>

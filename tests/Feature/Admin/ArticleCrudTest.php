@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ArticleCategory;
 use App\Models\Article;
 use App\Models\JournalIssue;
 use App\Models\ResourceField;
@@ -24,6 +25,33 @@ it('creates an article linked to a journal issue', function () {
     expect($article)->not->toBeNull()
         ->and($article->journal_issue_id)->toBe($issue->id)
         ->and($article->slug)->not->toBeEmpty();
+});
+
+it('creates a newspaper article with an editorial category', function () {
+    $issue = JournalIssue::factory()->create();
+
+    $this->post(route('admin.articles.store'), [
+        'journal_issue_id' => $issue->id,
+        'title' => 'Filialimizda yangi laboratoriya ochildi',
+        'author' => 'Xabarchi X.',
+        'category' => ArticleCategory::AboutBranch->value,
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Filialimizda yangi laboratoriya ochildi');
+    expect($article->category)->toBe(ArticleCategory::AboutBranch);
+});
+
+it('rejects an invalid category', function () {
+    $issue = JournalIssue::factory()->create();
+
+    $this->from(route('admin.articles.create'))
+        ->post(route('admin.articles.store'), [
+            'journal_issue_id' => $issue->id,
+            'title' => 'X',
+            'author' => 'Y',
+            'category' => 'editorial_board', // not an ArticleCategory case
+        ])
+        ->assertSessionHasErrors('category');
 });
 
 it('requires a journal issue, title and author', function () {

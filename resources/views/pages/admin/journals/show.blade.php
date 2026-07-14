@@ -139,6 +139,7 @@
                                 <x-admin.form.input name="year" type="number" :label="__('Nashr yili')" required placeholder="{{ date('Y') }}" />
                                 <x-admin.form.input name="issue_number" :label="__('Soni')" required :placeholder="__('masalan: 2024/3')" />
                             </div>
+                            <x-admin.form.input name="issue_date" type="date" :label="__('Sanasi')" />
                             <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" />
                             <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*" :help="__('JPG/PNG, 2 MB gacha')" />
                             <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress :help="__('PDF, 950 MB gacha')" />
@@ -179,6 +180,8 @@
                                     <x-admin.form.input name="issue_number" :label="__('Soni')" required
                                         :value="$isEditing ? old('issue_number') : $issue->issue_number" />
                                 </div>
+                                <x-admin.form.input name="issue_date" type="date" :label="__('Sanasi')"
+                                    :value="$isEditing ? old('issue_date') : $issue->issue_date?->format('Y-m-d')" />
                                 <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')"
                                     :value="$isEditing ? old('pages') : $issue->pages" />
                                 <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*"

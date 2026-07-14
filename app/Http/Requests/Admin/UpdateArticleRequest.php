@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ArticleCategory;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateArticleRequest extends FormRequest
 {
@@ -23,6 +25,7 @@ class UpdateArticleRequest extends FormRequest
             'author' => ['required', 'string', 'max:500'],
             'resource_field_id' => ['nullable', 'integer', 'exists:resource_fields,id'],
             'language_id' => ['nullable', 'integer', 'exists:languages,id'],
+            'category' => ['nullable', new Enum(ArticleCategory::class)],
             'doi' => ['nullable', 'string', 'max:255'],
             'pages' => ['nullable', 'string', 'max:50'],
             'annotation' => ['nullable', 'string'],
@@ -41,6 +44,7 @@ class UpdateArticleRequest extends FormRequest
             'author' => __('Muallif(lar)'),
             'resource_field_id' => __('Resurs sohasi'),
             'language_id' => __('Tili'),
+            'category' => __('Kategoriyasi'),
             'doi' => __('DOI'),
             'pages' => __('Sahifalar'),
             'annotation' => __('Annotatsiya'),
