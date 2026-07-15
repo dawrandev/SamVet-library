@@ -5,15 +5,20 @@
 @php
     $kind = $journal->kind;   // PublicationKind (journal / newspaper)
 
+    // Muassis/Nashr joyi/Nashriyoti/Indeks are library-internal (kutubxona
+    // ichki ma'lumoti) — shown only in the admin panel, not on the public site.
+    $periodicity = match (true) {
+        $journal->periodicity && $journal->periodicity_count => "{$journal->periodicity_count} marta / {$journal->periodicity->label()}",
+        (bool) $journal->periodicity => $journal->periodicity->label(),
+        default => null,
+    };
+
     $rows = array_filter([
         [$kind->label().' '.__('nomi'), $journal->name],
         [__('Turi'), $journal->type?->name],
-        [__('Muassis'), $journal->founder],
-        [__('Davriyligi'), $journal->periodicity?->label()],
+        [__('Davriyligi'), $periodicity],
         ['ISSN', $journal->issn],
         [__('Tili'), $journal->language?->name],
-        [__('Nashr joyi'), $journal->publicationPlace?->name],
-        [__('Nashriyoti'), $journal->publisher],
         [__('Yili'), $sinceYear ? __(':y yildan', ['y' => $sinceYear]) : null],
     ], fn ($row) => filled($row[1]));
 @endphp
@@ -63,15 +68,12 @@
                         <span class="font-semibold text-blue-700">{{ $journal->type->name }}</span>
                     @endif
                     <span class="text-gray-500">
-                        @if ($journal->periodicity){{ $journal->periodicity->label() }}@endif
+                        @if ($periodicity){{ $periodicity }}@endif
                         @if ($sinceYear) · {{ __(':y yildan', ['y' => $sinceYear]) }}@endif
                     </span>
                 </div>
 
                 <h1 class="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-gray-900">{{ $journal->name }}</h1>
-                @if ($journal->founder)
-                    <p class="mt-2 text-base text-gray-500">{{ $journal->founder }}</p>
-                @endif
 
                 <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
                     <h2 class="border-b border-gray-100 px-5 py-3.5 text-sm font-bold text-gray-900">{{ __('Nashr ma‘lumotlari') }}</h2>

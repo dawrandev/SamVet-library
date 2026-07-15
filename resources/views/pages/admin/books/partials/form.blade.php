@@ -95,7 +95,7 @@
                 </div>
             </x-admin.form.section>
 
-            <x-admin.form.section :title="__('Kataloglashtirish')">
+            <x-admin.form.section :title="__('Qo‘shimcha ma’lumotlar')">
                 <div class="space-y-5">
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.input name="udc" :label="__('UO‘K')" :value="$book?->udc" :placeholder="__('masalan: 330.1')" />

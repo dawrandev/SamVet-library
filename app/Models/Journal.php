@@ -20,7 +20,7 @@ class Journal extends Model
     protected $fillable = [
         'name', 'kind', 'slug', 'journal_type_id', 'founder',
         'language_id', 'publisher', 'publication_place_id',
-        'issn', 'index', 'periodicity',
+        'issn', 'index', 'periodicity', 'periodicity_count',
     ];
 
     /** Only the publisher is translatable (name — single language). */
@@ -31,6 +31,7 @@ class Journal extends Model
         return [
             'kind' => PublicationKind::class,
             'periodicity' => JournalPeriodicity::class,
+            'periodicity_count' => 'integer',
         ];
     }
 

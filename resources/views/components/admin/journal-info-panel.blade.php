@@ -3,13 +3,19 @@
 @php
     $isNewspaper = $journal->kind === \App\Enums\PublicationKind::Newspaper;
 
+    $periodicity = match (true) {
+        $journal->periodicity && $journal->periodicity_count => "{$journal->periodicity_count} marta / {$journal->periodicity->label()}",
+        (bool) $journal->periodicity => $journal->periodicity->label(),
+        default => null,
+    };
+
     $details = array_filter([
         ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal->name,
         ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $journal->type?->name,
         __('Indeks') => $journal->index,
         __('Nashr joyi') => $journal->publicationPlace?->name,
         __('Nashriyoti') => $journal->publisher,
-        __('Davriyligi') => $journal->periodicity?->label(),
+        __('Davriyligi') => $periodicity,
         __('Tili') => $journal->language?->name,
         __('ISSN') => $journal->issn,
         __('Muassislar') => $journal->founder,

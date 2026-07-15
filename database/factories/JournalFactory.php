@@ -29,6 +29,7 @@ class JournalFactory extends Factory
             'publication_place_id' => PublicationPlace::factory(),
             'issn' => $this->faker->numerify('####-####'),
             'periodicity' => JournalPeriodicity::Quarterly->value,
+            'periodicity_count' => 1,
             // slug is set by the observer
         ];
     }

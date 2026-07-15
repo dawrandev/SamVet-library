@@ -32,6 +32,39 @@ it('creates a journal', function () {
         ->and($journal->slug)->not->toBeEmpty();
 });
 
+it('creates a journal with a periodicity unit and a free "necha marta" count', function () {
+    $this->post(route('admin.journals.store'), [
+        'name' => 'Haftalik axborotnoma',
+        'kind' => 'journal',
+        'periodicity' => 'weekly',
+        'periodicity_count' => 3,
+    ])->assertRedirect();
+
+    $journal = Journal::firstWhere('name', 'Haftalik axborotnoma');
+    expect($journal->periodicity->value)->toBe('weekly')
+        ->and($journal->periodicity_count)->toBe(3);
+});
+
+it('rejects a periodicity count outside the valid range', function () {
+    $this->from(route('admin.journals.create'))
+        ->post(route('admin.journals.store'), [
+            'name' => 'X',
+            'kind' => 'journal',
+            'periodicity_count' => 32,
+        ])
+        ->assertSessionHasErrors('periodicity_count');
+});
+
+it('shows the combined periodicity ("necha marta / birlik") on the journal show page', function () {
+    $journal = Journal::factory()->create([
+        'periodicity' => 'weekly',
+        'periodicity_count' => 5,
+    ]);
+
+    $this->get(route('admin.journals.show', $journal))
+        ->assertSee('5 marta / Haftalik');
+});
+
 it('creates a newspaper (kind = newspaper)', function () {
     $this->post(route('admin.journals.store'), [
         'name' => 'Universitet gazetasi',
