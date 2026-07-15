@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\JournalPeriodicity;
+use App\Enums\NewspaperType;
 use App\Enums\PublicationKind;
 use App\Observers\JournalObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -18,7 +19,7 @@ class Journal extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'name', 'kind', 'slug', 'journal_type_id', 'founder',
+        'name', 'kind', 'slug', 'journal_type_id', 'newspaper_type', 'founder',
         'language_id', 'publisher', 'publication_place_id',
         'issn', 'index', 'periodicity', 'periodicity_count',
     ];
@@ -30,6 +31,7 @@ class Journal extends Model
     {
         return [
             'kind' => PublicationKind::class,
+            'newspaper_type' => NewspaperType::class,
             'periodicity' => JournalPeriodicity::class,
             'periodicity_count' => 'integer',
         ];

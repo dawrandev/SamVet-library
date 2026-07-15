@@ -61,6 +61,18 @@ it('shows a journal detail page but hides library-internal fields', function () 
         ->assertDontSee('Maxfiy shahar');
 });
 
+it('shows a newspaper detail page with its fixed newspaper_type label', function () {
+    $newspaper = Journal::factory()->newspaper()->create([
+        'name' => 'Ochiq gazeta',
+        'newspaper_type' => 'spiritual_educational',
+    ]);
+
+    $this->get(route('journal.show', $newspaper->slug))
+        ->assertOk()
+        ->assertSee('Ochiq gazeta')
+        ->assertSee('Ma’naviy-ma’rifiy gazeta');
+});
+
 it('shows a published news item and hides drafts', function () {
     $published = News::factory()->create();
     $draft = News::factory()->draft()->create();

@@ -3,6 +3,8 @@
     $editing = ! is_null($journal);
 
     $periodicityOptions = \App\Enums\JournalPeriodicity::cases();
+    $newspaperTypeOptions = \App\Enums\NewspaperType::cases();
+    $currentNewspaperType = old('newspaper_type', $editing ? $journal->newspaper_type?->value : null);
     $currentPeriodicity = old('periodicity', $editing ? $journal->periodicity?->value : null);
 
     $kindOptions = \App\Enums\PublicationKind::cases();
@@ -75,8 +77,24 @@
                 @endif
 
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"
-                        creatable create-translatable create-type="journal_type" :create-label="__('Yangi tur')" />
+                    @if ($isNewspaperForm)
+                        {{-- Newspapers use a fixed, closed set of 2 types (NewspaperType enum) —
+                             not the open, admin-extendable journal_type_id lookup that journals use. --}}
+                        <div>
+                            <label for="newspaper_type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
+                            <select name="newspaper_type" id="newspaper_type"
+                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('newspaper_type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                <option value="">{{ __('Tanlang') }}</option>
+                                @foreach ($newspaperTypeOptions as $opt)
+                                    <option value="{{ $opt->value }}" @selected($currentNewspaperType === $opt->value)>{{ $opt->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('newspaper_type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        </div>
+                    @else
+                        <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"
+                            creatable create-translatable create-type="journal_type" :create-label="__('Yangi tur')" />
+                    @endif
                     <x-admin.form.input name="founder" :label="__('Muassislar')" :value="$journal?->founder" :placeholder="__('masalan: SamVMU')" />
                 </div>
 

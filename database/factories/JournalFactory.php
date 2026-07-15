@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\JournalPeriodicity;
+use App\Enums\NewspaperType;
 use App\Enums\PublicationKind;
 use App\Models\Journal;
 use App\Models\JournalType;
@@ -36,6 +37,9 @@ class JournalFactory extends Factory
 
     public function newspaper(): static
     {
-        return $this->state(fn () => ['kind' => PublicationKind::Newspaper->value]);
+        return $this->state(fn () => [
+            'kind' => PublicationKind::Newspaper->value,
+            'newspaper_type' => NewspaperType::Pedagogical->value,
+        ]);
     }
 }

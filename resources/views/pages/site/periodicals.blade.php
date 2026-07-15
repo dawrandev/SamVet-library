@@ -58,6 +58,12 @@
         @else
             <div class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($periodicals as $periodical)
+                    @php
+                        // Newspapers use the fixed NewspaperType enum; journals keep the journal_type_id lookup.
+                        $periodicalType = $periodical->kind === \App\Enums\PublicationKind::Newspaper
+                            ? $periodical->newspaper_type?->label()
+                            : $periodical->type?->name;
+                    @endphp
                     <a href="{{ route('journal.show', $periodical->slug) }}"
                        class="group flex gap-4 rounded-2xl border border-gray-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
                         <div class="relative h-24 w-20 flex-none overflow-hidden rounded-lg border-t-2 border-blue-600 bg-blue-50">
@@ -67,7 +73,7 @@
                             <span class="text-[11px] font-semibold text-blue-700">{{ $periodical->kind->label() }}</span>
                             <h2 class="mt-0.5 line-clamp-2 font-bold text-gray-900 group-hover:text-blue-700">{{ $periodical->name }}</h2>
                             <p class="mt-1 line-clamp-1 text-xs text-gray-500">
-                                {{ $periodical->type?->name }}@if ($periodical->periodicity) · {{ $periodical->periodicity_count ? "{$periodical->periodicity_count} marta / " : '' }}{{ $periodical->periodicity->label() }}@endif
+                                {{ $periodicalType }}@if ($periodical->periodicity) · {{ $periodical->periodicity_count ? "{$periodical->periodicity_count} marta / " : '' }}{{ $periodical->periodicity->label() }}@endif
                             </p>
                             <p class="mt-2 text-xs font-medium text-gray-400">{{ __(':n ta son', ['n' => $periodical->issues_count]) }}</p>
                         </div>

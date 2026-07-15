@@ -4,6 +4,7 @@
 
 @php
     $kind = $journal->kind;   // PublicationKind (journal / newspaper)
+    $isNewspaper = $kind === \App\Enums\PublicationKind::Newspaper;
 
     // Muassis/Nashr joyi/Nashriyoti/Indeks are library-internal (kutubxona
     // ichki ma'lumoti) — shown only in the admin panel, not on the public site.
@@ -13,9 +14,12 @@
         default => null,
     };
 
+    // Newspapers use the fixed NewspaperType enum; journals keep the journal_type_id lookup.
+    $type = $isNewspaper ? $journal->newspaper_type?->label() : $journal->type?->name;
+
     $rows = array_filter([
         [$kind->label().' '.__('nomi'), $journal->name],
-        [__('Turi'), $journal->type?->name],
+        [__('Turi'), $type],
         [__('Davriyligi'), $periodicity],
         ['ISSN', $journal->issn],
         [__('Tili'), $journal->language?->name],
@@ -64,8 +68,8 @@
             {{-- Right: masthead info --}}
             <div>
                 <div class="flex flex-wrap items-center gap-2 text-sm">
-                    @if ($journal->type)
-                        <span class="font-semibold text-blue-700">{{ $journal->type->name }}</span>
+                    @if ($type)
+                        <span class="font-semibold text-blue-700">{{ $type }}</span>
                     @endif
                     <span class="text-gray-500">
                         @if ($periodicity){{ $periodicity }}@endif

@@ -75,6 +75,55 @@ it('creates a newspaper (kind = newspaper)', function () {
         ->toBe('newspaper');
 });
 
+it('creates a newspaper with a fixed newspaper_type value', function () {
+    $this->post(route('admin.journals.store'), [
+        'name' => 'Ma’naviyat gazetasi',
+        'kind' => 'newspaper',
+        'newspaper_type' => 'spiritual_educational',
+    ])->assertRedirect();
+
+    $journal = Journal::firstWhere('name', 'Ma’naviyat gazetasi');
+    expect($journal->newspaper_type)->toBe(\App\Enums\NewspaperType::SpiritualEducational)
+        ->and($journal->journal_type_id)->toBeNull();
+});
+
+it('rejects an invalid newspaper_type value', function () {
+    $this->from(route('admin.journals.create', ['kind' => 'newspaper']))
+        ->post(route('admin.journals.store'), [
+            'name' => 'X gazetasi',
+            'kind' => 'newspaper',
+            'newspaper_type' => 'not_a_real_type',
+        ])
+        ->assertSessionHasErrors('newspaper_type');
+});
+
+it('renders the fixed newspaper_type select (not journal_type_id) on the newspaper form', function () {
+    $this->get(route('admin.journals.create', ['kind' => 'newspaper']))
+        ->assertSee('<select name="newspaper_type"', false)
+        ->assertSee('Ma’naviy-ma’rifiy gazeta')
+        ->assertSee('Pedagogik gazeta')
+        ->assertDontSee('<select name="journal_type_id"', false)
+        ->assertDontSee('Yangi tur');
+
+    $journal = Journal::factory()->newspaper()->create();
+
+    $this->get(route('admin.journals.edit', $journal))
+        ->assertSee('<select name="newspaper_type"', false)
+        ->assertDontSee('<select name="journal_type_id"', false);
+});
+
+it('renders the journal_type_id lookup (not newspaper_type) on the journal form', function () {
+    $this->get(route('admin.journals.create', ['kind' => 'journal']))
+        ->assertSee('<select name="journal_type_id"', false)
+        ->assertDontSee('<select name="newspaper_type"', false);
+
+    $journal = Journal::factory()->create();
+
+    $this->get(route('admin.journals.edit', $journal))
+        ->assertSee('<select name="journal_type_id"', false)
+        ->assertDontSee('<select name="newspaper_type"', false);
+});
+
 it('requires a name and a kind', function () {
     $this->from(route('admin.journals.create'))
         ->post(route('admin.journals.store'), [])

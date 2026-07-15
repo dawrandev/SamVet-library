@@ -14,6 +14,7 @@ class JournalData
         public readonly string $name,
         public readonly string $kind,
         public readonly ?int $journal_type_id,
+        public readonly ?string $newspaper_type,
         public readonly ?string $founder,
         public readonly ?int $language_id,
         /** @var array<string, string>|null Publisher (translation: uz/ru/kk) */
@@ -37,6 +38,7 @@ class JournalData
             name: $request->string('name')->toString(),
             kind: $request->string('kind')->toString(),
             journal_type_id: $request->integer('journal_type_id') ?: null,
+            newspaper_type: $request->input('newspaper_type') ?: null,
             founder: $request->input('founder'),
             language_id: $request->integer('language_id') ?: null,
             publisher: $publisher ?: null,
@@ -59,6 +61,7 @@ class JournalData
             'name' => $this->name,
             'kind' => $this->kind,
             'journal_type_id' => $this->journal_type_id,
+            'newspaper_type' => $this->newspaper_type,
             'founder' => $this->founder,
             'language_id' => $this->language_id,
             'publisher' => $this->publisher,
