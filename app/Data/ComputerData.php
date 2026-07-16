@@ -15,7 +15,7 @@ class ComputerData
         public readonly string $type,
         public readonly string $inventory_number,
         public readonly string $status,
-        public readonly ?int $location_id,
+        public readonly ?string $location,
         public readonly ?string $note,
     ) {}
 
@@ -26,7 +26,7 @@ class ComputerData
             type: $request->string('type')->toString(),
             inventory_number: $request->string('inventory_number')->toString(),
             status: $request->string('status')->toString(),
-            location_id: $request->integer('location_id') ?: null,
+            location: $request->input('location') ?: null,
             note: $request->input('note'),
         );
     }
@@ -43,7 +43,7 @@ class ComputerData
             'type' => $this->type,
             'inventory_number' => $this->inventory_number,
             'status' => $this->status,
-            'location_id' => $this->location_id,
+            'location' => $this->location,
             'note' => $this->note,
         ];
     }

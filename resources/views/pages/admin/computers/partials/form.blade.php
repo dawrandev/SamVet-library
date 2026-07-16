@@ -7,6 +7,9 @@
 
     $statusOptions = \App\Enums\ComputerStatus::cases();
     $currentStatus = old('status', $editing ? $computer->status?->value : \App\Enums\ComputerStatus::Working->value);
+
+    $locationOptions = \App\Enums\ComputerLocation::cases();
+    $currentLocation = old('location', $editing ? $computer->location?->value : null);
 @endphp
 
 <form
@@ -71,8 +74,20 @@
                     <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" :value="$computer?->inventory_number" required :placeholder="__('masalan: KMP-001')"
                         :help="__('Ochiq saytda ko‘rinmaydi.')" />
 
-                    <x-admin.form.select name="location_id" :label="__('Joylashuv')" :options="$locations" :selected="$computer?->location_id" :placeholder="__('Tanlang')"
-                        creatable create-translatable create-type="location" :create-label="__('Yangi joylashuv')" />
+                    {{-- Computers use a fixed, closed set of 3 locations (ComputerLocation
+                         enum) — not the open, admin-extendable `locations` lookup that
+                         BookCopy/JournalCopy use. --}}
+                    <div>
+                        <label for="location" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
+                        <select name="location" id="location"
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('location') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <option value="">{{ __('Tanlang') }}</option>
+                            @foreach ($locationOptions as $opt)
+                                <option value="{{ $opt->value }}" @selected($currentLocation === $opt->value)>{{ $opt->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('location')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                    </div>
                 </div>
 
                 <x-admin.form.textarea name="note" :label="__('Eslatma')" :value="$computer?->note" :rows="3" />

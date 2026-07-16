@@ -6,7 +6,6 @@ use App\Data\ComputerData;
 use App\Enums\ComputerStatus;
 use App\Enums\ComputerType;
 use App\Models\Computer;
-use App\Models\Location;
 use App\Repositories\Contracts\ComputerRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +34,6 @@ class ComputerService
     public function formOptions(): array
     {
         return [
-            'locations' => Location::orderBy('id')->get(),
             'types' => ComputerType::cases(),
             'statuses' => ComputerStatus::cases(),
         ];

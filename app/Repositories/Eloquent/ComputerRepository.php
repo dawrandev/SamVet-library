@@ -11,7 +11,6 @@ class ComputerRepository implements ComputerRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Computer::query()
-            ->with('location') // eager load — no N+1
             // Search (model, inventory number)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -25,8 +24,8 @@ class ComputerRepository implements ComputerRepositoryInterface
             ->when($filters['status'] ?? null, function ($query, string $status) {
                 $query->where('status', $status);
             })
-            ->when($filters['location_id'] ?? null, function ($query, int $locationId) {
-                $query->where('location_id', $locationId);
+            ->when($filters['location'] ?? null, function ($query, string $location) {
+                $query->where('location', $location);
             })
             ->latest('id')
             ->paginate($perPage)
@@ -35,7 +34,7 @@ class ComputerRepository implements ComputerRepositoryInterface
 
     public function find(int $id): ?Computer
     {
-        return Computer::with('location')->find($id);
+        return Computer::find($id);
     }
 
     public function create(array $data): Computer

@@ -10,7 +10,7 @@ interface ComputerRepositoryInterface
     /**
      * Filtered, paginated list of computers.
      *
-     * @param  array{search?: string, type?: string, status?: string, location_id?: int}  $filters
+     * @param  array{search?: string, type?: string, status?: string, location?: string}  $filters
      */
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator;
 

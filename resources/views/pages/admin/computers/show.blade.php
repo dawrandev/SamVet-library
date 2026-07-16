@@ -64,7 +64,7 @@
                     </div>
                     <div class="flex justify-between gap-4 pb-1">
                         <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Joylashuv') }}</dt>
-                        <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $computer->location?->name ?? '—' }}</dd>
+                        <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $computer->location?->label() ?? '—' }}</dd>
                     </div>
                 </dl>
 

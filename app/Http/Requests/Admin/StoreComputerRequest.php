@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ComputerLocation;
 use App\Enums\ComputerStatus;
 use App\Enums\ComputerType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +27,7 @@ class StoreComputerRequest extends FormRequest
             'type' => ['required', new Enum(ComputerType::class)],
             'inventory_number' => ['required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
             'status' => ['required', new Enum(ComputerStatus::class)],
-            'location_id' => ['nullable', 'exists:locations,id'],
+            'location' => ['nullable', new Enum(ComputerLocation::class)],
             'note' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -49,7 +50,7 @@ class StoreComputerRequest extends FormRequest
             'type' => __('Turi'),
             'inventory_number' => __('Inventar raqami'),
             'status' => __('Holati'),
-            'location_id' => __('Joylashuv'),
+            'location' => __('Joylashuv'),
             'note' => __('Eslatma'),
         ];
     }

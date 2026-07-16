@@ -25,13 +25,13 @@
                 type: @js(old('type', '')),
                 inventory_number: @js(old('inventory_number', '')),
                 status: @js(old('status', 'working')),
-                location_id: @js(old('location_id', '')),
+                location: @js(old('location', '')),
                 note: @js(old('note', '')),
             },
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.computers.store') }}';
-                this.form = { id: null, model: '', type: '', inventory_number: '', status: 'working', location_id: '', note: '' };
+                this.form = { id: null, model: '', type: '', inventory_number: '', status: 'working', location: '', note: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -91,11 +91,11 @@
             </div>
             <div class="sm:w-44">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
-                <select name="location_id"
+                <select name="location"
                         class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
                     <option value="">{{ __('Barchasi') }}</option>
-                    @foreach ($locations as $location)
-                        <option value="{{ $location->id }}" @selected(($filters['location_id'] ?? null) == $location->id)>{{ $location->name }}</option>
+                    @foreach (\App\Enums\ComputerLocation::cases() as $opt)
+                        <option value="{{ $opt->value }}" @selected(($filters['location'] ?? null) === $opt->value)>{{ $opt->label() }}</option>
                     @endforeach
                 </select>
             </div>
@@ -137,13 +137,13 @@
                                 <td class="px-5 py-4">
                                     <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $statusBadge[$computer->status?->color()] ?? '' }}">{{ $computer->status?->label() ?? '—' }}</span>
                                 </td>
-                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $computer->location?->name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $computer->location?->label() ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.computers.show', $computer) }}"
                                            class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Ko‘rish') }}</a>
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.computers.update', $computer) }}', { id: {{ $computer->id }}, model: @js($computer->model), type: @js($computer->type?->value), inventory_number: @js($computer->inventory_number), status: @js($computer->status?->value), location_id: @js((string) $computer->location_id), note: @js($computer->note ?? '') })"
+                                                @click="openEdit('{{ route('admin.computers.update', $computer) }}', { id: {{ $computer->id }}, model: @js($computer->model), type: @js($computer->type?->value), inventory_number: @js($computer->inventory_number), status: @js($computer->status?->value), location: @js($computer->location?->value ?? ''), note: @js($computer->note ?? '') })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.computers.destroy', $computer) }}', '{{ __('Kompyuterni o‘chirishni tasdiqlaysizmi?') }}')"
@@ -229,12 +229,12 @@
                             <p class="mt-1 text-theme-xs text-gray-400">{{ __('Ochiq saytda ko‘rinmaydi.') }}</p>
                         </div>
                         <div>
-                            <label for="location_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
-                            <select name="location_id" id="location_id" x-model="form.location_id"
+                            <label for="location" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
+                            <select name="location" id="location" x-model="form.location"
                                     class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
                                 <option value="">{{ __('Tanlang') }}</option>
-                                @foreach ($locations as $location)
-                                    <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                @foreach (\App\Enums\ComputerLocation::cases() as $opt)
+                                    <option value="{{ $opt->value }}">{{ $opt->label() }}</option>
                                 @endforeach
                             </select>
                         </div>

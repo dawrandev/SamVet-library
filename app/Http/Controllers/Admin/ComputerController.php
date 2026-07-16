@@ -20,7 +20,7 @@ class ComputerController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'type', 'status', 'location_id']);
+        $filters = $request->only(['search', 'type', 'status', 'location']);
 
         return view('pages.admin.computers.index', [
             'computers' => $this->computerService->paginate($filters),
@@ -45,8 +45,6 @@ class ComputerController extends Controller
 
     public function show(Computer $computer): View
     {
-        $computer->load('location');
-
         return view('pages.admin.computers.show', ['computer' => $computer]);
     }
 
