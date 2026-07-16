@@ -31,4 +31,15 @@ class ArticleFactory extends Factory
     {
         return $this->state(fn () => ['electronic_file' => $path]);
     }
+
+    /** A teacher's article in a journal the library doesn't hold. */
+    public function external(): static
+    {
+        return $this->state(fn () => [
+            'journal_issue_id' => null,
+            'resource_field_id' => null,
+            'external_journal_name' => $this->faker->company().' Journal',
+            'external_journal_year' => $this->faker->numberBetween(2015, 2026),
+        ]);
+    }
 }

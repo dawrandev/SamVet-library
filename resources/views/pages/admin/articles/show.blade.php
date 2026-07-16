@@ -6,7 +6,8 @@
     @php
         $journal = $article->journalIssue?->journal;
         $isNewspaper = $journal?->kind === \App\Enums\PublicationKind::Newspaper;
-        $backParams = array_filter(['kind' => $journal?->kind?->value]);
+        // A library-external article has no journal → always lives under "Maqolalar".
+        $backParams = array_filter(['kind' => $journal?->kind?->value ?? \App\Enums\PublicationKind::Journal->value]);
 
         // Article's own fields
         $details = array_filter([
@@ -18,16 +19,22 @@
             __('Sahifalar') => $article->pages,
         ], fn ($v) => filled($v));
 
-        // Inherited meta (from the parent issue → journal — displayed, not stored)
-        $inherited = array_filter([
-            ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal?->name,
-            ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $journal?->type?->name,
-            __('Nashriyoti') => $journal?->publisher,
-            __('Nashr joyi') => $journal?->publicationPlace?->name,
-            __('Yili') => $article->journalIssue?->year,
-            ($isNewspaper ? __('Gazeta soni') : __('Soni')) => $article->journalIssue?->issue_number,
-            __('Chiqqan sanasi') => $article->journalIssue?->issue_date?->format('d.m.Y'),
-        ], fn ($v) => filled($v));
+        // Inherited meta (from the parent issue → journal — displayed, not stored).
+        // A library-external article has no journal — its own free-text name/year instead.
+        $inherited = $article->isExternal()
+            ? array_filter([
+                __('Jurnal nomi') => $article->external_journal_name,
+                __('Nashr yili') => $article->external_journal_year,
+            ], fn ($v) => filled($v))
+            : array_filter([
+                ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal?->name,
+                ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $journal?->type?->name,
+                __('Nashriyoti') => $journal?->publisher,
+                __('Nashr joyi') => $journal?->publicationPlace?->name,
+                __('Yili') => $article->journalIssue?->year,
+                ($isNewspaper ? __('Gazeta soni') : __('Soni')) => $article->journalIssue?->issue_number,
+                __('Chiqqan sanasi') => $article->journalIssue?->issue_date?->format('d.m.Y'),
+            ], fn ($v) => filled($v));
 
         $journalNameLabel = $isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi');
     @endphp
@@ -89,7 +96,11 @@
         <div class="col-span-12 space-y-6 xl:col-span-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
                 <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
-                    {{ $isNewspaper ? __('Gazeta haqida ma’lumot') : __('Jurnal haqida ma’lumot') }}
+                    @if ($article->isExternal())
+                        {{ __('Tashqi jurnal haqida ma’lumot') }}
+                    @else
+                        {{ $isNewspaper ? __('Gazeta haqida ma’lumot') : __('Jurnal haqida ma’lumot') }}
+                    @endif
                 </h3>
                 <dl class="space-y-3">
                     @forelse ($inherited as $label => $value)
@@ -113,7 +124,11 @@
             <div class="rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-500/30 dark:bg-brand-500/10 sm:p-6">
                 <h3 class="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-300">{{ __('Joylashuvi') }}</h3>
                 <p class="text-theme-sm text-brand-700 dark:text-brand-300">
-                    {{ __('Axborot resurs markazi Elektron o‘qish zalida joylashgan.') }}
+                    @if ($article->isExternal())
+                        {{ __('Jurnalning o‘zi kutubxona fondida yo‘q — faqat maqola haqida ma’lumot saqlanadi.') }}
+                    @else
+                        {{ __('Axborot resurs markazi Elektron o‘qish zalida joylashgan.') }}
+                    @endif
                 </p>
             </div>
         </div>

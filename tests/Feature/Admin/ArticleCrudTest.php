@@ -131,6 +131,66 @@ it('shows dynamic "Gazeta" labels on a newspaper article\'s show page', function
         ->assertDontSee('Jurnal haqida ma’lumot');
 });
 
+it('creates a library-external article with a free-text journal name (no journal_issue_id)', function () {
+    $field = ResourceField::factory()->create();
+
+    $this->post(route('admin.articles.store'), [
+        'external_journal_name' => 'Journal of Veterinary Science',
+        'external_journal_year' => 2025,
+        'title' => 'Xalqaro maqola',
+        'author' => 'Prof. A. Aliyev',
+        'resource_field_id' => $field->id,
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Xalqaro maqola');
+    expect($article)->not->toBeNull()
+        ->and($article->journal_issue_id)->toBeNull()
+        ->and($article->external_journal_name)->toBe('Journal of Veterinary Science')
+        ->and($article->external_journal_year)->toBe(2025)
+        ->and($article->isExternal())->toBeTrue();
+});
+
+it('rejects an article with neither a journal issue nor an external journal name', function () {
+    $this->from(route('admin.articles.create'))
+        ->post(route('admin.articles.store'), [
+            'title' => 'X',
+            'author' => 'Y',
+        ])
+        ->assertSessionHasErrors(['journal_issue_id', 'external_journal_name']);
+});
+
+it('lists an external article under Maqolalar, never under Gazeta maqolalari', function () {
+    Article::factory()->external()->create(['title' => 'Xalqaro maqola']);
+
+    $this->get(route('admin.articles.index', ['kind' => 'journal']))
+        ->assertSee('Xalqaro maqola')
+        ->assertSee('Maqolalar');
+
+    $this->get(route('admin.articles.index', ['kind' => 'newspaper']))
+        ->assertDontSee('Xalqaro maqola');
+});
+
+it('shows the external journal name/year on the article show page instead of an empty panel', function () {
+    $article = Article::factory()->external()->create([
+        'external_journal_name' => 'Journal of Veterinary Science',
+        'external_journal_year' => 2025,
+    ]);
+
+    $this->get(route('admin.articles.show', $article))
+        ->assertSee('Tashqi jurnal haqida ma’lumot')
+        ->assertSee('Journal of Veterinary Science')
+        ->assertSee('2025')
+        ->assertDontSee('Ma’lumot yo‘q');
+});
+
+it('renders the public article page for an external article without crashing', function () {
+    $article = Article::factory()->external()->create(['title' => 'Xalqaro ochiq maqola']);
+
+    $this->get(route('article.show', $article->slug))
+        ->assertOk()
+        ->assertSee('Xalqaro ochiq maqola');
+});
+
 it('restricts the journal-picker search to newspapers when creating via ?kind=newspaper', function () {
     Journal::factory()->create(['kind' => 'journal', 'name' => 'Ilmiy jurnal']);
     Journal::factory()->create(['kind' => 'newspaper', 'name' => 'Kunlik gazeta']);

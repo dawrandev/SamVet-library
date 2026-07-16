@@ -89,9 +89,14 @@
                                 </div>
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">
-                                {{ $article->journalIssue?->journal?->name ?? '—' }}
                                 @if ($article->journalIssue)
+                                    {{ $article->journalIssue->journal?->name }}
                                     <span class="text-theme-xs text-gray-400">({{ $article->journalIssue->issue_number }}, {{ $article->journalIssue->year }})</span>
+                                @elseif ($article->external_journal_name)
+                                    {{ $article->external_journal_name }}
+                                    <span class="text-theme-xs text-gray-400">{{ __('(tashqi)') }}</span>
+                                @else
+                                    —
                                 @endif
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $article->resourceField?->name ?? '—' }}</td>

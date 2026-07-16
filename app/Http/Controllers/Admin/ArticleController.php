@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\ArticleData;
+use App\Enums\PublicationKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreArticleRequest;
 use App\Http\Requests\Admin\UpdateArticleRequest;
@@ -93,7 +94,8 @@ class ArticleController extends Controller
 
     public function destroy(Article $article): RedirectResponse
     {
-        $kind = $article->journalIssue?->journal?->kind?->value;
+        // An external article (no journal_issue_id) always belongs under "Maqolalar".
+        $kind = $article->journalIssue?->journal?->kind?->value ?? PublicationKind::Journal->value;
 
         $this->articleService->delete($article);
 

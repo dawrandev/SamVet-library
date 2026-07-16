@@ -17,7 +17,7 @@ class Article extends Model
     // Note: `slug` (set by the observer) and `views_count` (DB default) are
     // intentionally NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
-        'journal_issue_id', 'title', 'author',
+        'journal_issue_id', 'external_journal_name', 'external_journal_year', 'title', 'author',
         'resource_field_id', 'language_id', 'category',
         'doi', 'pages', 'annotation',
         'electronic_file',
@@ -27,8 +27,15 @@ class Article extends Model
     {
         return [
             'category' => ArticleCategory::class,
+            'external_journal_year' => 'integer',
             'views_count' => 'integer',
         ];
+    }
+
+    /** True when this article has no library-held journal — an external publication. */
+    public function isExternal(): bool
+    {
+        return $this->journal_issue_id === null;
     }
 
     // --- Relationships ---

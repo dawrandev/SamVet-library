@@ -26,6 +26,9 @@ export default function articleForm(config) {
         journalId: config.initial.journalId,
         journalName: config.initial.journalName,
         issueId: config.initial.issueId ? String(config.initial.issueId) : '',
+        // Library-external article (a journal the library doesn't hold) —
+        // free-text journal name/year instead of the search + issue picker.
+        external: config.initial.external ?? false,
 
         results: [],
         showResults: false,

@@ -47,6 +47,11 @@ class ArticlePageService
      */
     private function otherArticles(Article $article): Collection
     {
+        // A library-external article (no journal_issue_id) has no siblings.
+        if ($article->journalIssue === null) {
+            return collect();
+        }
+
         return $this->periodicals->issueArticles($article->journalIssue)
             ->values()
             ->map(fn (Article $item, int $index): array => ['number' => $index + 1, 'article' => $item])

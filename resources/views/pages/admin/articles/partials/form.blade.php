@@ -32,6 +32,7 @@
             journalId: {{ $selectedJournalId ?? 'null' }},
             journalName: @js($selectedJournalName ?? ''),
             issueId: {{ $selectedIssueId ?? 'null' }},
+            external: {{ $editing && $article->isExternal() ? 'true' : 'false' }},
         },
     })"
 >
@@ -71,6 +72,17 @@
         {{-- Left: journal & issue --}}
         <x-admin.form.section :title="$isNewspaperForm ? __('Gazeta va son') : __('Jurnal va son')">
             <div class="space-y-5">
+                @unless ($isNewspaperForm)
+                    {{-- A teacher's article in an international journal the library doesn't
+                         hold — no journal/issue to link to, just a free-text journal name. --}}
+                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-400">
+                        <input type="checkbox" x-model="external"
+                               class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900" />
+                        {{ __('Jurnal kutubxonada yo‘q (xalqaro/tashqi jurnalda chop etilgan)') }}
+                    </label>
+                @endunless
+
+                <div x-show="! external">
                 {{-- Journal autocomplete --}}
                 <div class="relative" @click.outside="showResults = false">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -112,7 +124,7 @@
                     <label for="journal_issue_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         {{ __('Son') }}<span class="text-error-500">*</span>
                     </label>
-                    <select name="journal_issue_id" id="journal_issue_id" x-ref="issueSelect" x-model="issueId" required
+                    <select name="journal_issue_id" id="journal_issue_id" x-ref="issueSelect" x-model="issueId" :required="! external"
                             :disabled="journalId === null || loadingIssues"
                             class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
                         <option value="">{{ __('Avval jurnalni tanlang') }}</option>
@@ -124,6 +136,16 @@
                     <p x-show="journalId !== null && ! loadingIssues && issues.length === 0" x-cloak class="mt-1 text-theme-xs text-error-500">
                         {{ __('Bu jurnalda son yo‘q. Avval son qo‘shing.') }}
                     </p>
+                </div>
+                </div>
+
+                {{-- External journal (not held by the library) — free text. --}}
+                <div x-show="external" x-cloak class="space-y-5">
+                    <x-admin.form.input name="external_journal_name" :label="__('Jurnal nomi')" :value="$article?->external_journal_name"
+                        :placeholder="__('masalan: Journal of Veterinary Science')" />
+                    <x-admin.form.input name="external_journal_year" type="number" :label="__('Nashr yili')" :value="$article?->external_journal_year"
+                        :placeholder="date('Y')" />
+                    @error('external_journal_name')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                 </div>
             </div>
         </x-admin.form.section>
