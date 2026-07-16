@@ -8,6 +8,8 @@ import 'flatpickr/dist/flatpickr.css';
 import lookupTable from './admin/lookup-table';
 import articleForm from './admin/article-form';
 import uploadForm from './admin/upload-form';
+import computerSessionCountdown from './admin/computer-session-countdown';
+import computerSessionForm from './admin/computer-session-form';
 
 // Alpine.js (persist plugin — remembers sidebar/dark mode state)
 Alpine.plugin(persist);
@@ -21,6 +23,14 @@ Alpine.data('articleForm', articleForm);
 
 // Form upload with a live progress bar (large PDF uploads)
 Alpine.data('uploadForm', uploadForm);
+
+// Computer checkout: live countdown + auto-filled location preview
+Alpine.data('computerSessionCountdown', computerSessionCountdown);
+Alpine.data('computerSessionForm', computerSessionForm);
+
+// Shared 1s clock — one interval total (not one per countdown row), only
+// ticking on pages that actually render a computer-session countdown.
+Alpine.store('clock', { now: Date.now() });
 
 // 3-language rich text editor (TinyMCE loaded lazily) — used in news/page forms.
 Alpine.data('richEditor', () => ({
@@ -84,6 +94,11 @@ flatpickr('.datepicker', {
 // Dashboard charts: ApexCharts is heavy — load it only on the dashboard (code-split).
 if (document.querySelector('[data-dashboard]')) {
     import('./admin/charts.js').then((m) => m.initDashboardCharts());
+}
+
+// Tick the shared clock only on pages that render a computer-session countdown.
+if (document.querySelector('[data-computer-session-countdown]')) {
+    setInterval(() => { Alpine.store('clock').now = Date.now(); }, 1000);
 }
 
 // PDF.js is heavy — load it only on the protected online reader page (code-split).

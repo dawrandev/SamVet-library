@@ -57,6 +57,10 @@
                         </dd>
                     </div>
                     <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                        <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Kompyuter raqami') }}</dt>
+                        <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $computer->computer_number ?? '—' }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
                         <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Holati') }}</dt>
                         <dd>
                             <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $statusBadge[$computer->status?->color()] ?? '' }}">{{ $computer->status?->label() ?? '—' }}</span>

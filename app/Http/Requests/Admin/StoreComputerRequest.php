@@ -26,6 +26,7 @@ class StoreComputerRequest extends FormRequest
             'model' => ['required', 'string', 'max:255'],
             'type' => ['required', new Enum(ComputerType::class)],
             'inventory_number' => ['required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
+            'computer_number' => ['nullable', 'string', 'max:100', $this->computerNumberUniqueRule()],
             'status' => ['required', new Enum(ComputerStatus::class)],
             'location' => ['nullable', new Enum(ComputerLocation::class)],
             'note' => ['nullable', 'string', 'max:1000'],
@@ -41,6 +42,14 @@ class StoreComputerRequest extends FormRequest
     }
 
     /**
+     * The number readers actually check the computer out by (unrestricted on create).
+     */
+    protected function computerNumberUniqueRule(): object
+    {
+        return Rule::unique('computers', 'computer_number');
+    }
+
+    /**
      * @return array<string, string>
      */
     public function attributes(): array
@@ -49,6 +58,7 @@ class StoreComputerRequest extends FormRequest
             'model' => __('Modeli'),
             'type' => __('Turi'),
             'inventory_number' => __('Inventar raqami'),
+            'computer_number' => __('Kompyuter raqami'),
             'status' => __('Holati'),
             'location' => __('Joylashuv'),
             'note' => __('Eslatma'),

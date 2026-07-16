@@ -80,6 +80,29 @@ it('shows the correct Uzbek label in the index list table', function () {
         ->assertSee('Elektron kutubxona zali');
 });
 
+it('creates a computer with a computer_number distinct from the inventory number', function () {
+    $this->post(route('admin.computers.store'), [
+        'model' => 'HP ProDesk 400 G7',
+        'type' => 'desktop',
+        'inventory_number' => 'KMP-INV-1',
+        'computer_number' => '7',
+        'status' => 'working',
+    ])->assertRedirect();
+
+    $computer = Computer::firstWhere('inventory_number', 'KMP-INV-1');
+    expect($computer->computer_number)->toBe('7');
+});
+
+it('renders the computer_number field on the create/edit forms', function () {
+    $this->get(route('admin.computers.create'))
+        ->assertSee('name="computer_number"', false);
+
+    $computer = Computer::factory()->create();
+
+    $this->get(route('admin.computers.edit', $computer))
+        ->assertSee('name="computer_number"', false);
+});
+
 it('creates, updates and deletes a computer (happy path)', function () {
     $this->post(route('admin.computers.store'), [
         'model' => 'Dell OptiPlex 3080',

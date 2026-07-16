@@ -2,48 +2,129 @@
 
 namespace App\Services;
 
+use App\Data\ComputerSessionData;
 use App\Models\Computer;
 use App\Models\ComputerSession;
 use App\Models\Reader;
 use App\Repositories\Contracts\ComputerSessionRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ComputerSessionService
 {
+    /** Cache of the expired-and-unfinished sessions count (navbar/sidebar notification). */
+    public const EXPIRED_CACHE_KEY = 'expired_computer_sessions_count';
+
     public function __construct(
         private readonly ComputerSessionRepositoryInterface $sessions,
     ) {}
 
     /**
-     * Add a computer usage record for a reader.
+     * List of computer usage records (active / expired / finished).
      *
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $filters
      */
-    public function create(Reader $reader, array $data): ComputerSession
+    public function paginate(array $filters): LengthAwarePaginator
     {
-        $computerId = $data['computer_id'] ?? null;
-        $computerNumber = $data['computer_number'] ?? null;
+        return $this->sessions->paginate($filters);
+    }
 
-        // Snapshot the inventory number onto the session, so the usage log keeps the
-        // machine reference even if the computer is later removed from the registry.
-        if ($computerId !== null) {
-            $computerNumber = Computer::find($computerId)?->inventory_number ?? $computerNumber;
+    /**
+     * Count of expired-but-unfinished sessions (for the notification).
+     */
+    public function expiredCount(): int
+    {
+        return $this->sessions->expiredCount();
+    }
+
+    /**
+     * Check a computer out to a reader for an allotted duration.
+     * issued_at/expires_at/location are all server-derived — never trusted
+     * from client input (see ComputerSessionData).
+     */
+    public function create(Reader $reader, ComputerSessionData $data): ComputerSession
+    {
+        $computer = Computer::findOrFail($data->computer_id);
+        $issuedAt = now();
+
+        return DB::transaction(fn () => $this->sessions->create([
+            'reader_id' => $reader->id,
+            'computer_id' => $computer->id,
+            'issued_at' => $issuedAt,
+            'expires_at' => $issuedAt->clone()->addMinutes($data->duration_minutes),
+            'duration_minutes' => $data->duration_minutes,
+            'location' => $computer->location,
+            'purpose' => $data->purpose,
+            'note' => $data->note,
+        ]));
+    }
+
+    /**
+     * "Tugatish" — the reader finished using the computer (early, on time, or late).
+     * A no-op if already finished (mirrors LoanService::returnLoan's guard).
+     */
+    public function finish(ComputerSession $session): ComputerSession
+    {
+        if ($session->isFinished()) {
+            return $session;
         }
 
-        return $this->sessions->create([
-            'reader_id' => $reader->id,
-            'date' => $data['date'],
-            'issued_time' => $data['issued_time'] ?? null,
-            'returned_time' => $data['returned_time'] ?? null,
-            'computer_number' => $computerNumber, // snapshot of the picked computer (or legacy free-text)
-            'computer_id' => $computerId,
-            'location' => $data['location'] ?? null,
-            'purpose' => $data['purpose'] ?? null,
-            'note' => $data['note'] ?? null,
-        ]);
+        $session = DB::transaction(function () use ($session) {
+            $this->sessions->update($session, ['returned_at' => now()]);
+
+            return $session;
+        });
+
+        $this->forgetExpiredCache();
+
+        return $session;
+    }
+
+    /**
+     * Grant more time on an active session. If it's still running, extends
+     * from its current expiry (so remaining time isn't lost); if it already
+     * ran out, extends from now (the librarian is granting fresh time).
+     * A no-op if already finished.
+     */
+    public function extend(ComputerSession $session, int $minutes): ComputerSession
+    {
+        if ($session->isFinished()) {
+            return $session;
+        }
+
+        $session = DB::transaction(function () use ($session, $minutes) {
+            $base = ($session->expires_at !== null && $session->expires_at->isFuture())
+                ? $session->expires_at
+                : now();
+
+            $this->sessions->update($session, [
+                'expires_at' => $base->clone()->addMinutes($minutes),
+                'duration_minutes' => ($session->duration_minutes ?? 0) + $minutes,
+            ]);
+
+            return $session;
+        });
+
+        $this->forgetExpiredCache();
+
+        return $session;
     }
 
     public function delete(ComputerSession $session): void
     {
-        $this->sessions->delete($session);
+        DB::transaction(fn () => $this->sessions->delete($session));
+
+        // Deleting an expired-unfinished row can change the notification count.
+        $this->forgetExpiredCache();
+    }
+
+    /**
+     * Invalidates the expired-sessions cache — so the navbar/sidebar
+     * notification updates immediately after a state change.
+     */
+    private function forgetExpiredCache(): void
+    {
+        Cache::forget(self::EXPIRED_CACHE_KEY);
     }
 }

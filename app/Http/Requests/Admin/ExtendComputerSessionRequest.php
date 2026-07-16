@@ -4,7 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreComputerSessionRequest extends FormRequest
+class ExtendComputerSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,10 +18,7 @@ class StoreComputerSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'computer_id' => ['required', 'exists:computers,id'],
-            'duration_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
-            'purpose' => ['nullable', 'string', 'max:255'],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'minutes' => ['required', 'integer', 'min:1', 'max:1440'],
         ];
     }
 
@@ -31,10 +28,7 @@ class StoreComputerSessionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'computer_id' => __('Kompyuter'),
-            'duration_minutes' => __('Ajratilgan vaqt (daqiqa)'),
-            'purpose' => __('Maqsadi'),
-            'note' => __('Izoh'),
+            'minutes' => __('Necha daqiqaga uzaytirish'),
         ];
     }
 }

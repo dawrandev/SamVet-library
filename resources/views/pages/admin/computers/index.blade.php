@@ -24,6 +24,7 @@
                 model: @js(old('model', '')),
                 type: @js(old('type', '')),
                 inventory_number: @js(old('inventory_number', '')),
+                computer_number: @js(old('computer_number', '')),
                 status: @js(old('status', 'working')),
                 location: @js(old('location', '')),
                 note: @js(old('note', '')),
@@ -31,7 +32,7 @@
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.computers.store') }}';
-                this.form = { id: null, model: '', type: '', inventory_number: '', status: 'working', location: '', note: '' };
+                this.form = { id: null, model: '', type: '', inventory_number: '', computer_number: '', status: 'working', location: '', note: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -116,6 +117,7 @@
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Modeli') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Inventar raqami') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kompyuter raqami') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Holati') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Joylashuv') }}</th>
                             <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
@@ -134,6 +136,7 @@
                                     <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $computer->type?->label() ?? '—' }}</span>
                                 </td>
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $computer->inventory_number }}</td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $computer->computer_number ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $statusBadge[$computer->status?->color()] ?? '' }}">{{ $computer->status?->label() ?? '—' }}</span>
                                 </td>
@@ -143,7 +146,7 @@
                                         <a href="{{ route('admin.computers.show', $computer) }}"
                                            class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Ko‘rish') }}</a>
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.computers.update', $computer) }}', { id: {{ $computer->id }}, model: @js($computer->model), type: @js($computer->type?->value), inventory_number: @js($computer->inventory_number), status: @js($computer->status?->value), location: @js($computer->location?->value ?? ''), note: @js($computer->note ?? '') })"
+                                                @click="openEdit('{{ route('admin.computers.update', $computer) }}', { id: {{ $computer->id }}, model: @js($computer->model), type: @js($computer->type?->value), inventory_number: @js($computer->inventory_number), computer_number: @js($computer->computer_number ?? ''), status: @js($computer->status?->value), location: @js($computer->location?->value ?? ''), note: @js($computer->note ?? '') })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.computers.destroy', $computer) }}', '{{ __('Kompyuterni o‘chirishni tasdiqlaysizmi?') }}')"
@@ -228,6 +231,17 @@
                             @error('inventory_number')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                             <p class="mt-1 text-theme-xs text-gray-400">{{ __('Ochiq saytda ko‘rinmaydi.') }}</p>
                         </div>
+                        <div>
+                            <label for="computer_number" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kompyuter raqami') }}</label>
+                            <input type="text" name="computer_number" id="computer_number" x-model="form.computer_number"
+                                   placeholder="{{ __('masalan: 1') }}"
+                                   class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('computer_number') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
+                            @error('computer_number')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            <p class="mt-1 text-theme-xs text-gray-400">{{ __('Foydalanuvchilarga berish uchun ishlatiladigan raqam.') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="location" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
                             <select name="location" id="location" x-model="form.location"

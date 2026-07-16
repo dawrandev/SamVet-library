@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
+use App\Services\ComputerSessionService;
 use App\Services\LoanService;
 use App\Services\Site\SectionService;
 use Illuminate\Support\Facades\View;
@@ -23,17 +24,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Pass the number of overdue books to the admin layout and its
-        // partials (header/sidebar) for the notification badge. Cached for 60s
-        // (to let time pass), but LoanService clears it immediately when a loan changes.
+        // Pass the number of overdue books and expired-unfinished computer
+        // sessions to the admin layout and its partials (header/sidebar) for
+        // the notification badges. Cached for 60s (to let time pass), but each
+        // service clears its own cache immediately when its state changes.
         View::composer('layouts.admin', function ($view) {
-            $count = cache()->remember(
+            $overdueCount = cache()->remember(
                 LoanService::OVERDUE_CACHE_KEY,
                 60,
                 fn () => app(LoanService::class)->overdueCount(),
             );
 
-            $view->with('overdueLoansCount', $count);
+            $expiredComputerSessionsCount = cache()->remember(
+                ComputerSessionService::EXPIRED_CACHE_KEY,
+                60,
+                fn () => app(ComputerSessionService::class)->expiredCount(),
+            );
+
+            $view->with([
+                'overdueLoansCount' => $overdueCount,
+                'expiredComputerSessionsCount' => $expiredComputerSessionsCount,
+            ]);
         });
 
         // The public navbar renders the admin-built menu tree: active top-level

@@ -569,7 +569,11 @@
     </div>
 
     {{-- Computer usage --}}
-    <div class="mt-6" x-data="{ computerOpen: {{ $errors->has('issued_time') || $errors->has('returned_time') || $errors->has('computer_id') || $errors->has('location') || $errors->has('purpose') ? 'true' : 'false' }} }">
+    <div class="mt-6"
+         x-data="computerSessionForm({
+             hasErrors: {{ $errors->has('computer_id') || $errors->has('duration_minutes') ? 'true' : 'false' }},
+             locations: @js($computers->mapWithKeys(fn ($c) => [$c->id => $c->location?->label() ?? __('—')])),
+         })">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterdan foydalanish') }}</h3>
@@ -584,34 +588,56 @@
                     <table class="min-w-full text-left text-theme-sm">
                         <thead>
                             <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                <th class="px-3 py-2 font-medium">{{ __('Sanasi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Berilgan vaqti') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Kompyuter') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Joylashuv') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Maqsadi') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Topshirish vaqti') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Qolgan vaqt') }}</th>
                                 <th class="px-3 py-2 font-medium"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($reader->computerSessions as $session)
                                 <tr class="border-b border-gray-50 dark:border-gray-800/50">
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->date?->format('d.m.Y') }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->issued_time ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->issued_at->format('d.m.Y H:i') }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
                                         @if ($session->computer)
-                                            {{ $session->computer->inventory_number }} — {{ $session->computer->model }}
+                                            {{ $session->computer->computer_number ?? $session->computer->inventory_number }} — {{ $session->computer->model }}
                                         @else
-                                            {{ $session->computer_number ?: '—' }}
+                                            —
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->location ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->location?->label() ?? '—' }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->purpose ?: '—' }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $session->returned_time ?: '—' }}</td>
+                                    <td class="px-3 py-2" data-computer-session-countdown
+                                        x-data="computerSessionCountdown({ expiresAt: @js($session->expires_at?->toIso8601String()), returnedAt: @js($session->returned_at?->toIso8601String()) })">
+                                        <template x-if="finished">
+                                            <span class="text-gray-500 dark:text-gray-400">{{ __('Tugatilgan') }} ({{ $session->returned_at?->format('d.m.Y H:i') }})</span>
+                                        </template>
+                                        <template x-if="!finished && remainingLabel !== null">
+                                            <span :class="isExpired ? 'font-semibold text-error-600 dark:text-error-500' : 'text-gray-700 dark:text-gray-300'" x-text="remainingLabel"></span>
+                                        </template>
+                                        <template x-if="!finished && remainingLabel === null">
+                                            <span class="text-gray-400">—</span>
+                                        </template>
+                                    </td>
                                     <td class="px-3 py-2 text-right">
-                                        <button type="button"
-                                                @click="$store.confirm.ask('{{ route('admin.readers.computer-sessions.destroy', [$reader, $session]) }}', '{{ __('Yozuvni o‘chirishni tasdiqlaysizmi?') }}', 'DELETE')"
-                                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            @unless ($session->isFinished())
+                                                <form method="POST" action="{{ route('admin.computer-sessions.extend', $session) }}" class="flex items-center gap-1">
+                                                    @csrf @method('PATCH')
+                                                    <input type="number" name="minutes" value="15" min="1" max="1440"
+                                                           class="h-8 w-16 rounded-lg border border-gray-200 bg-transparent px-2 text-theme-xs text-gray-800 focus:outline-hidden dark:border-gray-800 dark:text-white/90" />
+                                                    <button type="submit" class="rounded-lg border border-gray-200 px-2 py-1.5 text-theme-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Uzaytirish') }}</button>
+                                                </form>
+                                                <button type="button"
+                                                        @click="$store.confirm.ask('{{ route('admin.computer-sessions.finish', $session) }}', '{{ __('Seansni tugatishni tasdiqlaysizmi?') }}', 'PATCH')"
+                                                        class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-success-600 hover:bg-success-50 dark:border-gray-800 dark:hover:bg-success-500/10">{{ __('Tugatish') }}</button>
+                                            @endunless
+                                            <button type="button"
+                                                    @click="$store.confirm.ask('{{ route('admin.readers.computer-sessions.destroy', [$reader, $session]) }}', '{{ __('Yozuvni o‘chirishni tasdiqlaysizmi?') }}', 'DELETE')"
+                                                    class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -632,25 +658,27 @@
                         @csrf
 
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <x-admin.form.input type="date" name="date" :label="__('Sanasi')" :required="true" :value="old('date')" />
-                            <x-admin.form.input type="time" name="issued_time" :label="__('Berilgan vaqti')" :value="old('issued_time')" />
-
-                            {{-- Computer picked from the registry (inventory number + model) --}}
+                            {{-- Computer picked from the registry, by its hand-out number (not the inventory tag) --}}
                             @php $computerInput = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90'; @endphp
                             <div>
                                 <label for="computer_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kompyuter') }}</label>
-                                <select name="computer_id" id="computer_id" class="{{ $computerInput }} {{ $errors->has('computer_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                <select name="computer_id" id="computer_id" x-model="computerId" class="{{ $computerInput }} {{ $errors->has('computer_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
                                     <option value="">{{ __('Tanlang') }}</option>
                                     @foreach ($computers as $computer)
-                                        <option value="{{ $computer->id }}" @selected(old('computer_id') == $computer->id)>{{ $computer->inventory_number }} — {{ $computer->model }} ({{ $computer->status->label() }})</option>
+                                        <option value="{{ $computer->id }}" @selected(old('computer_id') == $computer->id)>{{ $computer->computer_number }} — {{ $computer->model }} ({{ $computer->status->label() }})</option>
                                     @endforeach
                                 </select>
                                 @error('computer_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                             </div>
 
-                            <x-admin.form.input name="location" :label="__('Joylashuv')" :value="old('location')" />
+                            {{-- Read-only, auto-filled from the selected computer — never typed. --}}
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Joylashuv') }}</label>
+                                <p class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400" x-text="locationPreview"></p>
+                            </div>
+
+                            <x-admin.form.input type="number" name="duration_minutes" :label="__('Ajratilgan vaqt (daqiqa)')" :required="true" min="1" max="1440" :value="old('duration_minutes', 60)" />
                             <x-admin.form.input name="purpose" :label="__('Maqsadi')" :value="old('purpose')" />
-                            <x-admin.form.input type="time" name="returned_time" :label="__('Topshirish vaqti')" :value="old('returned_time')" />
                         </div>
 
                         <x-admin.form.textarea name="note" :label="__('Izoh')" :rows="2" />

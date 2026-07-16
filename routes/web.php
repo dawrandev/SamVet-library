@@ -166,8 +166,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('readers/{reader}/events/{event}', [EventController::class, 'destroy'])->name('readers.events.destroy');
 
     // Computer usage
+    Route::get('computer-sessions', [ComputerSessionController::class, 'index'])->name('computer-sessions.index');
     Route::post('readers/{reader}/computer-sessions', [ComputerSessionController::class, 'store'])->name('readers.computer-sessions.store');
     Route::delete('readers/{reader}/computer-sessions/{computerSession}', [ComputerSessionController::class, 'destroy'])->name('readers.computer-sessions.destroy');
+    Route::patch('computer-sessions/{computerSession}/finish', [ComputerSessionController::class, 'finish'])->name('computer-sessions.finish');
+    Route::patch('computer-sessions/{computerSession}/extend', [ComputerSessionController::class, 'extend'])->name('computer-sessions.extend');
 
     // User status (block / finish / restore)
     Route::patch('readers/{reader}/block', [ReaderStatusController::class, 'block'])->name('readers.block');

@@ -65,7 +65,7 @@ class Reader extends Model implements Authenticatable
 
     public function computerSessions(): HasMany
     {
-        return $this->hasMany(ComputerSession::class)->latest('date');
+        return $this->hasMany(ComputerSession::class)->latest('issued_at');
     }
 
     // --- Helpers ---

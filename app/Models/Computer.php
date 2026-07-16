@@ -14,7 +14,7 @@ class Computer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'model', 'type', 'inventory_number', 'status', 'location', 'note',
+        'model', 'type', 'inventory_number', 'computer_number', 'status', 'location', 'note',
     ];
 
     protected function casts(): array

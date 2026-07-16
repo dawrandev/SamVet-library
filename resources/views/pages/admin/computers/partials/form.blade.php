@@ -74,6 +74,13 @@
                     <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" :value="$computer?->inventory_number" required :placeholder="__('masalan: KMP-001')"
                         :help="__('Ochiq saytda ko‘rinmaydi.')" />
 
+                    {{-- The number readers actually check the computer out by — distinct
+                         from the inventory tag above (used only for library asset tracking). --}}
+                    <x-admin.form.input name="computer_number" :label="__('Kompyuter raqami')" :value="$computer?->computer_number" :placeholder="__('masalan: 1')"
+                        :help="__('Foydalanuvchilarga berish uchun ishlatiladigan raqam (inventar raqamidan farqli).')" />
+                </div>
+
+                <div class="grid gap-5 sm:grid-cols-2">
                     {{-- Computers use a fixed, closed set of 3 locations (ComputerLocation
                          enum) — not the open, admin-extendable `locations` lookup that
                          BookCopy/JournalCopy use. --}}

@@ -21,6 +21,7 @@ class ComputerFactory extends Factory
             'model' => $this->faker->words(3, true),
             'type' => $this->faker->randomElement(ComputerType::cases())->value,
             'inventory_number' => strtoupper($this->faker->unique()->bothify('KMP-#####')),
+            'computer_number' => $this->faker->unique()->numerify('##'),
             'status' => $this->faker->randomElement(ComputerStatus::cases())->value,
             'location' => $this->faker->randomElement(ComputerLocation::cases())->value,
             'note' => null,

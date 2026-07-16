@@ -163,6 +163,24 @@
                         </a>
                     </li>
 
+                    {{-- Kompyuter seanslari (foydalanish/checkout ro'yxati, barcha o'quvchilar) --}}
+                    <li>
+                        <a href="{{ route('admin.computer-sessions.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.computer-sessions.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.computer-sessions.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"
+                                      stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="currentColor" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Kompyuter seanslari') }}</span>
+                            @if (($expiredComputerSessionsCount ?? 0) > 0)
+                                <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-error-500 px-1 text-[10px] font-semibold text-white"
+                                      :class="sidebarToggle ? 'lg:hidden' : ''">
+                                    {{ $expiredComputerSessionsCount > 99 ? '99+' : $expiredComputerSessionsCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
+
                     {{-- Ma'lumotnomalar (ochiladigan guruh) --}}
                     <li x-data="{ open: {{ request()->routeIs('admin.lookups.*') ? 'true' : 'false' }} }">
                         <button type="button" @click="open = !open"

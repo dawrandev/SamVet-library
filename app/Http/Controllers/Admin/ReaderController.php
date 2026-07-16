@@ -58,8 +58,9 @@ class ReaderController extends Controller
 
         return view('pages.admin.readers.show', [
             'reader' => $reader,
-            // Computers picked from the registry in the "computer usage" modal
-            'computers' => Computer::orderBy('model')->get(),
+            // Computers picked from the registry in the "computer usage" modal —
+            // only ones the librarian has assigned a hand-out number to.
+            'computers' => Computer::whereNotNull('computer_number')->orderBy('computer_number')->get(),
         ]);
     }
 
