@@ -29,7 +29,7 @@ class Reader extends Model implements Authenticatable
         'nationality', 'birth_date', 'passport', 'pinfl', 'gender',
         'district', 'address', 'phone', 'member_year',
         'photo', 'other_library_member', 'note',
-        'status', 'blocked_until', 'block_reason',
+        'status', 'blocked_until', 'block_reason', 'left_reason',
     ];
 
     protected function casts(): array
@@ -80,6 +80,12 @@ class Reader extends Model implements Authenticatable
     {
         return $this->status === ReaderStatus::Blocked
             || ($this->blocked_until !== null && $this->blocked_until->isFuture());
+    }
+
+    /** Has unreturned books — membership can't be finished while this is true. */
+    public function hasOutstandingLoans(): bool
+    {
+        return $this->activeLoans()->exists();
     }
 
     /**

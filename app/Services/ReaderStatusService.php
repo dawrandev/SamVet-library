@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ReaderStatus;
 use App\Models\Reader;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
+use RuntimeException;
 
 class ReaderStatusService
 {
@@ -27,11 +28,20 @@ class ReaderStatusService
     /**
      * End usage (graduated / left employment) — status=left.
      * The record is kept but does not appear in the main list.
+     *
+     * @throws RuntimeException  When the reader still has unreturned books.
      */
-    public function finish(Reader $reader): Reader
+    public function finish(Reader $reader, string $reason): Reader
     {
+        if ($reader->hasOutstandingLoans()) {
+            throw new RuntimeException(
+                __('Foydalanuvchida qaytarilmagan kitob(lar) bor. Avval kitoblarni qaytarib bo‘lgach, foydalanishni tugatish mumkin.')
+            );
+        }
+
         return $this->readers->update($reader, [
             'status' => ReaderStatus::Left->value,
+            'left_reason' => $reason,
         ]);
     }
 

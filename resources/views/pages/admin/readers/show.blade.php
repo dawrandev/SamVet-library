@@ -43,10 +43,15 @@
     @php
         $isActiveOrSuspended = in_array($reader->status, [\App\Enums\ReaderStatus::Active, \App\Enums\ReaderStatus::Suspended], true);
         $warningCount = $reader->warnings->count();
+        $outstandingLoans = $reader->activeLoans()->with('copy.book')->get();
     @endphp
 
     {{-- Header --}}
-    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" x-data="{ blockOpen: {{ $errors->has('blocked_until') || $errors->has('block_reason') ? 'true' : 'false' }} }">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+         x-data="{
+             blockOpen: {{ $errors->has('blocked_until') || $errors->has('block_reason') ? 'true' : 'false' }},
+             finishOpen: {{ $errors->has('left_reason') ? 'true' : 'false' }},
+         }">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.readers.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $reader->full_name }}</h2>
@@ -59,9 +64,8 @@
                 <button type="button" @click="blockOpen = true"
                         class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('Bloklash') }}</button>
 
-                {{-- Finish usage (graduated / left employment) --}}
-                <button type="button"
-                        @click="$store.confirm.ask('{{ route('admin.readers.finish', $reader) }}', '{{ __('Kutubxonadan foydalanishni tugatishni tasdiqlaysizmi? Foydalanuvchi ro‘yxatdan olib tashlanadi.') }}', 'PATCH')"
+                {{-- Finish usage (graduated / left employment) — blocked while books are outstanding --}}
+                <button type="button" @click="finishOpen = true"
                         class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Foydalanishni tugatish') }}</button>
             @else
                 {{-- Restore (blocked / left) --}}
@@ -114,6 +118,51 @@
                                 <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('Bloklash') }}</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </template>
+
+            {{-- Finish-usage modal --}}
+            <template x-teleport="body">
+                <div x-show="finishOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-gray-900/50" @click="finishOpen = false"></div>
+                    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="finishOpen = false">
+                        <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanishni tugatish') }}</h4>
+
+                        @if ($outstandingLoans->isNotEmpty())
+                            {{-- Debt guard: cannot finish while books are unreturned. --}}
+                            <div class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                                <p class="font-medium">{{ __('Foydalanuvchida qaytarilmagan kitob(lar) bor.') }}</p>
+                                <p class="mt-1">{{ __('Avval quyidagi kitoblarni qaytarib bo‘lgach, foydalanishni tugatish mumkin bo‘ladi.') }}</p>
+                                <ul class="mt-2 list-inside list-disc space-y-1">
+                                    @foreach ($outstandingLoans as $loan)
+                                        <li>{{ $loan->copy?->book?->title ?? '—' }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <div class="flex justify-end pt-4">
+                                <button type="button" @click="finishOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Yopish') }}</button>
+                            </div>
+                        @else
+                            <form action="{{ route('admin.readers.finish', $reader) }}" method="POST" class="space-y-4">
+                                @csrf
+                                @method('PATCH')
+
+                                <x-admin.form.textarea
+                                    name="left_reason"
+                                    :label="__('Sababi')"
+                                    :value="old('left_reason')"
+                                    :required="true"
+                                    :rows="3"
+                                    :placeholder="__('masalan: dekret, o‘qishni bitirgan, ishdan ketti')"
+                                />
+
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" @click="finishOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                                    <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('Tasdiqlash') }}</button>
+                                </div>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </template>
