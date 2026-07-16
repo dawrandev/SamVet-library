@@ -36,7 +36,7 @@ class StoreJournalIssueRequest extends FormRequest
     {
         return [
             'year' => __('Nashr yili'),
-            'issue_date' => __('Sanasi'),
+            'issue_date' => __('Kelgan vaqti'),
             'issue_number' => __('Soni'),
             'pages' => __('Sahifalar soni'),
             'cover' => __('Muqova rasmi'),
