@@ -77,7 +77,7 @@
                     {{-- The number readers actually check the computer out by — distinct
                          from the inventory tag above (used only for library asset tracking). --}}
                     <x-admin.form.input name="computer_number" :label="__('Kompyuter raqami')" :value="$computer?->computer_number" :placeholder="__('masalan: 1')"
-                        :help="__('Foydalanuvchilarga berish uchun ishlatiladigan raqam (inventar raqamidan farqli).')" />
+                        :help="__('Kompyuterga kutubxonachi tomonidan berilgan raqam (inventar raqamidan farqli).')" />
                 </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">

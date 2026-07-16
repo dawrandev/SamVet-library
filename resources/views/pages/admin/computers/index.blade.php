@@ -237,7 +237,7 @@
                                    placeholder="{{ __('masalan: 1') }}"
                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('computer_number') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                             @error('computer_number')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                            <p class="mt-1 text-theme-xs text-gray-400">{{ __('Foydalanuvchilarga berish uchun ishlatiladigan raqam.') }}</p>
+                            <p class="mt-1 text-theme-xs text-gray-400">{{ __('Kompyuterga kutubxonachi tomonidan berilgan raqam.') }}</p>
                         </div>
                     </div>
 
