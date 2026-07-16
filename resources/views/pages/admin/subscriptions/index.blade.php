@@ -25,6 +25,22 @@
                 end_month: @js(old('end_month', '12')),
                 amount: @js(old('amount', '')),
             },
+            // Reference data for the reader/journal auto-fill panels below their pickers.
+            readersData: @js($readers->map(fn ($r) => [
+                'id' => (string) $r->id,
+                'label' => $r->full_name,
+                'isStudent' => $r->type->isStudent(),
+                'place' => $r->affiliation_place,
+                'unit' => $r->affiliation_unit,
+                'group' => $r->affiliation_group,
+            ])->values()),
+            journalsData: @js($journals->map(fn ($j) => ['id' => (string) $j->id, 'index' => $j->index])->values()),
+            get selectedReader() {
+                return this.readersData.find(r => r.id === this.form.reader_id) || null;
+            },
+            get selectedJournal() {
+                return this.journalsData.find(j => j.id === this.form.journal_id) || null;
+            },
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.subscriptions.store') }}';
@@ -202,15 +218,25 @@
                     </div>
 
                     <div x-show="form.source === 'reader'" x-cloak>
-                        <label for="m_reader" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obunachi') }}<span class="text-error-500">*</span></label>
-                        <select name="reader_id" id="m_reader" x-model="form.reader_id" :required="form.source === 'reader'"
-                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('reader_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
-                            <option value="">{{ __('Tanlang') }}</option>
-                            @foreach ($readers as $r)
-                                <option value="{{ $r->id }}">{{ $r->full_name }}</option>
-                            @endforeach
-                        </select>
+                        <x-admin.form.searchable-select name="reader_id" :label="__('Obunachi')" x-model="form.reader_id"
+                            :options="$readers->map(fn ($r) => ['id' => $r->id, 'label' => $r->full_name])" :required="true" />
                         @error('reader_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+
+                        {{-- Auto-filled reference info — display only, not submitted. --}}
+                        <div x-show="selectedReader" x-cloak class="mt-2 grid grid-cols-3 gap-3 rounded-lg bg-gray-50 p-3 text-theme-xs dark:bg-white/5">
+                            <div>
+                                <dt class="text-gray-400" x-text="selectedReader?.isStudent ? '{{ __('O‘qish joyi') }}' : '{{ __('Ish joyi') }}'"></dt>
+                                <dd class="mt-0.5 font-medium text-gray-700 dark:text-gray-300" x-text="selectedReader?.place || '—'"></dd>
+                            </div>
+                            <div>
+                                <dt class="text-gray-400" x-text="selectedReader?.isStudent ? '{{ __('Mutaxassisligi') }}' : '{{ __('Bo‘limi') }}'"></dt>
+                                <dd class="mt-0.5 font-medium text-gray-700 dark:text-gray-300" x-text="selectedReader?.unit || '—'"></dd>
+                            </div>
+                            <div>
+                                <dt class="text-gray-400" x-text="selectedReader?.isStudent ? '{{ __('Guruhi') }}' : '{{ __('Lavozimi') }}'"></dt>
+                                <dd class="mt-0.5 font-medium text-gray-700 dark:text-gray-300" x-text="selectedReader?.group || '—'"></dd>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -229,6 +255,10 @@
                             @endforeach
                         </select>
                         @error('journal_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+
+                        <p x-show="selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                            {{ __('Indeks') }}: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="selectedJournal?.index"></span>
+                        </p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-3">
@@ -262,7 +292,7 @@
 
                     <div>
                         <label for="m_amount" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}<span class="text-error-500">*</span></label>
-                        <input type="number" name="amount" id="m_amount" x-model="form.amount" required min="0" step="1000"
+                        <input type="number" name="amount" id="m_amount" x-model="form.amount" required min="0" step="1"
                                placeholder="{{ __('masalan: 150000') }}"
                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('amount') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                         @error('amount')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror

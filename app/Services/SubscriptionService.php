@@ -44,8 +44,9 @@ class SubscriptionService
     public function formOptions(): array
     {
         return [
-            'readers' => Reader::orderBy('full_name')->get(['id', 'full_name']),
-            'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind']),
+            // affiliation_* / index — shown as a read-only reference once a reader/journal is picked.
+            'readers' => Reader::orderBy('full_name')->get(['id', 'full_name', 'type', 'affiliation_place', 'affiliation_unit', 'affiliation_group']),
+            'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind', 'index']),
         ];
     }
 
