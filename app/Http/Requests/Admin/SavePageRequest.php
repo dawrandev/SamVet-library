@@ -31,7 +31,7 @@ class SavePageRequest extends FormRequest
             // SVG is excluded (may contain JS — stored XSS).
             'cover' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
             'gallery' => ['nullable', 'array'],
-            'gallery.*' => ['image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
+            'gallery.*' => ['image', 'mimes:jpeg,jpg,png,webp,gif', 'max:5120'],
         ];
     }
 
