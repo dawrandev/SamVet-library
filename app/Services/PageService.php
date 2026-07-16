@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\PageData;
 use App\Models\MenuItem;
 use App\Models\Page;
+use App\Models\PageImage;
 use App\Repositories\Contracts\PageRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ class PageService
             $existing = $this->pages->findForMenuItem($menuItem);
 
             $attributes = [
+                'title' => $data->title,
                 'body' => $this->cleanBody($data->body),
             ];
 
@@ -39,7 +41,11 @@ class PageService
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'pages/covers');
             }
 
-            return $this->pages->updateOrCreateForMenuItem($menuItem, $attributes);
+            $page = $this->pages->updateOrCreateForMenuItem($menuItem, $attributes);
+
+            $this->storeGallery($page, $data->gallery);
+
+            return $page;
         });
     }
 
@@ -55,6 +61,29 @@ class PageService
             static fn (string $html): string => Purifier::clean($html),
             $body,
         );
+    }
+
+    /**
+     * Saves the gallery images (continuing the existing sort order).
+     *
+     * @param  array<int, UploadedFile>  $files
+     */
+    private function storeGallery(Page $page, array $files): void
+    {
+        if ($files === []) {
+            return;
+        }
+
+        $sort = (int) $page->images()->max('sort_order');
+
+        foreach ($files as $file) {
+            $sort++;
+            PageImage::create([
+                'page_id' => $page->id,
+                'path' => $this->storePublic($file, 'pages/gallery'),
+                'sort_order' => $sort,
+            ]);
+        }
     }
 
     private function storePublic(UploadedFile $file, string $dir): string

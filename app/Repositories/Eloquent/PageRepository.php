@@ -10,7 +10,7 @@ class PageRepository implements PageRepositoryInterface
 {
     public function findForMenuItem(MenuItem $menuItem): ?Page
     {
-        return Page::where('menu_item_id', $menuItem->id)->first();
+        return Page::where('menu_item_id', $menuItem->id)->with('images')->first();
     }
 
     public function updateOrCreateForMenuItem(MenuItem $menuItem, array $attributes): Page

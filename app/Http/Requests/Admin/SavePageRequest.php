@@ -18,12 +18,20 @@ class SavePageRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'title' => ['nullable', 'array'],
+            'title.uz' => ['nullable', 'string', 'max:255'],
+            'title.ru' => ['nullable', 'string', 'max:255'],
+            'title.kk' => ['nullable', 'string', 'max:255'],
+
             'body' => ['nullable', 'array'],
             'body.uz' => ['nullable', 'string'],
             'body.ru' => ['nullable', 'string'],
             'body.kk' => ['nullable', 'string'],
+
             // SVG is excluded (may contain JS — stored XSS).
             'cover' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
+            'gallery' => ['nullable', 'array'],
+            'gallery.*' => ['image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
         ];
     }
 
@@ -33,6 +41,9 @@ class SavePageRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'title.uz' => __('Sarlavha (o‘zbekcha)'),
+            'title.ru' => __('Sarlavha (ruscha)'),
+            'title.kk' => __('Sarlavha (qoraqalpoqcha)'),
             'body.uz' => __('Matn (o‘zbekcha)'),
             'body.ru' => __('Matn (ruscha)'),
             'body.kk' => __('Matn (qoraqalpoqcha)'),

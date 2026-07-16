@@ -3,7 +3,9 @@
 @php
     $locale = app()->getLocale();
     $sectionTitle = $section->getTranslation('title', $locale, false) ?: $section->getTranslation('title', 'uz', false);
-    $itemTitle = $item->getTranslation('title', $locale, false) ?: $item->getTranslation('title', 'uz', false);
+    // The page's own title (if the librarian set one) wins over the menu item's label.
+    $pageTitle = $item->page?->getTranslation('title', $locale, false) ?: $item->page?->getTranslation('title', 'uz', false);
+    $itemTitle = $pageTitle ?: ($item->getTranslation('title', $locale, false) ?: $item->getTranslation('title', 'uz', false));
     $isSection = $item->id === $section->id;
 @endphp
 
@@ -40,6 +42,18 @@
                 <div class="rich-text {{ $isSection ? '' : 'mt-5' }}">{!! $body !!}</div>
             @else
                 <p class="mt-2 text-sm text-gray-500">{{ __('Sahifa matni tez orada qo‘shiladi.') }}</p>
+            @endif
+
+            @if ($item->page && $item->page->images->isNotEmpty())
+                <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    @foreach ($item->page->images as $img)
+                        <a href="{{ asset('storage/'.$img->path) }}" target="_blank"
+                           class="group block overflow-hidden rounded-xl border border-gray-200">
+                            <img src="{{ asset('storage/'.$img->path) }}" alt="{{ $itemTitle }}"
+                                 class="aspect-square w-full object-cover transition group-hover:scale-105" />
+                        </a>
+                    @endforeach
+                </div>
             @endif
         </div>
     </div>

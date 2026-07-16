@@ -56,7 +56,7 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     {
         return MenuItem::query()
             ->where('is_active', true)
-            ->with(['page', 'parent'])
+            ->with(['page.images', 'parent'])
             ->find($id);
     }
 

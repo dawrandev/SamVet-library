@@ -192,6 +192,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Site menu (client navbar navigation) — tree-structured CRUD
     Route::get('menu-items/{menuItem}/page', [PageController::class, 'edit'])->name('menu-items.page.edit');
     Route::put('menu-items/{menuItem}/page', [PageController::class, 'update'])->name('menu-items.page.update');
+    Route::get('menu-items/{menuItem}/page/show', [PageController::class, 'show'])->name('menu-items.page.show');
     Route::resource('menu-items', MenuItemController::class)->except(['show']);
 
     // News CRUD (admin preview page included)

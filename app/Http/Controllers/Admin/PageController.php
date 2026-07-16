@@ -24,6 +24,18 @@ class PageController extends Controller
         ]);
     }
 
+    /**
+     * Preview how the page currently reads — so a librarian can check it
+     * without leaving the admin panel.
+     */
+    public function show(MenuItem $menuItem): View
+    {
+        return view('pages.admin.pages.show', [
+            'menuItem' => $menuItem,
+            'page' => $this->pageService->forMenuItem($menuItem),
+        ]);
+    }
+
     public function update(SavePageRequest $request, MenuItem $menuItem): RedirectResponse
     {
         $this->pageService->save($menuItem, PageData::fromRequest($request));
