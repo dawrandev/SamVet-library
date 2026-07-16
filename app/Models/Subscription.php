@@ -3,20 +3,22 @@
 namespace App\Models;
 
 use App\Enums\Month;
+use App\Enums\SubscriptionSource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A single subscription record: a reader (Foydalanuvchi) subscribed to a
- * journal/newspaper for a period (start_month..end_month) of a year.
+ * A single subscription record: a journal/newspaper subscribed for a
+ * period (start_month..end_month) of a year, funded either by a specific
+ * reader (Foydalanuvchi) or by the branch's own budget — see `source`.
  */
 class Subscription extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'reader_id', 'journal_id', 'year',
+        'reader_id', 'source', 'journal_id', 'year',
         'start_month', 'end_month', 'amount',
     ];
 
@@ -27,6 +29,7 @@ class Subscription extends Model
             'start_month' => Month::class,
             'end_month' => Month::class,
             'amount' => 'decimal:2',
+            'source' => SubscriptionSource::class,
         ];
     }
 

@@ -63,6 +63,9 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
             })
             ->when($filters['year'] ?? null, function (Builder $query, $value) {
                 $query->where('year', (int) $value);
+            })
+            ->when($filters['source'] ?? null, function (Builder $query, $value) {
+                $query->where('source', $value);
             });
     }
 }

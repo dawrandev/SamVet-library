@@ -17,6 +17,7 @@
             action: '{{ old('subscription_id') ? route('admin.subscriptions.update', old('subscription_id')) : route('admin.subscriptions.store') }}',
             form: {
                 id: @js(old('subscription_id')),
+                source: @js(old('source', 'reader')),
                 reader_id: @js(old('reader_id', '')),
                 journal_id: @js(old('journal_id', '')),
                 year: @js(old('year', date('Y'))),
@@ -27,7 +28,7 @@
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.subscriptions.store') }}';
-                this.form = { id: null, reader_id: '', journal_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
+                this.form = { id: null, source: 'reader', reader_id: '', journal_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -90,6 +91,16 @@
                 <input type="number" name="year" value="{{ $filters['year'] ?? '' }}" placeholder="{{ date('Y') }}"
                        class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
             </div>
+            <div class="sm:w-44">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Manba') }}</label>
+                <select name="source"
+                        class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
+                    <option value="">{{ __('Barchasi') }}</option>
+                    @foreach ($sources as $s)
+                        <option value="{{ $s->value }}" @selected(($filters['source'] ?? null) === $s->value)>{{ $s->label() }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex gap-2">
                 <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
                 @if (array_filter($filters))
@@ -104,7 +115,7 @@
                 <table class="min-w-full">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-800">
-                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Obunachi') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Manba') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Nashr') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Yil') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Davr') }}</th>
@@ -115,7 +126,13 @@
                     <tbody>
                         @forelse ($subscriptions as $subscription)
                             <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
-                                <td class="px-5 py-4 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->reader?->full_name ?? '—' }}</td>
+                                <td class="px-5 py-4">
+                                    @if ($subscription->source === \App\Enums\SubscriptionSource::Budget)
+                                        <span class="text-theme-xs inline-flex items-center rounded-full bg-brand-50 px-2.5 py-1 font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">{{ __('Filial byudjetidan') }}</span>
+                                    @else
+                                        <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->reader?->full_name ?? '—' }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4">
                                     <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $subscription->journal?->name ?? '—' }}</p>
                                     <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $subscription->journal?->kind?->label() ?? '—' }}</span>
@@ -126,7 +143,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
+                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, source: @js($subscription->source->value), reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.subscriptions.destroy', $subscription) }}', '{{ __('Obunani o‘chirishni tasdiqlaysizmi?') }}')"
@@ -171,8 +188,22 @@
                     <input type="hidden" name="subscription_id" :value="form.id" />
 
                     <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Manba') }}<span class="text-error-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach (\App\Enums\SubscriptionSource::cases() as $s)
+                                <label class="flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium transition"
+                                       x-bind:class="form.source === '{{ $s->value }}' ? 'border-brand-500 bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400' : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5'">
+                                    <input type="radio" name="source" value="{{ $s->value }}" x-model="form.source" class="sr-only" />
+                                    {{ $s->label() }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('source')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div x-show="form.source === 'reader'" x-cloak>
                         <label for="m_reader" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obunachi') }}<span class="text-error-500">*</span></label>
-                        <select name="reader_id" id="m_reader" x-model="form.reader_id" required
+                        <select name="reader_id" id="m_reader" x-model="form.reader_id" :required="form.source === 'reader'"
                                 class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('reader_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                             <option value="">{{ __('Tanlang') }}</option>
                             @foreach ($readers as $r)

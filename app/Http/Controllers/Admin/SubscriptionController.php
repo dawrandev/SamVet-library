@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Data\SubscriptionData;
 use App\Enums\Month;
+use App\Enums\SubscriptionSource;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSubscriptionRequest;
 use App\Http\Requests\Admin\UpdateSubscriptionRequest;
@@ -21,13 +22,14 @@ class SubscriptionController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = array_filter($request->only(['reader_id', 'journal_id', 'year']), fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($request->only(['reader_id', 'journal_id', 'year', 'source']), fn ($v) => $v !== null && $v !== '');
 
         return view('pages.admin.subscriptions.index', [
             'subscriptions' => $this->subscriptionService->paginate($filters),
             'totalAmount' => $this->subscriptionService->sumAmount($filters),
             'filters' => $filters,
             'months' => Month::cases(),
+            'sources' => SubscriptionSource::cases(),
             ...$this->subscriptionService->formOptions(),
         ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Month;
+use App\Enums\SubscriptionSource;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -20,7 +21,9 @@ class StoreSubscriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reader_id' => ['required', 'exists:readers,id'],
+            'source' => ['required', new Enum(SubscriptionSource::class)],
+            // Only required when funded by a reader — budget-funded subscriptions have none.
+            'reader_id' => ['nullable', 'required_if:source,'.SubscriptionSource::Reader->value, 'exists:readers,id'],
             'journal_id' => ['required', 'exists:journals,id'],
             'year' => ['required', 'integer', 'min:2000', 'max:2100'],
             'start_month' => ['required', 'integer', new Enum(Month::class)],
@@ -35,6 +38,7 @@ class StoreSubscriptionRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'source' => __('Manba'),
             'reader_id' => __('Obunachi'),
             'journal_id' => __('Nashr'),
             'year' => __('Yil'),
@@ -50,7 +54,8 @@ class StoreSubscriptionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'reader_id.required' => __('Obunachini tanlang.'),
+            'source.required' => __('Obuna manbasini tanlang.'),
+            'reader_id.required_if' => __('Obunachini tanlang.'),
             'journal_id.required' => __('Nashrni tanlang.'),
             'end_month.gte' => __('Tugash oyi boshlanish oyidan oldin bo‘lmasligi kerak.'),
         ];
