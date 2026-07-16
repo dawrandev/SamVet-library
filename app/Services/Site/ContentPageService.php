@@ -28,15 +28,14 @@ class ContentPageService
             throw new NotFoundHttpException();
         }
 
-        // A child page's sidebar belongs to its section (parent); a top-level
-        // item is its own section.
+        // A child page's breadcrumb belongs to its section (parent); a
+        // top-level item is its own section.
         $section = $item->parent ?? $item;
         $locale = app()->getLocale();
 
         return [
             'item' => $item,
             'section' => $section,
-            'children' => $this->menu->sectionChildren($section->id),
             'body' => $item->page?->getTranslation('body', $locale, false)
                 ?: $item->page?->getTranslation('body', 'uz', false),
         ];

@@ -34,13 +34,6 @@ interface MenuItemRepositoryInterface
     public function findPublicPage(int $id): ?MenuItem;
 
     /**
-     * Active children of a section, ordered for the sidebar.
-     *
-     * @return Collection<int, MenuItem>
-     */
-    public function sectionChildren(int $sectionId): Collection;
-
-    /**
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): MenuItem;

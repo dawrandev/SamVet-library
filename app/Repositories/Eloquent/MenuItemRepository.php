@@ -60,15 +60,6 @@ class MenuItemRepository implements MenuItemRepositoryInterface
             ->find($id);
     }
 
-    public function sectionChildren(int $sectionId): Collection
-    {
-        return MenuItem::query()
-            ->where('parent_id', $sectionId)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-    }
-
     public function create(array $data): MenuItem
     {
         return MenuItem::create($data);
