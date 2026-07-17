@@ -35,4 +35,15 @@ class JournalCopy extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    public function loans(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Loan::class, 'loanable');
+    }
+
+    /** The currently active (not returned) loan. */
+    public function currentLoan(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Loan::class, 'loanable')->where('status', \App\Enums\LoanStatus::OnLoan->value);
+    }
 }

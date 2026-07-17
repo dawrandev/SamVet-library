@@ -46,14 +46,21 @@
             @endforeach
         </div>
 
-        {{-- Search --}}
+        {{-- Type + search --}}
         <form method="GET" action="{{ route('admin.loans.index') }}" class="flex gap-2">
             <input type="hidden" name="scope" value="{{ $scope }}" />
+            <select name="material_type"
+                    class="shadow-theme-xs h-11 rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
+                <option value="">{{ __('Barchasi') }}</option>
+                @foreach ($materialTypes as $type)
+                    <option value="{{ $type->value }}" @selected(($filters['material_type'] ?? null) === $type->value)>{{ $type->label() }}</option>
+                @endforeach
+            </select>
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                    placeholder="{{ __('Foydalanuvchi yoki inventar raqami...') }}"
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 lg:w-72" />
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
-            @if (! empty($filters['search']))
+            @if (! empty($filters['search']) || ! empty($filters['material_type']))
                 <a href="{{ route('admin.loans.index', ['scope' => $scope]) }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
             @endif
         </form>
@@ -66,7 +73,8 @@
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Foydalanuvchi') }}</th>
-                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kitob') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Material') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Berilgan sana') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Muddat') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kechikkan') }}</th>
@@ -92,10 +100,14 @@
                                     <span class="text-theme-sm text-gray-400">—</span>
                                 @endif
                             </td>
-                            {{-- Book --}}
+                            {{-- Type --}}
                             <td class="px-5 py-4">
-                                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $loan->copy?->book?->title ?? '—' }}</p>
-                                <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ __('Inventar') }}: {{ $loan->copy?->inventory_number ?? '—' }}</p>
+                                <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $loan->materialType()->label() }}</span>
+                            </td>
+                            {{-- Material --}}
+                            <td class="px-5 py-4">
+                                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $loan->materialTitle() }}</p>
+                                <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ __('Inventar') }}: {{ $loan->inventoryNumber() ?? '—' }}</p>
                             </td>
                             {{-- Issued date --}}
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
@@ -126,7 +138,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-5 py-12 text-center">
+                            <td colspan="7" class="px-5 py-12 text-center">
                                 <x-admin.icon name="book" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Kitoblar topilmadi.') }}</p>
                             </td>

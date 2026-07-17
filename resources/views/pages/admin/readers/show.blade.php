@@ -43,7 +43,12 @@
     @php
         $isActiveOrSuspended = in_array($reader->status, [\App\Enums\ReaderStatus::Active, \App\Enums\ReaderStatus::Suspended], true);
         $warningCount = $reader->warnings->count();
-        $outstandingLoans = $reader->activeLoans()->with('copy.book')->get();
+        $outstandingLoans = $reader->activeLoans()->with(['loanable' => function ($morphTo) {
+            $morphTo->morphWith([
+                \App\Models\BookCopy::class => ['book'],
+                \App\Models\JournalCopy::class => ['issue.journal'],
+            ]);
+        }])->get();
     @endphp
 
     {{-- Header --}}
@@ -136,7 +141,7 @@
                                 <p class="mt-1">{{ __('Avval quyidagi kitoblarni qaytarib bo‘lgach, foydalanishni tugatish mumkin bo‘ladi.') }}</p>
                                 <ul class="mt-2 list-inside list-disc space-y-1">
                                     @foreach ($outstandingLoans as $loan)
-                                        <li>{{ $loan->copy?->book?->title ?? '—' }}</li>
+                                        <li>{{ $loan->materialTitle() }}</li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -363,7 +368,7 @@
         </div>
     </div>
 
-    {{-- Books read (lending) --}}
+    {{-- Materials read (lending) --}}
     @php
         $defaultDue = now()->addDays(15)->format('Y-m-d');
     @endphp
@@ -372,6 +377,9 @@
         issueOpen: {{ $errors->has('inventory_number') || $errors->has('due_at') ? 'true' : 'false' }},
         lookupState: 'idle', {{-- idle | loading | found | missing --}}
         lookup: {},
+        returnOpen: false,
+        returnUrl: '',
+        returnCondition: '',
         init() {
             @if (old('inventory_number'))
                 this.check(@js(old('inventory_number')));
@@ -390,54 +398,95 @@
             } catch (e) {
                 this.lookup = {}; this.lookupState = 'missing';
             }
-        }
+        },
+        openReturn(url, issuedCondition) {
+            this.returnUrl = url;
+            this.returnCondition = issuedCondition || '';
+            this.returnOpen = true;
+        },
     }">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('O‘qigan kitoblari') }}</h3>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('O‘qigan materiallari') }}</h3>
                 <button type="button"
                         @click="issueOpen = true"
-                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Kitob berish') }}</button>
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Material berish') }}</button>
             </div>
 
-            @if ($reader->loans->isEmpty())
-                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha kitob berilmagan.') }}</p>
+            {{-- Filter: type + search --}}
+            <form method="GET" action="{{ route('admin.readers.show', $reader) }}" class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div class="sm:w-48">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
+                    <select name="material_type"
+                            class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
+                        <option value="">{{ __('Barchasi') }}</option>
+                        @foreach ($materialTypes as $type)
+                            <option value="{{ $type->value }}" @selected(($materialFilters['material_type'] ?? null) === $type->value)>{{ $type->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qidiruv') }}</label>
+                    <input type="text" name="material_search" value="{{ $materialFilters['search'] ?? '' }}"
+                           placeholder="{{ __('Sarlavha yoki inventar raqami...') }}"
+                           class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
+                    @if (array_filter($materialFilters))
+                        <a href="{{ route('admin.readers.show', $reader) }}#materials" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
+                    @endif
+                </div>
+            </form>
+
+            @if ($loans->isEmpty())
+                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha material berilmagan.') }}</p>
             @else
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-left text-theme-sm">
                         <thead>
                             <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                <th class="px-3 py-2 font-medium">{{ __('Olgan sana') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Muddat') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Turi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Nomi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Inventar') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('UO‘K') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Muallif') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Sarlavha') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Yil') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Qaytargan sana') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Olgan vaqti') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Muddat') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Qaytargan vaqti') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Nusxa holati') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Holat') }}</th>
                                 <th class="px-3 py-2 font-medium"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($reader->loans as $loan)
+                            @foreach ($loans as $loan)
                                 @php $overdue = $loan->isOverdue(); @endphp
                                 <tr class="border-b border-gray-50 dark:border-gray-800/50 {{ $overdue ? 'bg-error-50 dark:bg-error-500/10' : '' }}">
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->issued_at?->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                        <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $loan->materialType()->label() }}</span>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <p class="font-medium text-gray-800 dark:text-white/90">{{ $loan->materialTitle() }}</p>
+                                        @if ($loan->materialSubtitle())
+                                            <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ $loan->materialSubtitle() }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->inventoryNumber() }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->issued_at?->format('d.m.Y H:i') }}</td>
                                     <td class="px-3 py-2 {{ $overdue ? 'font-medium text-error-600 dark:text-error-500' : 'text-gray-700 dark:text-gray-300' }}">{{ $loan->due_at?->format('d.m.Y') }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->inventory_number }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->udc }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->authors->pluck('name')->implode(', ') }}</td>
-                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $loan->copy?->book?->title }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->copy?->book?->publication_year }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->returned_at?->format('d.m.Y') ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->returned_at?->format('d.m.Y H:i') ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-theme-xs text-gray-600 dark:text-gray-400">
+                                        <p>{{ __('Berilganda') }}: {{ $loan->issued_condition?->label() ?? '—' }}</p>
+                                        @if ($loan->returned_condition)
+                                            <p>{{ __('Qaytarilganda') }}: {{ $loan->returned_condition->label() }}</p>
+                                        @endif
+                                    </td>
                                     <td class="px-3 py-2">
                                         <span class="text-theme-xs rounded-full px-2.5 py-1 font-medium {{ $loan->status === \App\Enums\LoanStatus::Returned ? 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500' : ($loan->status === \App\Enums\LoanStatus::Lost ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' : ($overdue ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500' : 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500')) }}">{{ $loan->status->label() }}</span>
                                     </td>
                                     <td class="px-3 py-2 text-right">
                                         @if ($loan->status === \App\Enums\LoanStatus::OnLoan)
                                             <button type="button"
-                                                    @click="$store.confirm.ask('{{ route('admin.loans.return', $loan) }}', '{{ __('Kitob qaytarilganini tasdiqlaysizmi?') }}', 'PATCH')"
+                                                    @click="openReturn('{{ route('admin.loans.return', $loan) }}', @js($loan->issued_condition?->value))"
                                                     class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Qaytardi') }}</button>
                                         @endif
                                     </td>
@@ -446,15 +495,50 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-4">
+                    {{ $loans->links() }}
+                </div>
             @endif
         </div>
 
-        {{-- Give book modal --}}
+        {{-- Return (with condition) modal --}}
+        <template x-teleport="body">
+            <div x-show="returnOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-gray-900/50" @click="returnOpen = false"></div>
+                <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="returnOpen = false">
+                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Materialni qaytarish') }}</h4>
+
+                    <form method="POST" :action="returnUrl" class="space-y-4">
+                        @csrf
+                        @method('PATCH')
+
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qaytarilgandagi holati') }}</label>
+                            <select name="returned_condition" x-model="returnCondition"
+                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                                <option value="">{{ __('Belgilanmagan') }}</option>
+                                @foreach ($copyConditions as $condition)
+                                    <option value="{{ $condition->value }}">{{ $condition->label() }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-theme-xs text-gray-400">{{ __('Berilgandagi holati taklif sifatida tanlangan — kerak bo‘lsa o‘zgartiring.') }}</p>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" @click="returnOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Tasdiqlash') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        {{-- Give material modal --}}
         <template x-teleport="body">
             <div x-show="issueOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
                 <div class="fixed inset-0 bg-gray-900/50" @click="issueOpen = false"></div>
                 <div class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
-                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Kitob berish') }}</h4>
+                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Material berish') }}</h4>
 
                     <form action="{{ route('admin.readers.loans.store', $reader) }}" method="POST" class="space-y-4">
                         @csrf
@@ -468,19 +552,29 @@
                             autocomplete="off"
                         />
 
-                        {{-- Copy/book info (appears automatically) --}}
+                        {{-- Copy/material info (appears automatically) --}}
                         <div x-show="lookupState === 'loading'" class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Qidirilmoqda...') }}</div>
 
                         <div x-show="lookupState === 'missing'" x-cloak class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
                             {{ __('Bunday inventar raqamli nusxa topilmadi.') }}
                         </div>
 
-                        <div x-show="lookupState === 'found'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+                        <div x-show="lookupState === 'found' && lookup.type === 'book'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
                             <p class="font-medium text-gray-800 dark:text-white/90" x-text="lookup.book?.title"></p>
                             <p class="text-theme-sm text-gray-500 dark:text-gray-400" x-text="lookup.book?.authors"></p>
                             <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-theme-xs text-gray-500 dark:text-gray-400">
                                 <span x-show="lookup.book?.udc">{{ __('UO‘K') }}: <span x-text="lookup.book?.udc"></span></span>
                                 <span x-show="lookup.book?.year">{{ __('Yil') }}: <span x-text="lookup.book?.year"></span></span>
+                                <span :class="lookup.available ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'" x-text="lookup.status"></span>
+                            </div>
+                        </div>
+
+                        <div x-show="lookupState === 'found' && lookup.type === 'journal_copy'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+                            <p class="font-medium text-gray-800 dark:text-white/90" x-text="lookup.journal?.name"></p>
+                            <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-theme-xs text-gray-500 dark:text-gray-400">
+                                <span x-show="lookup.journal?.kind" x-text="lookup.journal?.kind"></span>
+                                <span x-show="lookup.journal?.year">{{ __('Yil') }}: <span x-text="lookup.journal?.year"></span></span>
+                                <span x-show="lookup.journal?.issue_number">{{ __('Son') }}: <span x-text="lookup.journal?.issue_number"></span></span>
                                 <span :class="lookup.available ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'" x-text="lookup.status"></span>
                             </div>
                         </div>

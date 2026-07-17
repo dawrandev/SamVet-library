@@ -2,7 +2,11 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Enums\LoanMaterialType;
 use App\Enums\LoanStatus;
+use App\Enums\PublicationKind;
+use App\Models\BookCopy;
+use App\Models\JournalCopy;
 use App\Models\Loan;
 use App\Repositories\Contracts\LoanRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -29,7 +33,7 @@ class LoanRepository implements LoanRepositoryInterface
         $today = now()->startOfDay();
 
         $query = Loan::query()
-            ->with(['reader', 'copy.book'])
+            ->with($this->eagerLoanable())
             ->where('status', LoanStatus::OnLoan->value);
 
         match ($scope) {
@@ -42,14 +46,31 @@ class LoanRepository implements LoanRepositoryInterface
                 ->orderBy('due_at'),
         };
 
+        $this->applyMaterialType($query, $filters['material_type'] ?? null);
+
         if ($search !== '') {
-            $query->where(function (Builder $q) use ($search) {
-                $q->whereHas('reader', fn (Builder $r) => $r->where('full_name', 'like', "%{$search}%"))
-                    ->orWhereHas('copy', fn (Builder $c) => $c->where('inventory_number', 'like', "%{$search}%"));
-            });
+            $this->applySearch($query, $search, includeReader: true);
         }
 
         return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function paginateForReader(int $readerId, array $filters, int $perPage = 10): LengthAwarePaginator
+    {
+        $search = trim((string) ($filters['search'] ?? ''));
+
+        $query = Loan::query()
+            ->with($this->eagerLoanable())
+            ->where('reader_id', $readerId)
+            ->latest('issued_at');
+
+        $this->applyMaterialType($query, $filters['material_type'] ?? null);
+
+        if ($search !== '') {
+            $this->applySearch($query, $search, includeReader: false);
+        }
+
+        return $query->paginate($perPage, ['*'], 'materials_page')->withQueryString();
     }
 
     public function overdueCount(): int
@@ -58,5 +79,61 @@ class LoanRepository implements LoanRepositoryInterface
             ->where('status', LoanStatus::OnLoan->value)
             ->where('due_at', '<', now()->startOfDay())
             ->count();
+    }
+
+    /**
+     * Eager-load the loanable copy with the right chain per type, in one query set.
+     *
+     * @return array<string, mixed>
+     */
+    private function eagerLoanable(): array
+    {
+        return [
+            'reader',
+            'loanable' => function ($morphTo) {
+                $morphTo->morphWith([
+                    BookCopy::class => ['book.authors'],
+                    JournalCopy::class => ['issue.journal'],
+                ]);
+            },
+        ];
+    }
+
+    private function applyMaterialType(Builder $query, ?string $type): void
+    {
+        match ($type) {
+            LoanMaterialType::Book->value => $query->where('loanable_type', 'book_copy'),
+            LoanMaterialType::Journal->value => $query->where('loanable_type', 'journal_copy')
+                ->whereHasMorph('loanable', [JournalCopy::class], fn (Builder $q) => $q->whereHas(
+                    'issue.journal', fn (Builder $j) => $j->where('kind', PublicationKind::Journal->value)
+                )),
+            LoanMaterialType::Newspaper->value => $query->where('loanable_type', 'journal_copy')
+                ->whereHasMorph('loanable', [JournalCopy::class], fn (Builder $q) => $q->whereHas(
+                    'issue.journal', fn (Builder $j) => $j->where('kind', PublicationKind::Newspaper->value)
+                )),
+            default => null,
+        };
+    }
+
+    private function applySearch(Builder $query, string $search, bool $includeReader): void
+    {
+        $morphSearch = function (Builder $cq, string $type) use ($search) {
+            $cq->where('inventory_number', 'like', "%{$search}%");
+
+            if ($type === BookCopy::class) {
+                $cq->orWhereHas('book', fn (Builder $b) => $b->where('title', 'like', "%{$search}%"));
+            } else {
+                $cq->orWhereHas('issue.journal', fn (Builder $j) => $j->where('name', 'like', "%{$search}%"));
+            }
+        };
+
+        $query->where(function (Builder $q) use ($search, $includeReader, $morphSearch) {
+            if ($includeReader) {
+                $q->whereHas('reader', fn (Builder $r) => $r->where('full_name', 'like', "%{$search}%"))
+                    ->orWhereHasMorph('loanable', [BookCopy::class, JournalCopy::class], $morphSearch);
+            } else {
+                $q->whereHasMorph('loanable', [BookCopy::class, JournalCopy::class], $morphSearch);
+            }
+        });
     }
 }

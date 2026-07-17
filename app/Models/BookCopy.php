@@ -38,14 +38,14 @@ class BookCopy extends Model
         return $this->belongsTo(Location::class);
     }
 
-    public function loans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function loans(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->hasMany(Loan::class);
+        return $this->morphMany(Loan::class, 'loanable');
     }
 
     /** The currently active (not returned) loan. */
-    public function currentLoan(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function currentLoan(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->hasMany(Loan::class)->where('status', \App\Enums\LoanStatus::OnLoan->value);
+        return $this->morphMany(Loan::class, 'loanable')->where('status', \App\Enums\LoanStatus::OnLoan->value);
     }
 }

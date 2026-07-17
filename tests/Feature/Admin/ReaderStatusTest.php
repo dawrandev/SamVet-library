@@ -34,7 +34,8 @@ it('refuses to finish usage while the reader has an unreturned book', function (
     $copy = BookCopy::factory()->create();
     Loan::create([
         'reader_id' => $reader->id,
-        'book_copy_id' => $copy->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
         'issued_at' => now(),
         'due_at' => now()->addDays(14),
         'status' => 'on_loan',
@@ -52,7 +53,8 @@ it('allows finishing again once the outstanding book has been returned', functio
     $copy = BookCopy::factory()->create();
     $loan = Loan::create([
         'reader_id' => $reader->id,
-        'book_copy_id' => $copy->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
         'issued_at' => now(),
         'due_at' => now()->addDays(14),
         'status' => 'on_loan',
@@ -74,7 +76,8 @@ it('shows the outstanding-book warning instead of the reason form on the show pa
     $copy->book->update(['title' => 'Qarzdorlik sinov kitobi']);
     Loan::create([
         'reader_id' => $reader->id,
-        'book_copy_id' => $copy->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
         'issued_at' => now(),
         'due_at' => now()->addDays(14),
         'status' => 'on_loan',

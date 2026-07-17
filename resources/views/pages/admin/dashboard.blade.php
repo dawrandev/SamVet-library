@@ -135,7 +135,7 @@
                                 @php $isOverdue = $loan->status === \App\Enums\LoanStatus::OnLoan && $loan->due_at && $loan->due_at->lt($today); @endphp
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/60">
                                     <td class="px-5 py-3.5 text-theme-sm font-medium text-gray-800 dark:text-white/90 sm:px-6">{{ $loan->reader?->full_name ?? '—' }}</td>
-                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($loan->copy?->book?->title ?? '—', 30) }}</td>
+                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($loan->materialTitle(), 30) }}</td>
                                     <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
                                     <td class="px-5 py-3.5 text-right sm:px-6">
                                         <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $isOverdue ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }}">{{ $loan->due_at?->format('d.m.Y') ?? '—' }}</span>

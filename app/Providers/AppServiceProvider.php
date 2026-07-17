@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\BookCopy;
+use App\Models\JournalCopy;
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Services\ComputerSessionService;
 use App\Services\LoanService;
 use App\Services\Site\SectionService;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Short, stable values for Loan::loanable_type — matches this project's
+        // convention of storing snake_case values (not FQCNs) for typed columns.
+        Relation::enforceMorphMap([
+            'book_copy' => BookCopy::class,
+            'journal_copy' => JournalCopy::class,
+        ]);
+
         // Pass the number of overdue books and expired-unfinished computer
         // sessions to the admin layout and its partials (header/sidebar) for
         // the notification badges. Cached for 60s (to let time pass), but each

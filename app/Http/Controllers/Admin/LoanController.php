@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CopyCondition;
+use App\Enums\LoanMaterialType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReturnLoanRequest;
 use App\Http\Requests\Admin\StoreLoanRequest;
 use App\Models\Loan;
 use App\Models\Reader;
@@ -19,7 +22,7 @@ class LoanController extends Controller
     ) {}
 
     /**
-     * List of lent books (due date monitoring).
+     * List of lent materials (due date monitoring), across all readers.
      */
     public function index(Request $request): View
     {
@@ -29,14 +32,22 @@ class LoanController extends Controller
             $scope = 'overdue';
         }
 
+        $materialType = $request->input('material_type');
+
+        if (! in_array($materialType, array_column(LoanMaterialType::cases(), 'value'), true)) {
+            $materialType = null;
+        }
+
         $filters = [
             'scope' => $scope,
             'search' => $request->input('search'),
+            'material_type' => $materialType,
         ];
 
         return view('pages.admin.loans.index', [
             'loans' => $this->loanService->paginate($filters),
             'filters' => $filters,
+            'materialTypes' => LoanMaterialType::cases(),
             'overdueCount' => $this->loanService->overdueCount(),
         ]);
     }
@@ -59,17 +70,21 @@ class LoanController extends Controller
 
         return redirect()
             ->route('admin.readers.show', $reader)
-            ->with('success', __('Kitob berildi.'));
+            ->with('success', __('Material berildi.'));
     }
 
-    public function return(Loan $loan): RedirectResponse
+    public function return(ReturnLoanRequest $request, Loan $loan): RedirectResponse
     {
         $reader = $loan->reader;
 
-        $this->loanService->returnLoan($loan);
+        $condition = $request->filled('returned_condition')
+            ? CopyCondition::from($request->string('returned_condition')->toString())
+            : null;
+
+        $this->loanService->returnLoan($loan, $condition);
 
         return redirect()
             ->route('admin.readers.show', $reader)
-            ->with('success', __('Kitob qaytarildi.'));
+            ->with('success', __('Material qaytarildi.'));
     }
 }

@@ -12,6 +12,7 @@ use App\Models\BookCopy;
 use App\Models\Category;
 use App\Models\Computer;
 use App\Models\Journal;
+use App\Models\JournalCopy;
 use App\Models\Loan;
 use App\Models\News;
 use App\Models\Reader;
@@ -65,7 +66,12 @@ class DashboardService
             'authorsTotal' => Author::count(),
 
             // Recent activity
-            'recentLoans' => Loan::with(['reader', 'copy.book'])->latest('id')->limit(6)->get(),
+            'recentLoans' => Loan::with(['reader', 'loanable' => function ($morphTo) {
+                $morphTo->morphWith([
+                    BookCopy::class => ['book'],
+                    JournalCopy::class => ['issue.journal'],
+                ]);
+            }])->latest('id')->limit(6)->get(),
         ];
     }
 }
