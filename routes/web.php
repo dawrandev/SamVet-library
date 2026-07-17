@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
 use App\Http\Controllers\Admin\ReaderLookupController;
 use App\Http\Controllers\Admin\ReaderStatusController;
+use App\Http\Controllers\Admin\SubscriptionCatalogController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
 use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
+use App\Http\Controllers\Admin\Lookups\PostBranchController;
 use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
@@ -191,7 +193,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Periodical subscriptions — attached to a reader (Foydalanuvchi)
     Route::get('subscriptions/dashboard', [SubscriptionController::class, 'dashboard'])->name('subscriptions.dashboard');
+    Route::get('subscriptions/{subscription}/receipt', [SubscriptionController::class, 'receipt'])->name('subscriptions.receipt');
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
+
+    // Yearly subscription catalog (annual price per journal) — narrowed to the
+    // library's own shortlist, drives auto price calculation on Subscription.
+    Route::resource('subscription-catalog', SubscriptionCatalogController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['subscription-catalog' => 'subscriptionCatalog']);
 
     // Computers (electronic reading room inventory)
     Route::resource('computers', ComputerController::class);
@@ -225,6 +234,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);
         Route::resource('event-locations', EventLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['event-locations' => 'eventLocation']);
         Route::resource('delivery-locations', DeliveryLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['delivery-locations' => 'deliveryLocation']);
+        Route::resource('post-branches', PostBranchController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['post-branches' => 'postBranch']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

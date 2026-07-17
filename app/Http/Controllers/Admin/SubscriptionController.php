@@ -12,7 +12,10 @@ use App\Models\Subscription;
 use App\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubscriptionController extends Controller
 {
@@ -46,7 +49,14 @@ class SubscriptionController extends Controller
 
     public function store(StoreSubscriptionRequest $request): RedirectResponse
     {
-        $this->subscriptionService->create(SubscriptionData::fromRequest($request));
+        try {
+            $this->subscriptionService->create(SubscriptionData::fromRequest($request));
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('admin.subscriptions.index')
+                ->withInput()
+                ->withErrors(['journal_id' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.subscriptions.index')
@@ -55,7 +65,14 @@ class SubscriptionController extends Controller
 
     public function update(UpdateSubscriptionRequest $request, Subscription $subscription): RedirectResponse
     {
-        $this->subscriptionService->update($subscription, SubscriptionData::fromRequest($request));
+        try {
+            $this->subscriptionService->update($subscription, SubscriptionData::fromRequest($request));
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('admin.subscriptions.index')
+                ->withInput()
+                ->withErrors(['journal_id' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.subscriptions.index')
@@ -69,5 +86,16 @@ class SubscriptionController extends Controller
         return redirect()
             ->route('admin.subscriptions.index')
             ->with('success', __('Obuna o‘chirildi.'));
+    }
+
+    /**
+     * Stream the payment receipt (proof-of-payment scan/photo) — private disk,
+     * admin-only via the route's auth middleware.
+     */
+    public function receipt(Subscription $subscription): StreamedResponse
+    {
+        abort_unless($subscription->receipt_file, 404);
+
+        return Storage::disk('local')->response($subscription->receipt_file);
     }
 }

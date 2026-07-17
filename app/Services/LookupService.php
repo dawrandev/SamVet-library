@@ -12,6 +12,7 @@ use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
 use App\Models\NewsCategory;
+use App\Models\PostBranch;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
 
@@ -31,6 +32,7 @@ class LookupService
         'contributor_role' => ContributorRole::class,
         'event_location' => EventLocation::class,
         'delivery_location' => DeliveryLocation::class,
+        'post_branch' => PostBranch::class,
         'category' => Category::class,
         'location' => Location::class,
         'news_category' => NewsCategory::class,

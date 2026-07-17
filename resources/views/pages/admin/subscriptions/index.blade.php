@@ -21,6 +21,7 @@
                 reader_id: @js(old('reader_id', '')),
                 journal_id: @js(old('journal_id', '')),
                 delivery_location_id: @js(old('delivery_location_id', '')),
+                post_branch_id: @js(old('post_branch_id', '')),
                 year: @js(old('year', date('Y'))),
                 start_month: @js(old('start_month', '1')),
                 end_month: @js(old('end_month', '12')),
@@ -36,16 +37,35 @@
                 'group' => $r->affiliation_group,
             ])->values()),
             journalsData: @js($journals->map(fn ($j) => ['id' => (string) $j->id, 'index' => $j->index])->values()),
+            // Shortlisted catalog entries by year — drives the year-aware journal
+            // picker + auto price calculation from {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }} on.
+            catalogByYear: @js($catalogByYear),
+            catalogEnforcedFromYear: {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }},
             get selectedReader() {
                 return this.readersData.find(r => r.id === this.form.reader_id) || null;
             },
             get selectedJournal() {
                 return this.journalsData.find(j => j.id === this.form.journal_id) || null;
             },
+            get isCatalogDriven() {
+                return Number(this.form.year) >= this.catalogEnforcedFromYear;
+            },
+            get catalogOptions() {
+                return this.catalogByYear[this.form.year] || [];
+            },
+            get selectedCatalogEntry() {
+                return this.catalogOptions.find(c => c.journal_id === this.form.journal_id) || null;
+            },
+            get monthCount() {
+                return Number(this.form.end_month) - Number(this.form.start_month) + 1;
+            },
+            get computedAmount() {
+                return this.selectedCatalogEntry ? Math.round(this.selectedCatalogEntry.annual_price / 12 * this.monthCount) : null;
+            },
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.subscriptions.store') }}';
-                this.form = { id: null, source: 'reader', reader_id: '', journal_id: '', delivery_location_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
+                this.form = { id: null, source: 'reader', reader_id: '', journal_id: '', delivery_location_id: '', post_branch_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -64,6 +84,10 @@
                 <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $subscriptions->total() }}</p>
             </div>
             <div class="flex items-center gap-2">
+                <a href="{{ route('admin.subscription-catalog.index') }}"
+                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
+                    {{ __('Katalog') }}
+                </a>
                 <a href="{{ route('admin.subscriptions.dashboard') }}"
                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
                     {{ __('Tahlil') }}
@@ -145,6 +169,8 @@
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Davr') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Summa') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Manzili') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Pochta filiali') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kvitansiya') }}</th>
                             <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                         </tr>
                     </thead>
@@ -167,10 +193,19 @@
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->start_month->label() }}–{{ $subscription->end_month->label() }}</td>
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ number_format($subscription->amount, 0, '.', ' ') }} {{ __('so‘m') }}</td>
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->deliveryLocation?->name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->postBranch?->name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-theme-sm">
+                                    @if ($subscription->receipt_file)
+                                        <a href="{{ route('admin.subscriptions.receipt', $subscription) }}" target="_blank" rel="noopener noreferrer"
+                                           class="font-medium text-brand-500 hover:text-brand-600">{{ __('Ko‘rish') }} 📎</a>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, source: @js($subscription->source->value), reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), delivery_location_id: @js((string) $subscription->delivery_location_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
+                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, source: @js($subscription->source->value), reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), delivery_location_id: @js((string) $subscription->delivery_location_id), post_branch_id: @js((string) $subscription->post_branch_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.subscriptions.destroy', $subscription) }}', '{{ __('Obunani o‘chirishni tasdiqlaysizmi?') }}')"
@@ -180,7 +215,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-5 py-12 text-center">
+                                <td colspan="10" class="px-5 py-12 text-center">
                                     <x-admin.icon name="clipboard-list" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                     <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Obunalar topilmadi.') }}</p>
                                 </td>
@@ -209,10 +244,14 @@
                     <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                 </div>
 
-                <form method="POST" :action="action" class="space-y-4">
+                <form method="POST" :action="action" enctype="multipart/form-data" class="space-y-4"
+                      x-data="uploadForm" @submit="submitUpload($event)">
                     @csrf
                     <template x-if="editing"><input type="hidden" name="_method" value="PUT" /></template>
                     <input type="hidden" name="subscription_id" :value="form.id" />
+
+                    <x-admin.form.upload-errors />
+                    <x-admin.form.uploading-overlay />
 
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Manba') }}<span class="text-error-500">*</span></label>
@@ -252,7 +291,22 @@
 
                     <div>
                         <label for="m_journal" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr') }}<span class="text-error-500">*</span></label>
-                        <select name="journal_id" id="m_journal" x-model="form.journal_id" required
+
+                        {{-- Catalog-driven years: only the library's own shortlist for that year. --}}
+                        <select x-show="isCatalogDriven" name="journal_id" x-model="form.journal_id" :required="isCatalogDriven"
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
+                            <option value="">{{ __('Tanlang') }}</option>
+                            <template x-for="c in catalogOptions" :key="c.journal_id">
+                                <option :value="c.journal_id" x-text="c.journal_name"></option>
+                            </template>
+                        </select>
+                        <p x-show="isCatalogDriven && catalogOptions.length === 0" x-cloak class="mt-1.5 text-theme-xs text-warning-600 dark:text-warning-500">
+                            {{ __('Bu yil uchun katalogda hech narsa yo‘q — avval qo‘shing:') }}
+                            <a href="{{ route('admin.subscription-catalog.index') }}" class="font-medium underline">{{ __('Katalog') }}</a>
+                        </p>
+
+                        {{-- Legacy years — free choice, as before. --}}
+                        <select x-show="!isCatalogDriven" id="m_journal" name="journal_id" x-model="form.journal_id" :required="!isCatalogDriven"
                                 class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                             <option value="">{{ __('Tanlang') }}</option>
                             @foreach (\App\Enums\PublicationKind::cases() as $kind)
@@ -267,7 +321,7 @@
                         </select>
                         @error('journal_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
 
-                        <p x-show="selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                        <p x-show="!isCatalogDriven && selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
                             {{ __('Indeks') }}: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="selectedJournal?.index"></span>
                         </p>
                     </div>
@@ -283,6 +337,18 @@
                         </select>
                         @error('delivery_location_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                         <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Kutubxona/filial manzili — obunachining uy manzili emas.') }}</p>
+                    </div>
+
+                    <div>
+                        <label for="m_post_branch" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Pochta filiali') }}</label>
+                        <select name="post_branch_id" id="m_post_branch" x-model="form.post_branch_id"
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('post_branch_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
+                            <option value="">{{ __('Tanlanmagan') }}</option>
+                            @foreach ($postBranches as $branch)
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('post_branch_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-3">
@@ -314,13 +380,25 @@
                         </div>
                     </div>
 
-                    <div>
+                    {{-- Catalog-driven years: amount is always computed from the catalog, never typed. --}}
+                    <div x-show="isCatalogDriven" x-cloak>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}</label>
+                        <p class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300"
+                           x-text="selectedCatalogEntry ? (computedAmount.toLocaleString('ru-RU') + ' {{ __('so‘m') }} (' + monthCount + ' {{ __('oy') }})') : '{{ __('Avval nashrni tanlang') }}'"></p>
+                        <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Katalogdagi yillik summadan avtomat hisoblanadi — qo‘lda o‘zgartirilmaydi.') }}</p>
+                    </div>
+
+                    {{-- Legacy years — manual amount, as before. --}}
+                    <div x-show="!isCatalogDriven">
                         <label for="m_amount" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}<span class="text-error-500">*</span></label>
-                        <input type="number" name="amount" id="m_amount" x-model="form.amount" required min="0" step="1"
+                        <input type="number" name="amount" id="m_amount" x-model="form.amount" :required="!isCatalogDriven" min="0" step="1"
                                placeholder="{{ __('masalan: 150000') }}"
                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('amount') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                         @error('amount')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
+
+                    <x-admin.form.file name="receipt_file" :label="__('Kvitansiya (rasm yoki PDF)')" accept="image/jpeg,image/png,image/jpg,application/pdf" with-progress
+                        :help="__('JPG/PNG/PDF, 10 MB gacha')" />
 
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" @click="open = false"

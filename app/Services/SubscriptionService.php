@@ -5,14 +5,21 @@ namespace App\Services;
 use App\Data\SubscriptionData;
 use App\Models\DeliveryLocation;
 use App\Models\Journal;
+use App\Models\PostBranch;
 use App\Models\Reader;
 use App\Models\Subscription;
+use App\Models\SubscriptionCatalog;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class SubscriptionService
 {
+    private const RECEIPTS_DIR = 'subscriptions/receipts';
+
     public function __construct(
         private readonly SubscriptionRepositoryInterface $subscriptions,
     ) {}
@@ -49,6 +56,18 @@ class SubscriptionService
             'readers' => Reader::orderBy('full_name')->get(['id', 'full_name', 'type', 'affiliation_place', 'affiliation_unit', 'affiliation_group']),
             'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind', 'index']),
             'deliveryLocations' => DeliveryLocation::orderBy('name')->get(['id', 'name']),
+            'postBranches' => PostBranch::orderBy('name')->get(['id', 'name']),
+            // Shortlisted catalog entries grouped by year — drives the year-aware
+            // journal picker + auto price calculation on the create/edit form.
+            'catalogByYear' => SubscriptionCatalog::with('journal')
+                ->where('is_selected', true)
+                ->get()
+                ->groupBy('year')
+                ->map(fn ($entries) => $entries->map(fn (SubscriptionCatalog $e) => [
+                    'journal_id' => (string) $e->journal_id,
+                    'journal_name' => $e->journal?->name,
+                    'annual_price' => (float) $e->annual_price,
+                ])->values()),
         ];
     }
 
@@ -90,21 +109,72 @@ class SubscriptionService
     public function create(SubscriptionData $data): Subscription
     {
         return DB::transaction(function () use ($data) {
-            return $this->subscriptions->create($data->toAttributes());
+            $attributes = $this->resolveAttributes($data);
+
+            if ($data->receipt_file) {
+                $attributes['receipt_file'] = $this->storeProtected($data->receipt_file);
+            }
+
+            return $this->subscriptions->create($attributes);
         });
     }
 
     public function update(Subscription $subscription, SubscriptionData $data): Subscription
     {
         return DB::transaction(function () use ($subscription, $data) {
-            return $this->subscriptions->update($subscription, $data->toAttributes());
+            $attributes = $this->resolveAttributes($data);
+
+            if ($data->receipt_file) {
+                $this->deleteFile($subscription->receipt_file);
+                $attributes['receipt_file'] = $this->storeProtected($data->receipt_file);
+            }
+
+            return $this->subscriptions->update($subscription, $attributes);
         });
     }
 
     public function delete(Subscription $subscription): void
     {
         DB::transaction(function () use ($subscription) {
+            $this->deleteFile($subscription->receipt_file);
             $this->subscriptions->delete($subscription);
         });
+    }
+
+    /**
+     * From CATALOG_ENFORCED_FROM_YEAR on, the amount is never trusted from the
+     * client — it's always the catalog's annual price, prorated for the period.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveAttributes(SubscriptionData $data): array
+    {
+        $attributes = $data->toAttributes();
+
+        if ($data->year >= Subscription::CATALOG_ENFORCED_FROM_YEAR) {
+            $catalogEntry = SubscriptionCatalog::where('year', $data->year)
+                ->where('journal_id', $data->journal_id)
+                ->first();
+
+            if (! $catalogEntry) {
+                throw new RuntimeException(__('Bu nashr uchun :year yil katalogida narx topilmadi.', ['year' => $data->year]));
+            }
+
+            $attributes['amount'] = $catalogEntry->amountFor($data->start_month, $data->end_month);
+        }
+
+        return $attributes;
+    }
+
+    private function storeProtected(UploadedFile $file): string
+    {
+        return $file->store(self::RECEIPTS_DIR, 'local');
+    }
+
+    private function deleteFile(?string $path): void
+    {
+        if ($path && Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
+        }
     }
 }

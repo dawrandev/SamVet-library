@@ -217,6 +217,7 @@
                                         'contributor-roles' => __('Mualliflik rollari'),
                                         'event-locations' => __('Tadbir joylari'),
                                         'delivery-locations' => __('Yetkazib berish manzillari'),
+                                        'post-branches' => __('Pochta filiallari'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)
