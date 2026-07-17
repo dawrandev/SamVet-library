@@ -34,6 +34,16 @@ class SubscriptionController extends Controller
         ]);
     }
 
+    public function dashboard(Request $request): View
+    {
+        $year = $request->integer('year') ?: (int) date('Y');
+
+        return view('pages.admin.subscriptions.dashboard', [
+            'year' => $year,
+            'coverage' => $this->subscriptionService->journalCoverage($year),
+        ]);
+    }
+
     public function store(StoreSubscriptionRequest $request): RedirectResponse
     {
         $this->subscriptionService->create(SubscriptionData::fromRequest($request));

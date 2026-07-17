@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\SubscriptionSource;
+use App\Models\DeliveryLocation;
 use App\Models\Journal;
 use App\Models\Reader;
 use App\Models\Subscription;
@@ -10,11 +11,13 @@ beforeEach(fn () => actingAsAdmin());
 it('creates a reader-funded subscription', function () {
     $reader = Reader::factory()->create();
     $journal = Journal::factory()->create();
+    $location = DeliveryLocation::factory()->create();
 
     $this->post(route('admin.subscriptions.store'), [
         'source' => 'reader',
         'reader_id' => $reader->id,
         'journal_id' => $journal->id,
+        'delivery_location_id' => $location->id,
         'year' => 2026,
         'start_month' => 1,
         'end_month' => 6,
@@ -28,10 +31,12 @@ it('creates a reader-funded subscription', function () {
 
 it('creates a budget-funded subscription without a reader', function () {
     $journal = Journal::factory()->create();
+    $location = DeliveryLocation::factory()->create();
 
     $this->post(route('admin.subscriptions.store'), [
         'source' => 'budget',
         'journal_id' => $journal->id,
+        'delivery_location_id' => $location->id,
         'year' => 2026,
         'start_month' => 1,
         'end_month' => 12,
@@ -46,11 +51,13 @@ it('creates a budget-funded subscription without a reader', function () {
 it('ignores a client-submitted reader_id when the source is budget', function () {
     $reader = Reader::factory()->create();
     $journal = Journal::factory()->create();
+    $location = DeliveryLocation::factory()->create();
 
     $this->post(route('admin.subscriptions.store'), [
         'source' => 'budget',
         'reader_id' => $reader->id,
         'journal_id' => $journal->id,
+        'delivery_location_id' => $location->id,
         'year' => 2026,
         'start_month' => 1,
         'end_month' => 12,

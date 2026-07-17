@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
+use App\Http\Controllers\Admin\Lookups\DeliveryLocationController;
 use App\Http\Controllers\Admin\Lookups\EventLocationController;
 use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
@@ -189,6 +190,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::patch('loans/{loan}/return', [LoanController::class, 'return'])->name('loans.return');
 
     // Periodical subscriptions — attached to a reader (Foydalanuvchi)
+    Route::get('subscriptions/dashboard', [SubscriptionController::class, 'dashboard'])->name('subscriptions.dashboard');
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
 
     // Computers (electronic reading room inventory)
@@ -222,6 +224,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['news-categories' => 'newsCategory']);
         Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);
         Route::resource('event-locations', EventLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['event-locations' => 'eventLocation']);
+        Route::resource('delivery-locations', DeliveryLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['delivery-locations' => 'deliveryLocation']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

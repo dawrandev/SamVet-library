@@ -12,7 +12,7 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->filtered($filters)
-            ->with(['reader', 'journal']) // eager load — no N+1
+            ->with(['reader', 'journal', 'deliveryLocation']) // eager load — no N+1
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

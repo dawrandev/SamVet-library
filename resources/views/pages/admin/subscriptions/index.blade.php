@@ -20,6 +20,7 @@
                 source: @js(old('source', 'reader')),
                 reader_id: @js(old('reader_id', '')),
                 journal_id: @js(old('journal_id', '')),
+                delivery_location_id: @js(old('delivery_location_id', '')),
                 year: @js(old('year', date('Y'))),
                 start_month: @js(old('start_month', '1')),
                 end_month: @js(old('end_month', '12')),
@@ -44,7 +45,7 @@
             openCreate() {
                 this.editing = false;
                 this.action = '{{ route('admin.subscriptions.store') }}';
-                this.form = { id: null, source: 'reader', reader_id: '', journal_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
+                this.form = { id: null, source: 'reader', reader_id: '', journal_id: '', delivery_location_id: '', year: '{{ date('Y') }}', start_month: '1', end_month: '12', amount: '' };
                 this.open = true;
             },
             openEdit(url, data) {
@@ -62,10 +63,16 @@
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Obunalar') }}</h2>
                 <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $subscriptions->total() }}</p>
             </div>
-            <button type="button" @click="openCreate()"
-                    class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-                <span class="text-lg leading-none">+</span> {{ __('Yangi obuna') }}
-            </button>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.subscriptions.dashboard') }}"
+                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
+                    {{ __('Tahlil') }}
+                </a>
+                <button type="button" @click="openCreate()"
+                        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
+                    <span class="text-lg leading-none">+</span> {{ __('Yangi obuna') }}
+                </button>
+            </div>
         </div>
 
         {{-- Success message --}}
@@ -132,10 +139,12 @@
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-800">
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Manba') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Lavozimi') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Nashr') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Yil') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Davr') }}</th>
                             <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Summa') }}</th>
+                            <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Manzili') }}</th>
                             <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                         </tr>
                     </thead>
@@ -149,6 +158,7 @@
                                         <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->reader?->full_name ?? '—' }}</span>
                                     @endif
                                 </td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->reader?->affiliation_group ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $subscription->journal?->name ?? '—' }}</p>
                                     <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $subscription->journal?->kind?->label() ?? '—' }}</span>
@@ -156,10 +166,11 @@
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->year }}</td>
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->start_month->label() }}–{{ $subscription->end_month->label() }}</td>
                                 <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ number_format($subscription->amount, 0, '.', ' ') }} {{ __('so‘m') }}</td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->deliveryLocation?->name ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <button type="button"
-                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, source: @js($subscription->source->value), reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
+                                                @click="openEdit('{{ route('admin.subscriptions.update', $subscription) }}', { id: {{ $subscription->id }}, source: @js($subscription->source->value), reader_id: @js((string) $subscription->reader_id), journal_id: @js((string) $subscription->journal_id), delivery_location_id: @js((string) $subscription->delivery_location_id), year: @js((string) $subscription->year), start_month: @js((string) $subscription->start_month->value), end_month: @js((string) $subscription->end_month->value), amount: @js((string) $subscription->amount) })"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Tahrirlash') }}</button>
                                         <button type="button"
                                                 @click="$store.confirm.ask('{{ route('admin.subscriptions.destroy', $subscription) }}', '{{ __('Obunani o‘chirishni tasdiqlaysizmi?') }}')"
@@ -169,7 +180,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-12 text-center">
+                                <td colspan="8" class="px-5 py-12 text-center">
                                     <x-admin.icon name="clipboard-list" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                     <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Obunalar topilmadi.') }}</p>
                                 </td>
@@ -259,6 +270,19 @@
                         <p x-show="selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
                             {{ __('Indeks') }}: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="selectedJournal?.index"></span>
                         </p>
+                    </div>
+
+                    <div>
+                        <label for="m_delivery_location" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Yetkazib berish manzili') }}<span class="text-error-500">*</span></label>
+                        <select name="delivery_location_id" id="m_delivery_location" x-model="form.delivery_location_id" required
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('delivery_location_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
+                            <option value="">{{ __('Tanlang') }}</option>
+                            @foreach ($deliveryLocations as $loc)
+                                <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('delivery_location_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Kutubxona/filial manzili — obunachining uy manzili emas.') }}</p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-3">

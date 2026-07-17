@@ -18,7 +18,7 @@ class Subscription extends Model
     use HasFactory;
 
     protected $fillable = [
-        'reader_id', 'source', 'journal_id', 'year',
+        'reader_id', 'source', 'journal_id', 'delivery_location_id', 'year',
         'start_month', 'end_month', 'amount',
     ];
 
@@ -41,5 +41,10 @@ class Subscription extends Model
     public function journal(): BelongsTo
     {
         return $this->belongsTo(Journal::class);
+    }
+
+    public function deliveryLocation(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryLocation::class);
     }
 }

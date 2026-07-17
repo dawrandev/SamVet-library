@@ -216,6 +216,7 @@
                                         'authors' => __('Mualliflar'),
                                         'contributor-roles' => __('Mualliflik rollari'),
                                         'event-locations' => __('Tadbir joylari'),
+                                        'delivery-locations' => __('Yetkazib berish manzillari'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)
