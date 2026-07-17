@@ -41,6 +41,11 @@ class ReaderRepository implements ReaderRepositoryInterface
         return Reader::find($id);
     }
 
+    public function findByIdNumber(string $idNumber): ?Reader
+    {
+        return Reader::where('id_number', $idNumber)->first();
+    }
+
     public function create(array $data): Reader
     {
         return Reader::create($data);

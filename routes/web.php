@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ReaderCardController;
 use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
+use App\Http\Controllers\Admin\ReaderLookupController;
 use App\Http\Controllers\Admin\ReaderStatusController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\WarningController;
@@ -155,6 +156,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Reader card (ID card) PDF
     Route::get('readers/{reader}/card', [ReaderCardController::class, 'show'])->name('readers.card');
+
+    // Reader lookup by ID number (before the resource's {reader} show route, or "lookup" gets bound as an id)
+    Route::get('readers/lookup', [ReaderLookupController::class, 'show'])->name('readers.lookup');
 
     // Users (library members) CRUD
     Route::resource('readers', ReaderController::class);

@@ -173,6 +173,42 @@
                 x-data="{
                     showStore: {{ $openStore ? 'true' : 'false' }},
                     editId: {{ $openEditId ?? 'null' }},
+                    lendOpen: false,
+                    lendInventory: '',
+                    lendActionUrl: '',
+                    loanStoreUrlTemplate: '{{ route('admin.readers.loans.store', ['reader' => '__READER_ID__']) }}',
+                    lookupState: 'idle', {{-- idle | loading | found | missing --}}
+                    lookup: {},
+                    openLend(inventory) {
+                        this.lendInventory = inventory;
+                        this.lendActionUrl = '';
+                        this.lookupState = 'idle';
+                        this.lookup = {};
+                        this.lendOpen = true;
+                    },
+                    async checkReader(idNumber) {
+                        const value = (idNumber || '').trim();
+                        if (value === '') { this.lookupState = 'idle'; this.lookup = {}; return; }
+                        this.lookupState = 'loading';
+                        try {
+                            const url = '{{ route('admin.readers.lookup') }}?id_number=' + encodeURIComponent(value);
+                            const res = await fetch(url, { headers: { Accept: 'application/json' } });
+                            const body = await res.json();
+                            if (body.found) {
+                                this.lookup = body;
+                                this.lookupState = 'found';
+                                this.lendActionUrl = this.loanStoreUrlTemplate.replace('__READER_ID__', body.reader_id);
+                            } else {
+                                this.lookup = {};
+                                this.lookupState = 'missing';
+                                this.lendActionUrl = '';
+                            }
+                        } catch (e) {
+                            this.lookup = {};
+                            this.lookupState = 'missing';
+                            this.lendActionUrl = '';
+                        }
+                    },
                 }"
                 class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
             >
@@ -220,6 +256,10 @@
                                     </td>
                                     <td class="px-5 py-3 text-right text-theme-xs">
                                         <div class="flex items-center justify-end gap-2">
+                                            @if ($copy->status === \App\Enums\CopyStatus::Available)
+                                                <button type="button" @click="openLend('{{ $copy->inventory_number }}')"
+                                                        class="rounded-lg border border-brand-200 px-3 py-1.5 font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-500/30 dark:text-brand-400 dark:hover:bg-brand-500/10">{{ __('Berish') }}</button>
+                                            @endif
                                             <button type="button" @click="editId = {{ $copy->id }}"
                                                     class="rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800">{{ __('Tahrirlash') }}</button>
                                             <button type="button"
@@ -307,6 +347,73 @@
                                         class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ __('Bekor qilish') }}</button>
                                 <button type="submit"
                                         class="bg-brand-500 hover:bg-brand-600 rounded-lg px-4 py-2.5 text-sm font-medium text-white">{{ __('Saqlash') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Lend modal — the reverse of the reader page's "Material berish": start
+                     from a known copy, type the reader's ID number, and their info
+                     auto-fills before confirming a due date. --}}
+                <div x-show="lendOpen" x-cloak
+                     class="fixed inset-0 z-99999 flex items-center justify-center p-4"
+                     @keydown.escape.window="lendOpen = false">
+                    <div class="fixed inset-0 bg-gray-900/50" @click="lendOpen = false"></div>
+                    <div class="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+                        <div class="mb-5 flex items-center justify-between">
+                            <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanishga berish') }}</h4>
+                            <button type="button" @click="lendOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
+                        </div>
+                        <form method="POST" :action="lendActionUrl" class="space-y-4" @submit="if (!lendActionUrl) $event.preventDefault()">
+                            @csrf
+                            <input type="hidden" name="inventory_number" :value="lendInventory" />
+
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Inventar raqami') }}</label>
+                                <p class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400" x-text="lendInventory"></p>
+                            </div>
+
+                            <x-admin.form.input
+                                name="id_number"
+                                :label="__('O‘quvchining ID raqami')"
+                                :required="true"
+                                @blur="checkReader($event.target.value)"
+                                @keydown.enter.prevent="checkReader($event.target.value)"
+                                autocomplete="off"
+                            />
+
+                            <div x-show="lookupState === 'loading'" class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Qidirilmoqda...') }}</div>
+
+                            <div x-show="lookupState === 'missing'" x-cloak class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                                {{ __('Bunday ID raqamli foydalanuvchi topilmadi.') }}
+                            </div>
+
+                            <div x-show="lookupState === 'found'" x-cloak class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+                                <p class="font-medium text-gray-800 dark:text-white/90" x-text="lookup.full_name"></p>
+                                <div class="mt-1 space-y-0.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                                    <p x-show="lookup.affiliation?.place"><span x-text="lookup.affiliation?.place_label"></span>: <span x-text="lookup.affiliation?.place"></span></p>
+                                    <p x-show="lookup.affiliation?.unit"><span x-text="lookup.affiliation?.unit_label"></span>: <span x-text="lookup.affiliation?.unit"></span></p>
+                                    <p x-show="lookup.affiliation?.group"><span x-text="lookup.affiliation?.group_label"></span>: <span x-text="lookup.affiliation?.group"></span></p>
+                                </div>
+                                <p class="mt-1.5 text-theme-xs" :class="lookup.can_borrow ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'" x-text="lookup.status"></p>
+                                <p x-show="!lookup.can_borrow" x-cloak class="mt-1 text-theme-xs text-error-600 dark:text-error-500">{{ __('Bu foydalanuvchi hozircha kitob ololmaydi.') }}</p>
+                            </div>
+
+                            <x-admin.form.input
+                                type="date"
+                                name="due_at"
+                                :label="__('Qaytarish muddati')"
+                                :value="now()->addDays(15)->format('Y-m-d')"
+                                :required="true"
+                            />
+
+                            <x-admin.form.textarea name="note" :label="__('Izoh')" :rows="2" />
+
+                            <div class="flex justify-end gap-3 pt-2">
+                                <button type="button" @click="lendOpen = false"
+                                        class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ __('Bekor qilish') }}</button>
+                                <button type="submit" :disabled="!lendActionUrl || lookup.can_borrow === false"
+                                        class="bg-brand-500 hover:bg-brand-600 rounded-lg px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{{ __('Berish') }}</button>
                             </div>
                         </form>
                     </div>

@@ -16,6 +16,8 @@ interface ReaderRepositoryInterface
 
     public function find(int $id): ?Reader;
 
+    public function findByIdNumber(string $idNumber): ?Reader;
+
     public function create(array $data): Reader;
 
     public function update(Reader $reader, array $data): Reader;
