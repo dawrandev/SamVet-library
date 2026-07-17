@@ -9,6 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ReaderService
 {
@@ -54,8 +55,17 @@ class ReaderService
         });
     }
 
+    /**
+     * @throws RuntimeException  When the reader still has unreturned books.
+     */
     public function delete(Reader $reader): void
     {
+        if ($reader->hasOutstandingLoans()) {
+            throw new RuntimeException(
+                __('Foydalanuvchida qaytarilmagan kitob(lar) bor. Avval kitoblarni qaytarib bo‘lgach, foydalanuvchini o‘chirish mumkin.')
+            );
+        }
+
         DB::transaction(function () use ($reader) {
             $this->deleteFile('public', $reader->photo);
 

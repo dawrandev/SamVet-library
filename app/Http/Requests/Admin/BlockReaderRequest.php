@@ -20,7 +20,7 @@ class BlockReaderRequest extends FormRequest
         // If blocked_until is empty — permanent block.
         return [
             'blocked_until' => ['nullable', 'date', 'after:today'],
-            'block_reason' => ['nullable', 'string', 'max:1000'],
+            'block_reason' => ['required', 'string', 'max:1000'],
         ];
     }
 

@@ -15,9 +15,17 @@ class ReaderStatusService
 
     /**
      * Block a reader. If $blockedUntil is null — block permanently.
+     *
+     * @throws RuntimeException  When the reader still has unreturned books.
      */
-    public function block(Reader $reader, ?string $blockedUntil = null, ?string $reason = null): Reader
+    public function block(Reader $reader, ?string $blockedUntil, string $reason): Reader
     {
+        if ($reader->hasOutstandingLoans()) {
+            throw new RuntimeException(
+                __('Foydalanuvchida qaytarilmagan kitob(lar) bor. Avval kitoblarni qaytarib bo‘lgach, bloklash mumkin.')
+            );
+        }
+
         return $this->readers->update($reader, [
             'status' => ReaderStatus::Blocked->value,
             'blocked_until' => $blockedUntil,

@@ -56,6 +56,7 @@
          x-data="{
              blockOpen: {{ $errors->has('blocked_until') || $errors->has('block_reason') ? 'true' : 'false' }},
              finishOpen: {{ $errors->has('left_reason') ? 'true' : 'false' }},
+             deleteOpen: false,
          }">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.readers.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
@@ -86,43 +87,60 @@
                     <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="blockOpen = false">
                         <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchini bloklash') }}</h4>
 
-                        <form action="{{ route('admin.readers.block', $reader) }}" method="POST" class="space-y-4" x-data="{ mode: '{{ old('blocked_until') ? 'until' : 'permanent' }}' }">
-                            @csrf
-                            @method('PATCH')
-
-                            <div class="space-y-2">
-                                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <input type="radio" name="block_mode" value="permanent" x-model="mode" class="text-brand-500" />
-                                    {{ __('Butunlay bloklash') }}
-                                </label>
-                                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                    <input type="radio" name="block_mode" value="until" x-model="mode" class="text-brand-500" />
-                                    {{ __('Muddatli (sanagacha)') }}
-                                </label>
+                        @if ($outstandingLoans->isNotEmpty())
+                            {{-- Debt guard: cannot block while books are unreturned. --}}
+                            <div class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                                <p class="font-medium">{{ __('Foydalanuvchida qaytarilmagan kitob(lar) bor.') }}</p>
+                                <p class="mt-1">{{ __('Avval quyidagi kitoblarni qaytarib bo‘lgach, bloklash mumkin bo‘ladi.') }}</p>
+                                <ul class="mt-2 list-inside list-disc space-y-1">
+                                    @foreach ($outstandingLoans as $loan)
+                                        <li>{{ $loan->materialTitle() }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
+                            <div class="flex justify-end pt-4">
+                                <button type="button" @click="blockOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Yopish') }}</button>
+                            </div>
+                        @else
+                            <form action="{{ route('admin.readers.block', $reader) }}" method="POST" class="space-y-4" x-data="{ mode: '{{ old('blocked_until') ? 'until' : 'permanent' }}' }">
+                                @csrf
+                                @method('PATCH')
 
-                            <div x-show="mode === 'until'" x-cloak>
-                                <x-admin.form.input
-                                    type="date"
-                                    name="blocked_until"
-                                    :label="__('Qaysi sanagacha')"
-                                    :value="old('blocked_until')"
-                                    x-bind:disabled="mode !== 'until'"
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <input type="radio" name="block_mode" value="permanent" x-model="mode" class="text-brand-500" />
+                                        {{ __('Butunlay bloklash') }}
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                        <input type="radio" name="block_mode" value="until" x-model="mode" class="text-brand-500" />
+                                        {{ __('Muddatli (sanagacha)') }}
+                                    </label>
+                                </div>
+
+                                <div x-show="mode === 'until'" x-cloak>
+                                    <x-admin.form.input
+                                        type="date"
+                                        name="blocked_until"
+                                        :label="__('Qaysi sanagacha')"
+                                        :value="old('blocked_until')"
+                                        x-bind:disabled="mode !== 'until'"
+                                    />
+                                </div>
+
+                                <x-admin.form.textarea
+                                    name="block_reason"
+                                    :label="__('Bloklash sababi')"
+                                    :value="old('block_reason')"
+                                    :required="true"
+                                    :rows="3"
                                 />
-                            </div>
 
-                            <x-admin.form.textarea
-                                name="block_reason"
-                                :label="__('Bloklash sababi')"
-                                :value="old('block_reason')"
-                                :rows="3"
-                            />
-
-                            <div class="flex justify-end gap-2 pt-2">
-                                <button type="button" @click="blockOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
-                                <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('Bloklash') }}</button>
-                            </div>
-                        </form>
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" @click="blockOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                                    <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('Bloklash') }}</button>
+                                </div>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </template>
@@ -172,14 +190,53 @@
                 </div>
             </template>
 
-            <button type="button"
-                    @click="$store.confirm.ask('{{ route('admin.readers.destroy', $reader) }}', '{{ __('Foydalanuvchini o‘chirishni tasdiqlaysizmi?') }}')"
+            <button type="button" @click="deleteOpen = true"
                     class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+
+            {{-- Delete modal --}}
+            <template x-teleport="body">
+                <div x-show="deleteOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-gray-900/50" @click="deleteOpen = false"></div>
+                    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="deleteOpen = false">
+                        <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchini o‘chirish') }}</h4>
+
+                        @if ($outstandingLoans->isNotEmpty())
+                            {{-- Debt guard: cannot delete while books are unreturned. --}}
+                            <div class="rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
+                                <p class="font-medium">{{ __('Foydalanuvchida qaytarilmagan kitob(lar) bor.') }}</p>
+                                <p class="mt-1">{{ __('Avval quyidagi kitoblarni qaytarib bo‘lgach, o‘chirish mumkin bo‘ladi.') }}</p>
+                                <ul class="mt-2 list-inside list-disc space-y-1">
+                                    @foreach ($outstandingLoans as $loan)
+                                        <li>{{ $loan->materialTitle() }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <div class="flex justify-end pt-4">
+                                <button type="button" @click="deleteOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Yopish') }}</button>
+                            </div>
+                        @else
+                            <p class="text-theme-sm text-gray-600 dark:text-gray-400">{{ __('Foydalanuvchini o‘chirishni tasdiqlaysizmi? Bu amalni orqaga qaytarib bo‘lmaydi.') }}</p>
+                            <form action="{{ route('admin.readers.destroy', $reader) }}" method="POST" class="mt-4">
+                                @csrf
+                                @method('DELETE')
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" @click="deleteOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
+                                    <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">{{ __('O‘chirish') }}</button>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 
     @if (session('success'))
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
+    @endif
+
+    @if (session('error'))
+        <x-alert type="error" class="mb-5">{{ session('error') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-12 gap-6">

@@ -36,6 +36,10 @@
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
     @endif
 
+    @if (session('error'))
+        <x-alert type="error" class="mb-5">{{ session('error') }}</x-alert>
+    @endif
+
     {{-- Qidiruv / filtr --}}
     <form method="GET" action="{{ route('admin.readers.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">

@@ -18,11 +18,17 @@ class ReaderStatusController extends Controller
 
     public function block(BlockReaderRequest $request, Reader $reader): RedirectResponse
     {
-        $this->statusService->block(
-            $reader,
-            $request->input('blocked_until') ?: null,
-            $request->input('block_reason'),
-        );
+        try {
+            $this->statusService->block(
+                $reader,
+                $request->input('blocked_until') ?: null,
+                $request->string('block_reason')->toString(),
+            );
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('admin.readers.show', $reader)
+                ->withErrors(['block_reason' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.readers.show', $reader)

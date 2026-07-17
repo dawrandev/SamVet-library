@@ -87,3 +87,93 @@ it('shows the outstanding-book warning instead of the reason form on the show pa
         ->assertSee('Qarzdorlik sinov kitobi')
         ->assertSee('Foydalanuvchida qaytarilmagan kitob');
 });
+
+// --- Block: debt guard + required reason ---
+
+it('blocks a reader and stores the reason when the reader has no outstanding loans', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+
+    $this->patch(route('admin.readers.block', $reader), [
+        'block_reason' => 'Qoidabuzarlik',
+    ])->assertRedirect(route('admin.readers.show', $reader));
+
+    $reader->refresh();
+    expect($reader->status)->toBe(ReaderStatus::Blocked)
+        ->and($reader->block_reason)->toBe('Qoidabuzarlik');
+});
+
+it('requires a reason to block a reader', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+
+    $this->from(route('admin.readers.show', $reader))
+        ->patch(route('admin.readers.block', $reader), [])
+        ->assertSessionHasErrors('block_reason');
+
+    expect($reader->fresh()->status)->toBe(ReaderStatus::Active);
+});
+
+it('refuses to block a reader while they have an unreturned book', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+    $copy = BookCopy::factory()->create();
+    Loan::create([
+        'reader_id' => $reader->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
+        'issued_at' => now(),
+        'due_at' => now()->addDays(14),
+        'status' => 'on_loan',
+    ]);
+
+    $this->patch(route('admin.readers.block', $reader), [
+        'block_reason' => 'Qoidabuzarlik',
+    ])->assertSessionHasErrors('block_reason');
+
+    expect($reader->fresh()->status)->toBe(ReaderStatus::Active);
+});
+
+// --- Delete: debt guard ---
+
+it('deletes a reader with no outstanding loans', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+
+    $this->delete(route('admin.readers.destroy', $reader))
+        ->assertRedirect(route('admin.readers.index'));
+
+    $this->assertDatabaseMissing('readers', ['id' => $reader->id]);
+});
+
+it('refuses to delete a reader while they have an unreturned book', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+    $copy = BookCopy::factory()->create();
+    Loan::create([
+        'reader_id' => $reader->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
+        'issued_at' => now(),
+        'due_at' => now()->addDays(14),
+        'status' => 'on_loan',
+    ]);
+
+    $this->from(route('admin.readers.show', $reader))
+        ->delete(route('admin.readers.destroy', $reader))
+        ->assertSessionHas('error');
+
+    $this->assertDatabaseHas('readers', ['id' => $reader->id]);
+});
+
+it('shows the outstanding-book warning on the show page instead of the delete confirmation', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+    $copy = BookCopy::factory()->create();
+    $copy->book->update(['title' => 'O‘chirish sinov kitobi']);
+    Loan::create([
+        'reader_id' => $reader->id,
+        'loanable_type' => 'book_copy',
+        'loanable_id' => $copy->id,
+        'issued_at' => now(),
+        'due_at' => now()->addDays(14),
+        'status' => 'on_loan',
+    ]);
+
+    $this->get(route('admin.readers.show', $reader))
+        ->assertSee('O‘chirish sinov kitobi');
+});

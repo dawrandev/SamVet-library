@@ -18,6 +18,7 @@ use App\Services\ReaderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use RuntimeException;
 
 class ReaderController extends Controller
 {
@@ -98,7 +99,13 @@ class ReaderController extends Controller
 
     public function destroy(Reader $reader): RedirectResponse
     {
-        $this->readerService->delete($reader);
+        try {
+            $this->readerService->delete($reader);
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('admin.readers.index')
