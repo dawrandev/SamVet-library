@@ -17,8 +17,7 @@ class BookData
         public readonly ?string $author_mark,
         public readonly ?int $book_type_id,
         public readonly ?int $language_id,
-        /** @var array<string, string>|null Publisher (translation: uz/ru/kk) */
-        public readonly ?array $publisher,
+        public readonly ?string $publisher,
         public readonly ?int $publication_place_id,
         public readonly ?int $publication_year,
         public readonly ?int $pages,
@@ -38,19 +37,13 @@ class BookData
 
     public static function fromRequest(Request $request): self
     {
-        // Publisher: {uz,ru,kk} — empty values are dropped, null if all are empty
-        $publisher = array_filter(
-            array_map('trim', (array) $request->input('publisher', [])),
-            static fn (string $v): bool => $v !== '',
-        );
-
         return new self(
             title: $request->string('title')->toString(),
             udc: $request->input('udc'),
             author_mark: $request->input('author_mark'),
             book_type_id: $request->integer('book_type_id') ?: null,
             language_id: $request->integer('language_id') ?: null,
-            publisher: $publisher ?: null,
+            publisher: $request->input('publisher') ?: null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             publication_year: $request->integer('publication_year') ?: null,
             pages: $request->integer('pages') ?: null,

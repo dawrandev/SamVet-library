@@ -10,12 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Spatie\Translatable\HasTranslations;
 
 #[ObservedBy([BookObserver::class])]
 class Book extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory;
 
     protected $fillable = [
         'title', 'slug', 'udc', 'author_mark',
@@ -24,9 +23,6 @@ class Book extends Model
         'cover_image', 'electronic_file', 'audio_file',
         'views_count',
     ];
-
-    /** Only the publisher is translatable (title/annotation — single language). */
-    public array $translatable = ['publisher'];
 
     protected function casts(): array
     {

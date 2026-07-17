@@ -1,24 +1,28 @@
 @extends('layouts.admin')
 
 @php
-    $isNewspaper = ($filters['kind'] ?? null) === \App\Enums\PublicationKind::Newspaper->value;
-    $pageTitle = $isNewspaper ? __('Gazetalar') : __('Jurnallar');
+    $currentKindFilter = $filters['kind'] ?? null;
+    $pageTitle = match ($currentKindFilter) {
+        \App\Enums\PublicationKind::Newspaper->value => __('Gazetalar'),
+        \App\Enums\PublicationKind::Journal->value => __('Jurnallar'),
+        default => __('Davriy nashrlar'),
+    };
     $filtersWithoutKind = collect($filters)->except('kind')->all();
 @endphp
 
 @section('title', $pageTitle)
 
 @section('content')
-    {{-- Title + New journal/newspaper --}}
+    {{-- Title + New periodical --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $pageTitle }}</h2>
             <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $journals->total() }}</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.journals.create', array_filter(['kind' => $filters['kind'] ?? null])) }}"
+            <a href="{{ route('admin.journals.create', array_filter(['kind' => $currentKindFilter])) }}"
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-                <span class="text-lg leading-none">+</span> {{ $isNewspaper ? __('Yangi gazeta') : __('Yangi jurnal') }}
+                <span class="text-lg leading-none">+</span> {{ __('Yangi davriy nashr') }}
             </a>
         </div>
     </div>
@@ -31,12 +35,21 @@
     {{-- Search / filter --}}
     <form method="GET" action="{{ route('admin.journals.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
-        <input type="hidden" name="kind" value="{{ $filters['kind'] ?? '' }}" />
         <div class="flex-1">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qidirish') }}</label>
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                    placeholder="{{ __('Nomi yoki ISSN...') }}"
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+        <div class="sm:w-44">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr turi') }}</label>
+            <select name="kind"
+                    class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
+                <option value="">{{ __('Barchasi') }}</option>
+                @foreach (\App\Enums\PublicationKind::cases() as $kind)
+                    <option value="{{ $kind->value }}" @selected($currentKindFilter === $kind->value)>{{ $kind->label() }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="sm:w-48">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
@@ -50,8 +63,8 @@
         </div>
         <div class="flex gap-2">
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
-            @if (array_filter($filtersWithoutKind))
-                <a href="{{ route('admin.journals.index', array_filter(['kind' => $filters['kind'] ?? null])) }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
+            @if (array_filter($filters))
+                <a href="{{ route('admin.journals.index') }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
             @endif
         </div>
     </form>
@@ -108,7 +121,13 @@
                         <tr>
                             <td colspan="6" class="px-5 py-12 text-center">
                                 <x-admin.icon name="newspaper" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
-                                <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ $isNewspaper ? __('Gazetalar topilmadi.') : __('Jurnallar topilmadi.') }}</p>
+                                <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">
+                                    {{ match ($currentKindFilter) {
+                                        \App\Enums\PublicationKind::Newspaper->value => __('Gazetalar topilmadi.'),
+                                        \App\Enums\PublicationKind::Journal->value => __('Jurnallar topilmadi.'),
+                                        default => __('Davriy nashrlar topilmadi.'),
+                                    } }}
+                                </p>
                             </td>
                         </tr>
                     @endforelse

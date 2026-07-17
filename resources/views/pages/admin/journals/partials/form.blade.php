@@ -9,7 +9,6 @@
 
     $kindOptions = \App\Enums\PublicationKind::cases();
     $currentKind = old('kind', $editing ? $journal->kind?->value : ($kind ?? \App\Enums\PublicationKind::Journal->value));
-    $isNewspaperForm = $currentKind === \App\Enums\PublicationKind::Newspaper->value;
 
     // Preserve the journal/newspaper list scope when navigating back/cancel.
     $backParams = array_filter(['kind' => $editing ? $journal->kind?->value : $currentKind]);
@@ -18,6 +17,7 @@
 <form
     method="POST"
     action="{{ $editing ? route('admin.journals.update', $journal) : route('admin.journals.store') }}"
+    x-data="{ kind: '{{ $currentKind }}' }"
 >
     @csrf
     @if ($editing) @method('PUT') @endif
@@ -27,11 +27,7 @@
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.journals.index', $backParams) }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white/90">
-                @if ($editing)
-                    {{ $isNewspaperForm ? __('Gazetani tahrirlash') : __('Jurnalni tahrirlash') }}
-                @else
-                    {{ $isNewspaperForm ? __('Yangi gazeta') : __('Yangi jurnal') }}
-                @endif
+                {{ $editing ? __('Davriy nashrni tahrirlash') : __('Yangi davriy nashr') }}
             </h2>
         </div>
         <div class="flex items-center gap-2">
@@ -51,50 +47,37 @@
             <div class="space-y-5">
                 <x-admin.form.input name="name" :label="__('Nomi')" :value="$journal?->name" required :placeholder="__('Jurnal nomi')" />
 
-                {{-- Publication kind (journal / newspaper). On create, the sidebar/button
-                     you came from ("Yangi jurnal" vs "Yangi gazeta") already decided this —
-                     asking again here is redundant, so it's fixed and just displayed. Only
-                     editable when correcting an existing record's kind. --}}
-                @if ($editing)
-                    <div>
-                        <label for="kind" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi (jurnal/gazeta)') }}<span class="text-error-500">*</span></label>
-                        <select name="kind" id="kind" required
-                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('kind') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                            @foreach ($kindOptions as $opt)
-                                <option value="{{ $opt->value }}" @selected($currentKind === $opt->value)>{{ $opt->label() }}</option>
-                            @endforeach
-                        </select>
-                        @error('kind')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                    </div>
-                @else
-                    <input type="hidden" name="kind" value="{{ $currentKind }}" />
-                    <div>
-                        <span class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</span>
-                        <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-3 py-1.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                            {{ $isNewspaperForm ? __('Gazeta') : __('Jurnal') }}
-                        </span>
-                    </div>
-                @endif
+                {{-- Publication kind (journal / newspaper) — decides whether copies of this
+                     periodical carry an inventory number (journal) or not (newspaper). --}}
+                <div>
+                    <label for="kind" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi (jurnal/gazeta)') }}<span class="text-error-500">*</span></label>
+                    <select name="kind" id="kind" required x-model="kind"
+                            class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('kind') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                        @foreach ($kindOptions as $opt)
+                            <option value="{{ $opt->value }}" @selected($currentKind === $opt->value)>{{ $opt->label() }}</option>
+                        @endforeach
+                    </select>
+                    @error('kind')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">
-                    @if ($isNewspaperForm)
-                        {{-- Newspapers use a fixed, closed set of 2 types (NewspaperType enum) —
-                             not the open, admin-extendable journal_type_id lookup that journals use. --}}
-                        <div>
-                            <label for="newspaper_type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
-                            <select name="newspaper_type" id="newspaper_type"
-                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('newspaper_type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                                <option value="">{{ __('Tanlang') }}</option>
-                                @foreach ($newspaperTypeOptions as $opt)
-                                    <option value="{{ $opt->value }}" @selected($currentNewspaperType === $opt->value)>{{ $opt->label() }}</option>
-                                @endforeach
-                            </select>
-                            @error('newspaper_type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                        </div>
-                    @else
+                    {{-- Newspapers use a fixed, closed set of 2 types (NewspaperType enum) —
+                         not the open, admin-extendable journal_type_id lookup that journals use. --}}
+                    <div x-show="kind === '{{ \App\Enums\PublicationKind::Newspaper->value }}'" x-cloak>
+                        <label for="newspaper_type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
+                        <select name="newspaper_type" id="newspaper_type"
+                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('newspaper_type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <option value="">{{ __('Tanlang') }}</option>
+                            @foreach ($newspaperTypeOptions as $opt)
+                                <option value="{{ $opt->value }}" @selected($currentNewspaperType === $opt->value)>{{ $opt->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('newspaper_type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                    </div>
+                    <div x-show="kind !== '{{ \App\Enums\PublicationKind::Newspaper->value }}'">
                         <x-admin.form.select name="journal_type_id" :label="__('Turi')" :options="$types" :selected="$journal?->journal_type_id" :placeholder="__('Tanlang')"
                             creatable create-translatable create-type="journal_type" :create-label="__('Yangi tur')" />
-                    @endif
+                    </div>
                     <x-admin.form.input name="founder" :label="__('Muassislar')" :value="$journal?->founder" :placeholder="__('masalan: SamVMU')" />
                 </div>
 
@@ -132,9 +115,8 @@
                         :help="__('Ochiq saytda ko‘rinmaydi.')" />
                 </div>
 
-                <x-admin.form.translatable-input name="publisher" :label="__('Nashriyoti')"
-                    :value="$editing ? $journal->getTranslations('publisher') : []"
-                    :placeholders="['uz' => 'masalan: Samarqand', 'ru' => 'например: Самарканд', 'kk' => 'mısalı: Samarqand']" />
+                <x-admin.form.input name="publisher" :label="__('Nashriyoti')"
+                    :value="old('publisher', $journal?->publisher)" placeholder="{{ __('masalan: Samarqand') }}" />
             </div>
         </x-admin.form.section>
     </div>

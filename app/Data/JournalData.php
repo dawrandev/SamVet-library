@@ -17,8 +17,7 @@ class JournalData
         public readonly ?string $newspaper_type,
         public readonly ?string $founder,
         public readonly ?int $language_id,
-        /** @var array<string, string>|null Publisher (translation: uz/ru/kk) */
-        public readonly ?array $publisher,
+        public readonly ?string $publisher,
         public readonly ?int $publication_place_id,
         public readonly ?string $issn,
         public readonly ?string $index,
@@ -28,12 +27,6 @@ class JournalData
 
     public static function fromRequest(Request $request): self
     {
-        // Publisher: {uz,ru,kk} — empty values are dropped, null if all are empty
-        $publisher = array_filter(
-            array_map('trim', (array) $request->input('publisher', [])),
-            static fn (string $v): bool => $v !== '',
-        );
-
         return new self(
             name: $request->string('name')->toString(),
             kind: $request->string('kind')->toString(),
@@ -41,7 +34,7 @@ class JournalData
             newspaper_type: $request->input('newspaper_type') ?: null,
             founder: $request->input('founder'),
             language_id: $request->integer('language_id') ?: null,
-            publisher: $publisher ?: null,
+            publisher: $request->input('publisher') ?: null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             issn: $request->input('issn'),
             index: $request->input('index'),

@@ -26,7 +26,7 @@ class JournalFactory extends Factory
             'journal_type_id' => JournalType::factory(),
             'founder' => $this->faker->company(),
             'language_id' => Language::factory(),
-            'publisher' => ['uz' => $this->faker->company()],
+            'publisher' => $this->faker->company(),
             'publication_place_id' => PublicationPlace::factory(),
             'issn' => $this->faker->numerify('####-####'),
             'periodicity' => JournalPeriodicity::Quarterly->value,

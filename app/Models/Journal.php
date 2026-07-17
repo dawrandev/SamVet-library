@@ -11,21 +11,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Translatable\HasTranslations;
 
 #[ObservedBy([JournalObserver::class])]
 class Journal extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory;
 
     protected $fillable = [
         'name', 'kind', 'slug', 'journal_type_id', 'newspaper_type', 'founder',
         'language_id', 'publisher', 'publication_place_id',
         'issn', 'index', 'periodicity', 'periodicity_count',
     ];
-
-    /** Only the publisher is translatable (name — single language). */
-    public array $translatable = ['publisher'];
 
     protected function casts(): array
     {

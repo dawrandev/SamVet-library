@@ -166,7 +166,7 @@ class BookImportService
             'publication_year' => $year,
             'book_type_id' => $this->translatableLookup(BookType::class, 'book_types', $this->clean($row[self::COL['book_type']] ?? null)),
             'language_id' => $this->resolveLanguage($this->clean($row[self::COL['language']] ?? null)),
-            'publisher' => $this->singleLanguage($this->clean($row[self::COL['publisher']] ?? null)),
+            'publisher' => $this->clean($row[self::COL['publisher']] ?? null),
             'pages' => $this->parseInt($this->clean($row[self::COL['pages']] ?? null)),
             'publication_place_id' => $this->translatableLookup(PublicationPlace::class, 'publication_places', $this->clean($row[self::COL['publication_place']] ?? null)),
             'isbn' => $this->cleanIsbn($this->clean($row[self::COL['isbn']] ?? null)),
@@ -356,16 +356,6 @@ class BookImportService
         }
 
         return preg_match('/(1\d{3}|20\d{2})/', $value, $m) === 1 ? (int) $m[1] : null;
-    }
-
-    /**
-     * The source file carries one language only — store it as the Uzbek value.
-     *
-     * @return array<string, string>|null
-     */
-    private function singleLanguage(?string $value): ?array
-    {
-        return $value === null ? null : ['uz' => $value];
     }
 
     /**

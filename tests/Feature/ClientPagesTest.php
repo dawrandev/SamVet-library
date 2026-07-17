@@ -43,7 +43,7 @@ it('shows a journal detail page but hides library-internal fields', function () 
         'name' => 'Ochiq jurnal',
         'index' => 'IDX-SECRET',
         'founder' => 'Maxfiy muassis',
-        'publisher' => ['uz' => 'Maxfiy nashriyot'],
+        'publisher' => 'Maxfiy nashriyot',
         'publication_place_id' => $place->id,
         'periodicity' => 'weekly',
         'periodicity_count' => 3,

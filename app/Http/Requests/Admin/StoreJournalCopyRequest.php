@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
+use App\Enums\PublicationKind;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -21,8 +22,11 @@ class StoreJournalCopyRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Newspapers don't carry an inventory number per copy — only journals do.
+        $isNewspaper = $this->route('journalIssue')?->journal?->kind === PublicationKind::Newspaper;
+
         return [
-            'inventory_number' => ['required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
+            'inventory_number' => [$isNewspaper ? 'nullable' : 'required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
             'condition' => ['nullable', new Enum(CopyCondition::class)],
             'status' => ['required', new Enum(CopyStatus::class)],
             'location_id' => ['nullable', 'exists:locations,id'],

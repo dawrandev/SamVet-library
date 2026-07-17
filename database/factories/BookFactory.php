@@ -23,7 +23,7 @@ class BookFactory extends Factory
             'title' => $title,
             'book_type_id' => BookType::factory(),
             'language_id' => Language::factory(),
-            'publisher' => ['uz' => $this->faker->company()],
+            'publisher' => $this->faker->company(),
             'publication_place_id' => PublicationPlace::factory(),
             'publication_year' => $this->faker->numberBetween(1990, 2025),
             'pages' => $this->faker->numberBetween(50, 600),

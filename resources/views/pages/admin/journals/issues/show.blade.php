@@ -16,6 +16,7 @@
 
         $openStore = $errors->any() && old('_copy_form') === 'store';
         $openEditId = $errors->any() && old('_copy_form') === 'edit' ? (int) old('_copy_id') : null;
+        $isNewspaper = $journal->kind === \App\Enums\PublicationKind::Newspaper;
     @endphp
 
     {{-- Header --}}
@@ -112,7 +113,7 @@
                         <tbody>
                             @forelse ($issue->copies as $copy)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/50">
-                                    <td class="px-5 py-3 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $copy->inventory_number }}</td>
+                                    <td class="px-5 py-3 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $copy->inventory_number ?? '—' }}</td>
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->condition?->label() ?? '—' }}</td>
                                     <td class="px-5 py-3">
                                         <span class="rounded-full px-2.5 py-0.5 text-theme-xs font-medium {{ $statusColor[$copy->status->value] ?? '' }}">{{ $copy->status->label() }}</span>
@@ -152,7 +153,7 @@
                             @csrf
                             <input type="hidden" name="_copy_form" value="store" />
 
-                            <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" required />
+                            <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" :required="! $isNewspaper" />
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
@@ -214,7 +215,7 @@
                                 <input type="hidden" name="_copy_form" value="edit" />
                                 <input type="hidden" name="_copy_id" value="{{ $copy->id }}" />
 
-                                <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" required
+                                <x-admin.form.input name="inventory_number" :label="__('Inventar raqami')" :required="! $isNewspaper"
                                     :value="$isEditing ? old('inventory_number') : $copy->inventory_number" />
 
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

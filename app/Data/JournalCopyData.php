@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class JournalCopyData
 {
     public function __construct(
-        public readonly string $inventory_number,
+        public readonly ?string $inventory_number,
         public readonly ?string $condition,
         public readonly string $status,
         public readonly ?int $location_id,
@@ -20,7 +20,7 @@ class JournalCopyData
     public static function fromRequest(Request $request): self
     {
         return new self(
-            inventory_number: $request->string('inventory_number')->toString(),
+            inventory_number: $request->input('inventory_number') ?: null,
             condition: $request->input('condition') ?: null,
             status: $request->string('status')->toString(),
             location_id: $request->integer('location_id') ?: null,

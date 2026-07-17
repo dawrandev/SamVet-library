@@ -17,8 +17,7 @@ it('creates a journal', function () {
         'kind' => 'journal',
         'journal_type_id' => $type->id,
         'language_id' => $language->id,
-        // Publisher is translatable free text; place of publication is a lookup.
-        'publisher' => ['uz' => 'SDVUNF nashriyoti'],
+        'publisher' => 'SDVUNF nashriyoti',
         'publication_place_id' => $place->id,
         'issn' => '1234-5678',
         'periodicity' => 'monthly',
@@ -97,31 +96,31 @@ it('rejects an invalid newspaper_type value', function () {
         ->assertSessionHasErrors('newspaper_type');
 });
 
-it('renders the fixed newspaper_type select (not journal_type_id) on the newspaper form', function () {
+it('renders both the newspaper_type and journal_type_id selects, toggled by the kind select', function () {
+    // Both fields are always in the DOM — Alpine (x-show, bound to the "kind"
+    // select) toggles which one is visible, so switching kind doesn't need a reload.
     $this->get(route('admin.journals.create', ['kind' => 'newspaper']))
         ->assertSee('<select name="newspaper_type"', false)
         ->assertSee('Ma’naviy-ma’rifiy gazeta')
         ->assertSee('Pedagogik gazeta')
-        ->assertDontSee('<select name="journal_type_id"', false)
-        ->assertDontSee('Yangi tur');
+        ->assertSee('<select name="journal_type_id"', false);
 
     $journal = Journal::factory()->newspaper()->create();
 
     $this->get(route('admin.journals.edit', $journal))
         ->assertSee('<select name="newspaper_type"', false)
-        ->assertDontSee('<select name="journal_type_id"', false);
+        ->assertSee('<select name="journal_type_id"', false);
 });
 
-it('renders the journal_type_id lookup (not newspaper_type) on the journal form', function () {
+it('renders the journal_type_id lookup with its create-new option on the journal form', function () {
     $this->get(route('admin.journals.create', ['kind' => 'journal']))
         ->assertSee('<select name="journal_type_id"', false)
-        ->assertDontSee('<select name="newspaper_type"', false);
+        ->assertSee('Yangi tur');
 
     $journal = Journal::factory()->create();
 
     $this->get(route('admin.journals.edit', $journal))
-        ->assertSee('<select name="journal_type_id"', false)
-        ->assertDontSee('<select name="newspaper_type"', false);
+        ->assertSee('<select name="journal_type_id"', false);
 });
 
 it('requires a name and a kind', function () {
@@ -173,13 +172,12 @@ it('separates journals and newspapers in the index list (?kind=)', function () {
         ->assertSee('Gazetalar');
 });
 
-it('fixes the kind on create instead of asking again (navigation already decided it)', function () {
-    // Coming from "Gazetalar" → "Yangi gazeta": the kind dropdown is redundant
-    // (you already told the system your intent), so it's a hidden field, not a select.
+it('shows the kind select pre-selected on create, coming from the list scope', function () {
+    // Coming from "Davriy nashrlar" filtered to newspapers → "Yangi davriy nashr":
+    // the kind select is always real (Alpine toggles the sub-fields), just pre-selected.
     $this->get(route('admin.journals.create', ['kind' => 'newspaper']))
-        ->assertSee('Yangi gazeta')
-        ->assertDontSee('<select name="kind"', false)
-        ->assertSee('<input type="hidden" name="kind" value="newspaper"', false);
+        ->assertSee('<select name="kind"', false)
+        ->assertSee('value="newspaper" selected', false);
 });
 
 it('keeps the kind select editable when correcting an existing journal', function () {

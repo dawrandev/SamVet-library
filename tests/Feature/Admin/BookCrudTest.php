@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(fn () => actingAsAdmin());
 
-it('creates a book with a translatable publisher and a place lookup', function () {
+it('creates a book with a plain-text publisher and a place lookup', function () {
     $type = BookType::factory()->create();
     $lang = Language::factory()->create();
     $place = PublicationPlace::factory()->create();
@@ -18,15 +18,14 @@ it('creates a book with a translatable publisher and a place lookup', function (
         'title' => 'Yangi kitob',
         'book_type_id' => $type->id,
         'language_id' => $lang->id,
-        'publisher' => ['uz' => 'Fan', 'ru' => 'Фан'],
+        'publisher' => 'Fan',
         'publication_place_id' => $place->id,
         'publication_year' => 2024,
     ])->assertRedirect();
 
     $book = Book::firstWhere('title', 'Yangi kitob');
     expect($book)->not->toBeNull()
-        ->and($book->getTranslation('publisher', 'uz'))->toBe('Fan')
-        ->and($book->getTranslation('publisher', 'ru'))->toBe('Фан')
+        ->and($book->publisher)->toBe('Fan')
         ->and($book->publication_place_id)->toBe($place->id)
         ->and($book->slug)->not->toBeEmpty();
 });

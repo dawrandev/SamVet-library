@@ -11,8 +11,8 @@
     $preBookTypeId = $translating ? old('book_type_id', $sourceBook->book_type_id) : $book?->book_type_id;
     $prePublicationPlaceId = $translating ? old('publication_place_id', $sourceBook->publication_place_id) : $book?->publication_place_id;
     $prePublisher = $translating
-        ? old('publisher', $sourceBook->getTranslations('publisher'))
-        : ($editing ? $book->getTranslations('publisher') : []);
+        ? old('publisher', $sourceBook->publisher)
+        : old('publisher', $book?->publisher);
     $prePublicationYear = $translating ? old('publication_year', $sourceBook->publication_year) : $book?->publication_year;
 
     $authorOptions = $authors->map(fn ($a) => ['id' => $a->id, 'label' => $a->name])->all();
@@ -114,9 +114,8 @@
                         <x-admin.form.input name="print_run" type="number" :label="__('Tiraj')" :value="$book?->print_run" />
                     </div>
 
-                    <x-admin.form.translatable-input name="publisher" :label="__('Nashriyoti')"
-                        :value="$prePublisher"
-                        :placeholders="['uz' => 'masalan: Iqtisod-moliya', 'ru' => 'например: Иктисод-молия', 'kk' => 'mısalı: Iqtisod-moliya']" />
+                    <x-admin.form.input name="publisher" :label="__('Nashriyoti')"
+                        :value="$prePublisher" placeholder="{{ __('masalan: Iqtisod-moliya') }}" />
                 </div>
             </x-admin.form.section>
 
