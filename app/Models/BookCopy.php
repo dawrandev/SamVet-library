@@ -15,7 +15,9 @@ class BookCopy extends Model
 
     protected $fillable = [
         'book_id', 'inventory_number', 'format', 'condition', 'status',
-        'location_id', 'price', 'acquisition_act', 'disposal_act',
+        'location_id', 'price',
+        'acquisition_act_number', 'acquisition_act_at',
+        'disposal_act_number', 'disposal_act_at',
     ];
 
     protected function casts(): array
@@ -25,6 +27,8 @@ class BookCopy extends Model
             'condition' => CopyCondition::class,
             'status' => CopyStatus::class,
             'price' => 'decimal:2',
+            'acquisition_act_at' => 'datetime',
+            'disposal_act_at' => 'datetime',
         ];
     }
 

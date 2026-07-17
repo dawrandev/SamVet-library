@@ -209,8 +209,14 @@
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->location?->name ?? '—' }}</td>
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->price ? number_format($copy->price, 0, '.', ' ') . ' ' . __('so‘m') : '—' }}</td>
                                     <td class="px-5 py-3 text-theme-xs">
-                                        <span class="{{ $copy->acquisition_act ? 'text-success-600' : 'text-gray-400' }}">{{ __('Kirish') }}: {{ $copy->acquisition_act ? '📎' : '—' }}</span>
-                                        <span class="ml-2 {{ $copy->disposal_act ? 'text-success-600' : 'text-gray-400' }}">{{ __('Chiqish') }}: {{ $copy->disposal_act ? '📎' : '—' }}</span>
+                                        <div class="{{ $copy->acquisition_act_number ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400' }}">
+                                            {{ __('Kirish') }}: {{ $copy->acquisition_act_number ?? '—' }}
+                                            @if ($copy->acquisition_act_at) <span class="text-gray-400">({{ $copy->acquisition_act_at->format('d.m.Y H:i') }})</span> @endif
+                                        </div>
+                                        <div class="{{ $copy->disposal_act_number ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400' }}">
+                                            {{ __('Chiqish') }}: {{ $copy->disposal_act_number ?? '—' }}
+                                            @if ($copy->disposal_act_at) <span class="text-gray-400">({{ $copy->disposal_act_at->format('d.m.Y H:i') }})</span> @endif
+                                        </div>
                                     </td>
                                     <td class="px-5 py-3 text-right text-theme-xs">
                                         <div class="flex items-center justify-end gap-2">
@@ -241,7 +247,7 @@
                             <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Yangi nusxa') }}</h4>
                             <button type="button" @click="showStore = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                         </div>
-                        <form method="POST" action="{{ route('admin.books.copies.store', $book) }}" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('admin.books.copies.store', $book) }}" class="space-y-4">
                             @csrf
                             <input type="hidden" name="_copy_form" value="store" />
 
@@ -289,8 +295,12 @@
 
                             <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')" />
 
-                            <x-admin.form.file name="acquisition_act" :label="__('Kirish akti (PDF)')" accept="application/pdf" :help="__('Maks. 50 MB')" />
-                            <x-admin.form.file name="disposal_act" :label="__('Chiqish akti (PDF)')" accept="application/pdf" :help="__('Maks. 50 MB')" />
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" />
+                                <x-admin.form.input name="acquisition_act_at" type="datetime-local" :label="__('Kirish akti sanasi')" />
+                                <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')" />
+                                <x-admin.form.input name="disposal_act_at" type="datetime-local" :label="__('Chiqish akti sanasi')" />
+                            </div>
 
                             <div class="flex justify-end gap-3 pt-2">
                                 <button type="button" @click="showStore = false"
@@ -314,7 +324,7 @@
                                 <button type="button" @click="editId = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                             </div>
                             @php $isEditing = $openEditId === $copy->id; @endphp
-                            <form method="POST" action="{{ route('admin.books.copies.update', [$book, $copy]) }}" enctype="multipart/form-data" class="space-y-4">
+                            <form method="POST" action="{{ route('admin.books.copies.update', [$book, $copy]) }}" class="space-y-4">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="_copy_form" value="edit" />
                                 <input type="hidden" name="_copy_id" value="{{ $copy->id }}" />
@@ -365,12 +375,16 @@
                                 <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')"
                                     :value="$isEditing ? old('price') : $copy->price" />
 
-                                <x-admin.form.file name="acquisition_act" :label="__('Kirish akti (PDF)')" accept="application/pdf"
-                                    :currentName="$copy->acquisition_act ? __('Fayl mavjud') : null"
-                                    :help="$copy->acquisition_act ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('Maks. 50 MB')" />
-                                <x-admin.form.file name="disposal_act" :label="__('Chiqish akti (PDF)')" accept="application/pdf"
-                                    :currentName="$copy->disposal_act ? __('Fayl mavjud') : null"
-                                    :help="$copy->disposal_act ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('Maks. 50 MB')" />
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')"
+                                        :value="$isEditing ? old('acquisition_act_number') : $copy->acquisition_act_number" />
+                                    <x-admin.form.input name="acquisition_act_at" type="datetime-local" :label="__('Kirish akti sanasi')"
+                                        :value="$isEditing ? old('acquisition_act_at') : $copy->acquisition_act_at?->format('Y-m-d\TH:i')" />
+                                    <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')"
+                                        :value="$isEditing ? old('disposal_act_number') : $copy->disposal_act_number" />
+                                    <x-admin.form.input name="disposal_act_at" type="datetime-local" :label="__('Chiqish akti sanasi')"
+                                        :value="$isEditing ? old('disposal_act_at') : $copy->disposal_act_at?->format('Y-m-d\TH:i')" />
+                                </div>
 
                                 <div class="flex justify-end gap-3 pt-2">
                                     <button type="button" @click="editId = null"

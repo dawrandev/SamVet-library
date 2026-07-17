@@ -3,7 +3,6 @@
 namespace App\Data;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 
 /**
  * DTO for passing data from Controller → Service (book copy).
@@ -18,8 +17,10 @@ class CopyData
         public readonly string $status,
         public readonly ?int $location_id,
         public readonly ?float $price,
-        public readonly ?UploadedFile $acquisition_act,
-        public readonly ?UploadedFile $disposal_act,
+        public readonly ?string $acquisition_act_number,
+        public readonly ?string $acquisition_act_at,
+        public readonly ?string $disposal_act_number,
+        public readonly ?string $disposal_act_at,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -31,13 +32,15 @@ class CopyData
             status: $request->string('status')->toString(),
             location_id: $request->integer('location_id') ?: null,
             price: $request->filled('price') ? (float) $request->input('price') : null,
-            acquisition_act: $request->file('acquisition_act'),
-            disposal_act: $request->file('disposal_act'),
+            acquisition_act_number: $request->input('acquisition_act_number') ?: null,
+            acquisition_act_at: $request->input('acquisition_act_at') ?: null,
+            disposal_act_number: $request->input('disposal_act_number') ?: null,
+            disposal_act_at: $request->input('disposal_act_at') ?: null,
         );
     }
 
     /**
-     * Only the scalar fields written to the book_copies table (without files).
+     * Only the scalar fields written to the book_copies table.
      *
      * @return array<string, mixed>
      */
@@ -50,6 +53,10 @@ class CopyData
             'status' => $this->status,
             'location_id' => $this->location_id,
             'price' => $this->price,
+            'acquisition_act_number' => $this->acquisition_act_number,
+            'acquisition_act_at' => $this->acquisition_act_at,
+            'disposal_act_number' => $this->disposal_act_number,
+            'disposal_act_at' => $this->disposal_act_at,
         ];
     }
 }

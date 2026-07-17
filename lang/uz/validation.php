@@ -226,8 +226,10 @@ return [
         'condition' => 'Holati',
         'price' => 'Narxi',
         'location_id' => 'Joylashuvi',
-        'acquisition_act' => 'Kirim akti',
-        'disposal_act' => 'Chiqim akti',
+        'acquisition_act_number' => 'Kirish akti raqami',
+        'acquisition_act_at' => 'Kirish akti sanasi',
+        'disposal_act_number' => 'Chiqish akti raqami',
+        'disposal_act_at' => 'Chiqish akti sanasi',
 
         // Berish (loan)
         'due_at' => 'Qaytarish muddati',

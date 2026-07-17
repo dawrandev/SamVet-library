@@ -123,7 +123,7 @@ Bu loyiha kutubxona tizimi — xavfsizlikка **juda katta e'tibor**. Har bir ko
 - **XSS:** Blade `{{ }}` avtomatik escape qiladi. `{!! !!}` faqat ishonchli, tozalangan ma'lumotда.
 - **CSRF:** barcha formalarда `@csrf`. State o'zgartiruvchi so'rovlar POST/PUT/DELETE.
 - **Fayl yuklash:** mime-type, hajm, kengaytma tekshiriladi. Fayllar `storage/app` (public EMAS), controller orqali beriladi.
-- **PDF/media himoyasi:** elektron kitob/audio va aktlar to'g'ridan-to'g'ri URL bilan berilmaydi — faqat auth + policy tekshiruvidan o'tган controller stream orqali. Yuklab olish yo'q.
+- **PDF/media himoyasi:** elektron kitob/audio to'g'ridan-to'g'ri URL bilan berilmaydi — faqat auth + policy tekshiruvidan o'tган controller stream orqali. Yuklab olish yo'q. (Kirish/chiqish aktlari endi fayl EMAS — oddiy matn maydonlari: akt raqami + sanasi/vaqti.)
 - **Parol:** `Hash::make` (bcrypt/argon). Login'да rate limiting (`throttle`).
 - **Kutubxonachi hujjatlari** (kirish/chiqish aktlari) — mijoz saytda MUTLAQO ko'rinmaydi.
 

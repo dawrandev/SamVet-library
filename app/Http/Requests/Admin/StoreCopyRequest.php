@@ -29,8 +29,10 @@ class StoreCopyRequest extends FormRequest
             'status' => ['required', new Enum(CopyStatus::class)],
             'location_id' => ['nullable', 'exists:locations,id'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'acquisition_act' => ['nullable', 'mimes:pdf', 'max:51200'], // 50 MB
-            'disposal_act' => ['nullable', 'mimes:pdf', 'max:51200'],    // 50 MB
+            'acquisition_act_number' => ['nullable', 'string', 'max:100'],
+            'acquisition_act_at' => ['nullable', 'date'],
+            'disposal_act_number' => ['nullable', 'string', 'max:100'],
+            'disposal_act_at' => ['nullable', 'date'],
         ];
     }
 
@@ -54,8 +56,10 @@ class StoreCopyRequest extends FormRequest
             'status' => __('Mavjudligi'),
             'location_id' => __('Joylashuvi'),
             'price' => __('Narxi'),
-            'acquisition_act' => __('Kirish akti'),
-            'disposal_act' => __('Chiqish akti'),
+            'acquisition_act_number' => __('Kirish akti raqami'),
+            'acquisition_act_at' => __('Kirish akti sanasi'),
+            'disposal_act_number' => __('Chiqish akti raqami'),
+            'disposal_act_at' => __('Chiqish akti sanasi'),
         ];
     }
 }
