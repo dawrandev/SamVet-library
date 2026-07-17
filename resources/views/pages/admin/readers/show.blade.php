@@ -660,16 +660,16 @@
         </template>
     </div>
 
-    {{-- Attended events and competitions --}}
-    <div class="mt-6" x-data="{ eventOpen: {{ $errors->has('date') || $errors->has('name') || $errors->has('type') || $errors->has('role') ? 'true' : 'false' }} }">
+    {{-- Attended events and competitions — read-only here; managed from the Tadbirlar module --}}
+    <div class="mt-6">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="mb-4 flex items-center justify-between gap-3">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qatnashgan tadbir va tanlovlar') }}</h3>
-                <button type="button" @click="eventOpen = true"
-                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">+ {{ __('Qo‘shish') }}</button>
+                <a href="{{ route('admin.events.create') }}"
+                   class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">+ {{ __('Tadbir qo‘shish') }}</a>
             </div>
 
-            @if ($reader->events->isEmpty())
+            @if ($eventParticipations->isEmpty())
                 <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha tadbirlar yo‘q.') }}</p>
             @else
                 <div class="overflow-x-auto">
@@ -677,34 +677,24 @@
                         <thead>
                             <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
                                 <th class="px-3 py-2 font-medium">{{ __('Sanasi') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Joyi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Nomi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Turi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Joyi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Maqsadi') }}</th>
-                                <th class="px-3 py-2 font-medium">{{ __('Havola') }}</th>
                                 <th class="px-3 py-2 font-medium"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($reader->events as $event)
+                            @foreach ($eventParticipations as $participation)
                                 <tr class="border-b border-gray-50 dark:border-gray-800/50">
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->date?->format('d.m.Y') }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->place ?: '—' }}</td>
-                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $event->name }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->type?->label() }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $event->role?->label() }}</td>
-                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                        @if ($event->link)
-                                            <a href="{{ $event->link }}" target="_blank" rel="noopener noreferrer"
-                                               class="font-medium text-brand-500 hover:text-brand-600">{{ __('Havola') }}</a>
-                                        @else
-                                            —
-                                        @endif
-                                    </td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $participation->event->date->format('d.m.Y') }}</td>
+                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ $participation->event->name }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $participation->event->type->label() }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $participation->event->locations->pluck('name')->join(', ') ?: '—' }}</td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $participation->role->label() }}</td>
                                     <td class="px-3 py-2 text-right">
-                                        <button type="button"
-                                                @click="$store.confirm.ask('{{ route('admin.readers.events.destroy', [$reader, $event]) }}', '{{ __('Tadbirni o‘chirishni tasdiqlaysizmi?') }}', 'DELETE')"
-                                                class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-red-600 hover:bg-red-50 dark:border-gray-800 dark:hover:bg-red-500/10">{{ __('O‘chirish') }}</button>
+                                        <a href="{{ route('admin.events.edit', $participation->event) }}"
+                                           class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">{{ __('Ko‘rish') }}</a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -713,59 +703,6 @@
                 </div>
             @endif
         </div>
-
-        {{-- Add event modal --}}
-        <template x-teleport="body">
-            <div x-show="eventOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
-                <div class="fixed inset-0 bg-gray-900/50" @click="eventOpen = false"></div>
-                <div class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="eventOpen = false">
-                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Tadbir qo‘shish') }}</h4>
-
-                    <form action="{{ route('admin.readers.events.store', $reader) }}" method="POST" class="space-y-4">
-                        @csrf
-
-                        @php $eventInput = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90'; @endphp
-
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <x-admin.form.input type="date" name="date" :label="__('Sanasi')" :required="true" :value="old('date')" />
-                            <x-admin.form.input name="place" :label="__('Joyi')" :value="old('place')" />
-                        </div>
-
-                        <x-admin.form.input name="name" :label="__('Nomi')" :required="true" :value="old('name')" />
-
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                <label for="type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}<span class="text-error-500">*</span></label>
-                                <select name="type" id="type" required class="{{ $eventInput }} {{ $errors->has('type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                                    @foreach (\App\Enums\EventType::cases() as $type)
-                                        <option value="{{ $type->value }}" @selected(old('type') === $type->value)>{{ $type->label() }}</option>
-                                    @endforeach
-                                </select>
-                                @error('type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                            </div>
-                            <div>
-                                <label for="role" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Maqsadi') }}<span class="text-error-500">*</span></label>
-                                <select name="role" id="role" required class="{{ $eventInput }} {{ $errors->has('role') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                                    @foreach (\App\Enums\EventRole::cases() as $role)
-                                        <option value="{{ $role->value }}" @selected(old('role') === $role->value)>{{ $role->label() }}</option>
-                                    @endforeach
-                                </select>
-                                @error('role')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                            </div>
-                        </div>
-
-                        <x-admin.form.input name="link" :label="__('Havola')" :value="old('link')" placeholder="https://" />
-
-                        <x-admin.form.textarea name="note" :label="__('Izoh')" :rows="2" />
-
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button type="button" @click="eventOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
-                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Qo‘shish') }}</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </template>
     </div>
 
     {{-- Computer usage --}}

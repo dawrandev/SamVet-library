@@ -107,6 +107,17 @@
                         </a>
                     </li>
 
+                    {{-- Tadbirlar (o'quvchilar/tashqi mehmonlar qatnashgan tadbir va tanlovlar) --}}
+                    <li>
+                        <a href="{{ route('admin.events.index') }}"
+                           class="menu-item group {{ request()->routeIs('admin.events.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+                            <svg class="{{ request()->routeIs('admin.events.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8 2.75C8.41421 2.75 8.75 3.08579 8.75 3.5V4.25H15.25V3.5C15.25 3.08579 15.5858 2.75 16 2.75C16.4142 2.75 16.75 3.08579 16.75 3.5V4.25H18C19.5188 4.25 20.75 5.48122 20.75 7V18C20.75 19.5188 19.5188 20.75 18 20.75H6C4.48122 20.75 3.25 19.5188 3.25 18V7C3.25 5.48122 4.48122 4.25 6 4.25H7.25V3.5C7.25 3.08579 7.58579 2.75 8 2.75ZM7.25 5.75H6C5.30964 5.75 4.75 6.30964 4.75 7V9.25H19.25V7C19.25 6.30964 18.6904 5.75 18 5.75H16.75V6.5C16.75 6.91421 16.4142 7.25 16 7.25C15.5858 7.25 15.25 6.91421 15.25 6.5V5.75H8.75V6.5C8.75 6.91421 8.41421 7.25 8 7.25C7.58579 7.25 7.25 6.91421 7.25 6.5V5.75ZM19.25 10.75H4.75V18C4.75 18.6904 5.30964 19.25 6 19.25H18C18.6904 19.25 19.25 18.6904 19.25 18V10.75Z" fill="" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">{{ __('Tadbirlar') }}</span>
+                        </a>
+                    </li>
+
                     {{-- Foydalanuvchilar (kutubxona a'zolari) --}}
                     <li>
                         <a href="{{ route('admin.readers.index') }}"
@@ -204,6 +215,7 @@
                                         'publication-places' => __('Nashriyot joylari'),
                                         'authors' => __('Mualliflar'),
                                         'contributor-roles' => __('Mualliflik rollari'),
+                                        'event-locations' => __('Tadbir joylari'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

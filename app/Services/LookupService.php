@@ -6,6 +6,7 @@ use App\Models\Author;
 use App\Models\BookType;
 use App\Models\Category;
 use App\Models\ContributorRole;
+use App\Models\EventLocation;
 use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
@@ -27,6 +28,7 @@ class LookupService
         'publication_place' => PublicationPlace::class,
         'author' => Author::class,
         'contributor_role' => ContributorRole::class,
+        'event_location' => EventLocation::class,
         'category' => Category::class,
         'location' => Location::class,
         'news_category' => NewsCategory::class,

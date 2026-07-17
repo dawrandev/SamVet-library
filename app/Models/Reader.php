@@ -58,9 +58,10 @@ class Reader extends Model implements Authenticatable
         return $this->hasMany(ReaderWarning::class)->latest('warned_at');
     }
 
-    public function events(): HasMany
+    /** Events this reader has participated in — read-only here; managed from the Tadbirlar module. */
+    public function eventParticipations(): HasMany
     {
-        return $this->hasMany(ReaderEvent::class)->latest('date');
+        return $this->hasMany(EventParticipant::class)->with('event.locations');
     }
 
     public function computerSessions(): HasMany

@@ -59,7 +59,7 @@ class ReaderController extends Controller
 
     public function show(Reader $reader, Request $request): View
     {
-        $reader->load(['warnings', 'events', 'computerSessions.computer']);
+        $reader->load(['warnings', 'eventParticipations.event.locations', 'computerSessions.computer']);
 
         $materialFilters = [
             'search' => $request->input('material_search'),
@@ -72,6 +72,7 @@ class ReaderController extends Controller
             'materialFilters' => $materialFilters,
             'materialTypes' => LoanMaterialType::cases(),
             'copyConditions' => CopyCondition::cases(),
+            'eventParticipations' => $reader->eventParticipations->sortByDesc(fn ($p) => $p->event->date)->values(),
             // Computers picked from the registry in the "computer usage" modal —
             // only ones the librarian has assigned a hand-out number to.
             'computers' => Computer::whereNotNull('computer_number')->orderBy('computer_number')->get(),

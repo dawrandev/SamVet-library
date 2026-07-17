@@ -2,14 +2,25 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\ReaderEvent;
+use App\Models\Event;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface EventRepositoryInterface
 {
     /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator;
+
+    /**
      * @param  array<string, mixed>  $data
      */
-    public function create(array $data): ReaderEvent;
+    public function create(array $data): Event;
 
-    public function delete(ReaderEvent $event): void;
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function update(Event $event, array $data): Event;
+
+    public function delete(Event $event): void;
 }

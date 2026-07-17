@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
+use App\Http\Controllers\Admin\Lookups\EventLocationController;
 use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
@@ -162,9 +163,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('readers/{reader}/warnings', [WarningController::class, 'store'])->name('readers.warnings.store');
     Route::delete('readers/{reader}/warnings/{warning}', [WarningController::class, 'destroy'])->name('readers.warnings.destroy');
 
-    // Attended events and contests
-    Route::post('readers/{reader}/events', [EventController::class, 'store'])->name('readers.events.store');
-    Route::delete('readers/{reader}/events/{event}', [EventController::class, 'destroy'])->name('readers.events.destroy');
+    // Events and contests (own module — a reader's show page only displays them read-only)
+    Route::resource('events', EventController::class)->except(['show']);
 
     // Computer usage
     Route::get('computer-sessions', [ComputerSessionController::class, 'index'])->name('computer-sessions.index');
@@ -217,6 +217,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('contributor-roles', ContributorRoleController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['contributor-roles' => 'contributorRole']);
         Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['news-categories' => 'newsCategory']);
         Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);
+        Route::resource('event-locations', EventLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['event-locations' => 'eventLocation']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

@@ -50,4 +50,9 @@ class News extends Model
     {
         return $this->hasMany(NewsImage::class)->orderBy('sort_order');
     }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
 }
