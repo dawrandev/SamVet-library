@@ -117,7 +117,7 @@
                             </div>
                             <x-admin.form.input name="issue_date" type="date" :label="__('Kelgan vaqti')" />
                             <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" />
-                            <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*" :help="__('JPG/PNG, 2 MB gacha')" />
+                            <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*" with-progress :help="__('JPG/PNG, 2 MB gacha')" />
                             <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress :help="__('PDF, 950 MB gacha')" />
 
                             <div class="flex justify-end gap-3 pt-2">
@@ -160,7 +160,7 @@
                                     :value="$isEditing ? old('issue_date') : $issue->issue_date?->format('Y-m-d')" />
                                 <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')"
                                     :value="$isEditing ? old('pages') : $issue->pages" />
-                                <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*"
+                                <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/*" with-progress
                                     :currentUrl="$issue->cover_image ? asset('storage/' . $issue->cover_image) : null"
                                     :help="$issue->cover_image ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('JPG/PNG, 2 MB gacha')" />
                                 <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress

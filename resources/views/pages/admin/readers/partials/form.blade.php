@@ -16,14 +16,14 @@
     method="POST"
     action="{{ $editing ? route('admin.readers.update', $reader) : route('admin.readers.store') }}"
     enctype="multipart/form-data"
-    x-data="{
-        studentTypes: @js($studentTypes),
-        type: @js((string) $curType),
-        get isStudent() { return this.studentTypes.includes(this.type); },
-    }"
+    x-data="readerForm({ studentTypes: @js($studentTypes), type: @js((string) $curType) })"
+    @submit="submitUpload($event)"
 >
     @csrf
     @if ($editing) @method('PUT') @endif
+
+    <x-admin.form.upload-errors />
+    <x-admin.form.uploading-overlay />
 
     {{-- Header + actions (sticky) --}}
     <div class="sticky top-16 z-9 -mx-4 mb-6 flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-gray-800 dark:bg-gray-900/90">
@@ -160,7 +160,7 @@
         {{-- RIGHT: photo --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <x-admin.form.section :title="__('Rasm')">
-                <x-admin.form.file name="photo" :image="true" accept="image/*"
+                <x-admin.form.file name="photo" :image="true" accept="image/*" with-progress
                     :currentUrl="$reader?->photo ? asset('storage/' . $reader->photo) : null"
                     :help="__('JPG/PNG, 2 MB gacha')" />
             </x-admin.form.section>

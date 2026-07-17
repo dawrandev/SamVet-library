@@ -8,6 +8,7 @@ import 'flatpickr/dist/flatpickr.css';
 import lookupTable from './admin/lookup-table';
 import articleForm from './admin/article-form';
 import uploadForm from './admin/upload-form';
+import readerForm from './admin/reader-form';
 import computerSessionCountdown from './admin/computer-session-countdown';
 import computerSessionForm from './admin/computer-session-form';
 
@@ -23,6 +24,9 @@ Alpine.data('articleForm', articleForm);
 
 // Form upload with a live progress bar (large PDF uploads)
 Alpine.data('uploadForm', uploadForm);
+
+// Reader form (student/staff label swap + photo upload progress)
+Alpine.data('readerForm', readerForm);
 
 // Computer checkout: live countdown + auto-filled location preview
 Alpine.data('computerSessionCountdown', computerSessionCountdown);

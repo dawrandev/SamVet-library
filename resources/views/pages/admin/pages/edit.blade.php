@@ -9,9 +9,13 @@
         $coverUrl = $page && $page->cover_image ? asset('storage/' . $page->cover_image) : null;
     @endphp
 
-    <form method="POST" action="{{ route('admin.menu-items.page.update', $menuItem) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.menu-items.page.update', $menuItem) }}" enctype="multipart/form-data"
+          x-data="uploadForm" @submit="submitUpload($event)">
         @csrf
         @method('PUT')
+
+        <x-admin.form.upload-errors />
+        <x-admin.form.uploading-overlay />
 
         {{-- Sarlavha + amallar --}}
         <div class="mb-6 flex items-center justify-between gap-3">
@@ -58,7 +62,7 @@
             {{-- O'ng: media --}}
             <div class="space-y-6 lg:col-span-1">
                 <x-admin.form.section :title="__('Muqova')">
-                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif"
+                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif" with-progress
                         :currentUrl="$coverUrl"
                         :help="__('Ixtiyoriy. JPG/PNG/WebP, 2 MB gacha.')" />
                 </x-admin.form.section>

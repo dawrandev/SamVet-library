@@ -11,9 +11,14 @@
 
 <form method="POST"
       action="{{ $editing ? route('admin.news.update', $news) : route('admin.news.store') }}"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data"
+      x-data="uploadForm"
+      @submit="submitUpload($event)">
     @csrf
     @if ($editing) @method('PUT') @endif
+
+    <x-admin.form.upload-errors />
+    <x-admin.form.uploading-overlay />
 
     {{-- Title + actions --}}
     <div class="mb-6 flex items-center justify-between gap-3">
@@ -65,7 +70,7 @@
 
             <x-admin.form.section :title="__('Media')">
                 <div class="space-y-5">
-                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif"
+                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif" with-progress
                         :currentUrl="$editing && $news->cover_image ? asset('storage/' . $news->cover_image) : null"
                         :help="__('JPG/PNG/WebP, 2 MB gacha. Barcha tillar uchun umumiy.')" />
 

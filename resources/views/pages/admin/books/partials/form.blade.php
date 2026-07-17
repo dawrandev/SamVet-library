@@ -134,7 +134,7 @@
         {{-- RIGHT: cover + files --}}
         <div class="col-span-12 space-y-6 xl:col-span-4">
             <x-admin.form.section :title="__('Muqova rasmi')">
-                <x-admin.form.file name="cover" :image="true" accept="image/*"
+                <x-admin.form.file name="cover" :image="true" accept="image/*" with-progress
                     :currentUrl="$book?->cover_image ? asset('storage/' . $book->cover_image) : null"
                     :help="__('JPG/PNG, 2 MB gacha')" />
             </x-admin.form.section>
@@ -143,7 +143,7 @@
                 <div class="space-y-5">
                     <x-admin.form.file name="electronic_file" :label="__('Elektron kitob (PDF)')" accept="application/pdf" with-progress
                         :currentName="$book?->electronic_file ? basename($book->electronic_file) : null" :help="__('PDF, 950 MB gacha')" />
-                    <x-admin.form.file name="audio_file" :label="__('Audio (mp3)')" accept="audio/*"
+                    <x-admin.form.file name="audio_file" :label="__('Audio (mp3)')" accept="audio/*" with-progress
                         :currentName="$book?->audio_file ? basename($book->audio_file) : null" :help="__('MP3, 100 MB gacha')" />
                 </div>
             </x-admin.form.section>

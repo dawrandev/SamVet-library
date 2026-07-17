@@ -115,6 +115,13 @@ window.initTinyEditor = initTinyEditor;
  * otherwise a paste immediately followed by "Saqlash" could save a blob:
  * placeholder instead of the real uploaded URL. Runs once per form (delegated
  * so it also covers forms rendered after this module loads).
+ *
+ * Registered on the CAPTURE phase so it runs before any submit handler bound
+ * directly on the form (e.g. Alpine's `@submit="submitUpload($event)"` for
+ * the upload-progress bar) — otherwise that handler would snapshot the form's
+ * FormData before the flush finishes. `stopImmediatePropagation()` blocks
+ * this first (pre-flush) submit from reaching those handlers at all; the
+ * `requestSubmit()` below fires a clean second submit that reaches them.
  */
 document.addEventListener('submit', (event) => {
     const form = event.target;
@@ -128,6 +135,7 @@ document.addEventListener('submit', (event) => {
     }
 
     event.preventDefault();
+    event.stopImmediatePropagation();
 
     Promise.all(editors.map((ed) => ed.uploadImages()))
         .catch(() => {}) // a failed upload still leaves valid content (blob removed); let the server-side validation catch anything missing
@@ -135,4 +143,4 @@ document.addEventListener('submit', (event) => {
             form.dataset.tinyFlushed = '1';
             form.requestSubmit();
         });
-});
+}, true);
