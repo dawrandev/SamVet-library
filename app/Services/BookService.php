@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Category;
+use App\Models\ContributorRole;
 use App\Models\Language;
 use App\Models\PublicationPlace;
 use App\Models\Work;
@@ -20,6 +21,7 @@ class BookService
 {
     public function __construct(
         private readonly BookRepositoryInterface $books,
+        private readonly ContributorService $contributors,
     ) {}
 
     /**
@@ -58,6 +60,7 @@ class BookService
             'publicationPlaces' => PublicationPlace::orderBy('name')->get(),
             'authors' => Author::orderBy('name')->get(),
             'categories' => Category::with('parent')->orderBy('name')->get(),
+            'contributorRoles' => ContributorRole::orderBy('name')->get(),
         ];
     }
 
@@ -86,6 +89,7 @@ class BookService
 
             $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
+            $this->contributors->sync($book, $data->contributors);
 
             return $book;
         });
@@ -129,6 +133,7 @@ class BookService
 
             $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
+            $this->contributors->sync($book, $data->contributors);
 
             return $book;
         });

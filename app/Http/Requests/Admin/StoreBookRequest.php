@@ -43,6 +43,11 @@ class StoreBookRequest extends FormRequest
             'category_ids' => ['array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
 
+            // Other participants (muharrir, tarjimon, ...) — a row is only kept when both fields are given.
+            'contributors' => ['nullable', 'array'],
+            'contributors.*.contributor_role_id' => ['required_with:contributors.*.name', 'integer', 'exists:contributor_roles,id'],
+            'contributors.*.name' => ['required_with:contributors.*.contributor_role_id', 'string', 'max:255'],
+
             'cover' => ['nullable', 'image', 'max:2048'],                 // 2 MB
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'],  // 950 MB
             'audio_file' => ['nullable', 'mimes:mp3,mpga,wav', 'max:102400'], // 100 MB

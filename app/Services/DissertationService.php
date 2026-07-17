@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\DissertationData;
+use App\Models\ContributorRole;
 use App\Models\Dissertation;
 use App\Models\Journal;
 use App\Models\JournalIssue;
@@ -20,6 +21,7 @@ class DissertationService
 
     public function __construct(
         private readonly DissertationRepositoryInterface $dissertations,
+        private readonly ContributorService $contributors,
     ) {}
 
     /**
@@ -54,6 +56,7 @@ class DissertationService
     {
         return [
             'resourceFields' => ResourceField::orderBy('id')->get(),
+            'contributorRoles' => ContributorRole::orderBy('name')->get(),
         ];
     }
 
@@ -90,7 +93,11 @@ class DissertationService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->dissertations->create($attributes); // slug — Observer
+            $dissertation = $this->dissertations->create($attributes); // slug — Observer
+
+            $this->contributors->sync($dissertation, $data->contributors);
+
+            return $dissertation;
         });
     }
 
@@ -104,7 +111,11 @@ class DissertationService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->dissertations->update($dissertation, $attributes);
+            $dissertation = $this->dissertations->update($dissertation, $attributes);
+
+            $this->contributors->sync($dissertation, $data->contributors);
+
+            return $dissertation;
         });
     }
 

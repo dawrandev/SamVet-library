@@ -209,6 +209,7 @@
                                         'locations' => __('Joylashuvlar'),
                                         'publication-places' => __('Nashriyot joylari'),
                                         'authors' => __('Mualliflar'),
+                                        'contributor-roles' => __('Mualliflik rollari'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

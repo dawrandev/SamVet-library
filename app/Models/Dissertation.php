@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[ObservedBy([DissertationObserver::class])]
 class Dissertation extends Model
@@ -38,5 +39,11 @@ class Dissertation extends Model
     public function resourceField(): BelongsTo
     {
         return $this->belongsTo(ResourceField::class);
+    }
+
+    /** Other participants beyond the formal author (muharrir, tarjimon, ...). */
+    public function contributors(): MorphMany
+    {
+        return $this->morphMany(Contributor::class, 'contributable')->orderBy('sort_order');
     }
 }

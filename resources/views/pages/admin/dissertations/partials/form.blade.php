@@ -118,7 +118,11 @@
         <x-admin.form.section :title="__('Dissertatsiya ma’lumotlari')">
             <div class="space-y-5">
                 <x-admin.form.input name="title" :label="__('Dissertatsiya nomi')" :value="$dissertation?->title" required :placeholder="__('Dissertatsiya nomi')" />
-                <x-admin.form.input name="author" :label="__('Muallifi')" :value="$dissertation?->author" required :placeholder="__('masalan: Aliyev A.')" />
+                <x-admin.form.input name="author" :label="__('Muallifi')" :value="$dissertation?->author" :placeholder="__('masalan: Aliyev A.')" />
+
+                <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"
+                    :value="$dissertation?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
+                    :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
 
                 <x-admin.form.select name="resource_field_id" :label="__('Resurs sohasi')" :options="$resourceFields" :selected="$dissertation?->resource_field_id" :placeholder="__('Tanlang')"
                     creatable create-translatable create-type="resource_field" :create-label="__('Yangi soha')" />

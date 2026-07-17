@@ -29,7 +29,7 @@ class StoreArticleRequest extends FormRequest
             'external_journal_name' => ['nullable', 'required_without:journal_issue_id', 'string', 'max:255'],
             'external_journal_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
             'title' => ['required', 'string', 'max:500'],
-            'author' => ['required', 'string', 'max:500'],
+            'author' => ['nullable', 'string', 'max:500'],
             'resource_field_id' => ['nullable', 'integer', 'exists:resource_fields,id'],
             'language_id' => ['nullable', 'integer', 'exists:languages,id'],
             'category' => ['nullable', new Enum(ArticleCategory::class)],
@@ -37,6 +37,11 @@ class StoreArticleRequest extends FormRequest
             'pages' => ['nullable', 'string', 'max:50'],
             'annotation' => ['nullable', 'string'],
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
+
+            // Other participants (muharrir, tarjimon, ...) — a row is only kept when both fields are given.
+            'contributors' => ['nullable', 'array'],
+            'contributors.*.contributor_role_id' => ['required_with:contributors.*.name', 'integer', 'exists:contributor_roles,id'],
+            'contributors.*.name' => ['required_with:contributors.*.contributor_role_id', 'string', 'max:255'],
         ];
     }
 

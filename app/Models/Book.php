@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Translatable\HasTranslations;
 
 #[ObservedBy([BookObserver::class])]
@@ -73,5 +74,11 @@ class Book extends Model
     public function copies(): HasMany
     {
         return $this->hasMany(BookCopy::class);
+    }
+
+    /** Other participants beyond the formal author (muharrir, tarjimon, ...). */
+    public function contributors(): MorphMany
+    {
+        return $this->morphMany(Contributor::class, 'contributable')->orderBy('sort_order');
     }
 }

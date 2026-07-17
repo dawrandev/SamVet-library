@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[ObservedBy([ArticleObserver::class])]
 class Article extends Model
@@ -53,5 +54,11 @@ class Article extends Model
     public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class);
+    }
+
+    /** Other participants beyond the formal author (muharrir, tarjimon, ...). */
+    public function contributors(): MorphMany
+    {
+        return $this->morphMany(Contributor::class, 'contributable')->orderBy('sort_order');
     }
 }

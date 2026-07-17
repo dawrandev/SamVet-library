@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\ArticleData;
 use App\Models\Article;
+use App\Models\ContributorRole;
 use App\Models\Journal;
 use App\Models\JournalIssue;
 use App\Models\Language;
@@ -21,6 +22,7 @@ class ArticleService
 
     public function __construct(
         private readonly ArticleRepositoryInterface $articles,
+        private readonly ContributorService $contributors,
     ) {}
 
     /**
@@ -60,6 +62,7 @@ class ArticleService
         return [
             'languages' => Language::orderBy('name')->get(),
             'resourceFields' => ResourceField::orderBy('id')->get(),
+            'contributorRoles' => ContributorRole::orderBy('name')->get(),
         ];
     }
 
@@ -96,7 +99,11 @@ class ArticleService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->articles->create($attributes); // slug — Observer
+            $article = $this->articles->create($attributes); // slug — Observer
+
+            $this->contributors->sync($article, $data->contributors);
+
+            return $article;
         });
     }
 
@@ -110,7 +117,11 @@ class ArticleService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->articles->update($article, $attributes);
+            $article = $this->articles->update($article, $attributes);
+
+            $this->contributors->sync($article, $data->contributors);
+
+            return $article;
         });
     }
 

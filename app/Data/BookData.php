@@ -32,6 +32,8 @@ class BookData
         public readonly ?UploadedFile $cover,
         public readonly ?UploadedFile $electronic_file,
         public readonly ?UploadedFile $audio_file,
+        /** @var array<int, array{contributor_role_id: int, name: string}> */
+        public readonly array $contributors = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -60,6 +62,7 @@ class BookData
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
             audio_file: $request->file('audio_file'),
+            contributors: $request->input('contributors', []),
         );
     }
 

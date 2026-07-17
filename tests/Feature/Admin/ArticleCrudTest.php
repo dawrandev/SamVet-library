@@ -55,10 +55,24 @@ it('rejects an invalid category', function () {
         ->assertSessionHasErrors('category');
 });
 
-it('requires a journal issue, title and author', function () {
+it('requires a journal issue and title, but not an author', function () {
     $this->from(route('admin.articles.create'))
         ->post(route('admin.articles.store'), [])
-        ->assertSessionHasErrors(['journal_issue_id', 'title', 'author']);
+        ->assertSessionHasErrors(['journal_issue_id', 'title'])
+        ->assertSessionDoesntHaveErrors('author');
+});
+
+it('creates an article with no author at all', function () {
+    $issue = JournalIssue::factory()->create();
+
+    $this->post(route('admin.articles.store'), [
+        'journal_issue_id' => $issue->id,
+        'title' => 'Muallifsiz maqola',
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Muallifsiz maqola');
+    expect($article)->not->toBeNull()
+        ->and($article->author)->toBeNull();
 });
 
 it('rejects a non-pdf file', function () {

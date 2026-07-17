@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
+use App\Models\Avtoreferat;
+use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\Dissertation;
 use App\Models\JournalCopy;
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Services\ComputerSessionService;
@@ -27,11 +31,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Short, stable values for Loan::loanable_type — matches this project's
-        // convention of storing snake_case values (not FQCNs) for typed columns.
+        // Short, stable values for polymorphic *_type columns — matches this
+        // project's convention of storing snake_case values (not FQCNs) for
+        // typed columns. One shared map for every morph relation in the app.
         Relation::enforceMorphMap([
             'book_copy' => BookCopy::class,
             'journal_copy' => JournalCopy::class,
+            'book' => Book::class,
+            'article' => Article::class,
+            'dissertation' => Dissertation::class,
+            'avtoreferat' => Avtoreferat::class,
         ]);
 
         // Pass the number of overdue books and expired-unfinished computer

@@ -21,10 +21,11 @@ it('creates a dissertation linked to a journal issue', function () {
         ->and($dissertation->slug)->not->toBeEmpty();
 });
 
-it('requires a journal issue, title and author', function () {
+it('requires a journal issue and title, but not an author', function () {
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [])
-        ->assertSessionHasErrors(['journal_issue_id', 'title', 'author']);
+        ->assertSessionHasErrors(['journal_issue_id', 'title'])
+        ->assertSessionDoesntHaveErrors('author');
 });
 
 it('rejects a non-pdf file', function () {

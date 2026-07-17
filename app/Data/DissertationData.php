@@ -14,10 +14,12 @@ class DissertationData
     public function __construct(
         public readonly int $journal_issue_id,
         public readonly string $title,
-        public readonly string $author,
+        public readonly ?string $author,
         public readonly ?int $resource_field_id,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
+        /** @var array<int, array{contributor_role_id: int, name: string}> */
+        public readonly array $contributors = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -25,10 +27,11 @@ class DissertationData
         return new self(
             journal_issue_id: $request->integer('journal_issue_id'),
             title: $request->string('title')->toString(),
-            author: $request->string('author')->toString(),
+            author: $request->input('author') ?: null,
             resource_field_id: $request->integer('resource_field_id') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
+            contributors: $request->input('contributors', []),
         );
     }
 

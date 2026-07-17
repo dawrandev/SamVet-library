@@ -17,7 +17,7 @@ class ArticleData
         public readonly ?string $external_journal_name,
         public readonly ?int $external_journal_year,
         public readonly string $title,
-        public readonly string $author,
+        public readonly ?string $author,
         public readonly ?int $resource_field_id,
         public readonly ?int $language_id,
         public readonly ?ArticleCategory $category,
@@ -25,6 +25,8 @@ class ArticleData
         public readonly ?string $pages,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
+        /** @var array<int, array{contributor_role_id: int, name: string}> */
+        public readonly array $contributors = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -34,7 +36,7 @@ class ArticleData
             external_journal_name: $request->input('external_journal_name') ?: null,
             external_journal_year: $request->integer('external_journal_year') ?: null,
             title: $request->string('title')->toString(),
-            author: $request->string('author')->toString(),
+            author: $request->input('author') ?: null,
             resource_field_id: $request->integer('resource_field_id') ?: null,
             language_id: $request->integer('language_id') ?: null,
             category: $request->filled('category') ? ArticleCategory::from($request->string('category')->toString()) : null,
@@ -42,6 +44,7 @@ class ArticleData
             pages: $request->input('pages') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
+            contributors: $request->input('contributors', []),
         );
     }
 

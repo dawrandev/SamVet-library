@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\AvtoreferatData;
 use App\Models\Avtoreferat;
+use App\Models\ContributorRole;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
@@ -19,6 +20,7 @@ class AvtoreferatService
 
     public function __construct(
         private readonly AvtoreferatRepositoryInterface $avtoreferats,
+        private readonly ContributorService $contributors,
     ) {}
 
     /**
@@ -53,6 +55,7 @@ class AvtoreferatService
         return [
             'resourceFields' => ResourceField::orderBy('id')->get(),
             'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
+            'contributorRoles' => ContributorRole::orderBy('name')->get(),
         ];
     }
 
@@ -65,7 +68,11 @@ class AvtoreferatService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->avtoreferats->create($attributes); // slug — Observer
+            $avtoreferat = $this->avtoreferats->create($attributes); // slug — Observer
+
+            $this->contributors->sync($avtoreferat, $data->contributors);
+
+            return $avtoreferat;
         });
     }
 
@@ -79,7 +86,11 @@ class AvtoreferatService
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
             }
 
-            return $this->avtoreferats->update($avtoreferat, $attributes);
+            $avtoreferat = $this->avtoreferats->update($avtoreferat, $attributes);
+
+            $this->contributors->sync($avtoreferat, $data->contributors);
+
+            return $avtoreferat;
         });
     }
 

@@ -75,6 +75,10 @@
                         :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
                         creatable create-type="author" :create-label="__('Yangi muallif...')" />
 
+                    <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"
+                        :value="$book?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
+                        :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
+
                     @php
                         // The language is picked first: it decides which translation
                         // the book type options are labelled with.

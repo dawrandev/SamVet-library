@@ -154,8 +154,12 @@
         <x-admin.form.section :title="__('Maqola ma’lumotlari')">
             <div class="space-y-5">
                 <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$article?->title" required :placeholder="__('Maqola sarlavhasi')" />
-                <x-admin.form.input name="author" :label="__('Muallif(lar)')" :value="$article?->author" required :placeholder="__('masalan: Aliyev A., Valiyev B.')"
-                    :help="__('Bir nechta muallif vergul bilan ajratiladi.')" />
+                <x-admin.form.input name="author" :label="__('Muallif(lar)')" :value="$article?->author" :placeholder="__('masalan: Aliyev A., Valiyev B.')"
+                    :help="__('Ixtiyoriy. Bir nechta muallif vergul bilan ajratiladi.')" />
+
+                <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"
+                    :value="$article?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
+                    :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-admin.form.select name="resource_field_id" :label="__('Resurs sohasi')" :options="$resourceFields" :selected="$article?->resource_field_id" :placeholder="__('Tanlang')"

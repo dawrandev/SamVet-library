@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Author;
 use App\Models\BookType;
 use App\Models\Category;
+use App\Models\ContributorRole;
 use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
@@ -25,6 +26,7 @@ class LookupService
         'language' => Language::class,
         'publication_place' => PublicationPlace::class,
         'author' => Author::class,
+        'contributor_role' => ContributorRole::class,
         'category' => Category::class,
         'location' => Location::class,
         'news_category' => NewsCategory::class,

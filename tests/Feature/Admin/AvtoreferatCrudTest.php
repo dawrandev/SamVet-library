@@ -43,10 +43,11 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         ->and($avtoreferat->getAttributes())->not->toHaveKey('journal_issue_id');
 });
 
-it('requires title, author and advisor', function () {
+it('requires title and advisor, but not an author', function () {
     $this->from(route('admin.avtoreferats.create'))
         ->post(route('admin.avtoreferats.store'), [])
-        ->assertSessionHasErrors(['title', 'author', 'advisor']);
+        ->assertSessionHasErrors(['title', 'advisor'])
+        ->assertSessionDoesntHaveErrors('author');
 });
 
 it('rejects an invalid degree or condition', function () {
