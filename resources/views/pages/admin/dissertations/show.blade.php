@@ -9,7 +9,24 @@
         // Dissertation's own fields
         $details = array_filter([
             __('Muallifi') => $dissertation->author,
+            __('Turi') => $dissertation->degree?->label(),
+            __('Fan nomi') => $dissertation->scienceField?->name,
+            __('Ixtisoslik shifri va nomi') => $dissertation->doctoralSpecialty?->name,
+            __('Mutaxassislik shifri va nomi') => $dissertation->masterSpecialty?->name,
+            __('Ilmiy rahbari') => $dissertation->advisor,
+            __('Muassasi') => $dissertation->institution,
+            __('Tili') => $dissertation->language?->name,
+            __('Nashr joyi') => $dissertation->publicationPlace?->name,
+            __('Himoya yili') => $dissertation->defense_year,
+            __('Beti') => $dissertation->pages,
+            __('UO‘K') => $dissertation->udc,
             __('Resurs sohasi') => $dissertation->resourceField?->name,
+        ], fn ($v) => filled($v));
+
+        // Admin-only fields — never surfaced on the client site.
+        $adminDetails = array_filter([
+            __('Inventari') => $dissertation->inventory_number,
+            __('Holati') => $dissertation->condition?->label(),
         ], fn ($v) => filled($v));
 
         // Inherited meta (from the parent issue → journal — displayed, not stored)
@@ -62,6 +79,21 @@
                     </div>
                 @endif
             </div>
+
+            {{-- Admin-only fields (inventory/condition) — never shown on the client site. --}}
+            @if ($adminDetails)
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Inventar (faqat admin)') }}</h3>
+                    <dl class="space-y-3">
+                        @foreach ($adminDetails as $label => $value)
+                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            @endif
 
             {{-- Electronic file indicator --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">

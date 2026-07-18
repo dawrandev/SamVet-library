@@ -218,6 +218,9 @@
                                         'event-locations' => __('Tadbir joylari'),
                                         'delivery-locations' => __('Yetkazib berish manzillari'),
                                         'post-branches' => __('Pochta filiallari'),
+                                        'science-fields' => __('Fan nomlari'),
+                                        'doctoral-specialties' => __('Ixtisosliklar (PhD/DSc)'),
+                                        'master-specialties' => __('Mutaxassisliklar (Magistrlik)'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

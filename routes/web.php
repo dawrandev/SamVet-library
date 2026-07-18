@@ -39,7 +39,10 @@ use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
 use App\Http\Controllers\Admin\Lookups\LocationController;
 use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
+use App\Http\Controllers\Admin\Lookups\DoctoralSpecialtyController;
+use App\Http\Controllers\Admin\Lookups\MasterSpecialtyController;
 use App\Http\Controllers\Admin\Lookups\PostBranchController;
+use App\Http\Controllers\Admin\Lookups\ScienceFieldController;
 use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
@@ -235,6 +238,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('event-locations', EventLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['event-locations' => 'eventLocation']);
         Route::resource('delivery-locations', DeliveryLocationController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['delivery-locations' => 'deliveryLocation']);
         Route::resource('post-branches', PostBranchController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['post-branches' => 'postBranch']);
+        Route::resource('science-fields', ScienceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['science-fields' => 'scienceField']);
+        Route::resource('doctoral-specialties', DoctoralSpecialtyController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['doctoral-specialties' => 'doctoralSpecialty']);
+        Route::resource('master-specialties', MasterSpecialtyController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['master-specialties' => 'masterSpecialty']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

@@ -3,11 +3,18 @@
 namespace App\Services;
 
 use App\Data\DissertationData;
+use App\Enums\CopyCondition;
+use App\Enums\DissertationType;
 use App\Models\ContributorRole;
 use App\Models\Dissertation;
+use App\Models\DoctoralSpecialty;
 use App\Models\Journal;
 use App\Models\JournalIssue;
+use App\Models\Language;
+use App\Models\MasterSpecialty;
+use App\Models\PublicationPlace;
 use App\Models\ResourceField;
+use App\Models\ScienceField;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -57,6 +64,13 @@ class DissertationService
         return [
             'resourceFields' => ResourceField::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
+            'scienceFields' => ScienceField::orderBy('name')->get(),
+            'doctoralSpecialties' => DoctoralSpecialty::orderBy('name')->get(),
+            'masterSpecialties' => MasterSpecialty::orderBy('name')->get(),
+            'languages' => Language::orderBy('id')->get(),
+            'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
+            'degreeTypes' => DissertationType::cases(),
+            'conditionOptions' => CopyCondition::cases(),
         ];
     }
 

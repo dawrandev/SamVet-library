@@ -7,14 +7,17 @@ use App\Models\BookType;
 use App\Models\Category;
 use App\Models\ContributorRole;
 use App\Models\DeliveryLocation;
+use App\Models\DoctoralSpecialty;
 use App\Models\EventLocation;
 use App\Models\JournalType;
 use App\Models\Language;
 use App\Models\Location;
+use App\Models\MasterSpecialty;
 use App\Models\NewsCategory;
 use App\Models\PostBranch;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
+use App\Models\ScienceField;
 
 /**
  * Creates a lookup (type, language, publication place, author, category, location)
@@ -37,6 +40,9 @@ class LookupService
         'location' => Location::class,
         'news_category' => NewsCategory::class,
         'resource_field' => ResourceField::class,
+        'science_field' => ScienceField::class,
+        'doctoral_specialty' => DoctoralSpecialty::class,
+        'master_specialty' => MasterSpecialty::class,
     ];
 
     /**
