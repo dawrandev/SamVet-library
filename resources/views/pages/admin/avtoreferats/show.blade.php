@@ -8,6 +8,7 @@
         $details = array_filter([
             __('Muallifi') => $avtoreferat->author,
             __('Ixtisoslik shifri va nomi') => $avtoreferat->specialty,
+            __('Fan nomi') => $avtoreferat->scienceField?->name,
             __('Turi') => $avtoreferat->degree?->label(),
             __('Ilmiy rahbar') => $avtoreferat->advisor,
             __('Resurs sohasi') => $avtoreferat->resourceField?->name,
@@ -26,7 +27,7 @@
             __('Ro‘yxat raqami') => $avtoreferat->registration_number,
             __('Holati') => $avtoreferat->condition?->label(),
             __('Nashr joyi') => $avtoreferat->publicationPlace?->name,
-            __('Nashr yili') => $avtoreferat->publication_year,
+            __('Himoya yili') => $avtoreferat->defense_year,
             __('Inventari') => $avtoreferat->inventory_number,
         ], fn ($v) => filled($v));
     @endphp

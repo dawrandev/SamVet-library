@@ -5,6 +5,7 @@ use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
+use App\Models\ScienceField;
 use Illuminate\Http\UploadedFile;
 
 beforeEach(fn () => actingAsAdmin());
@@ -12,11 +13,13 @@ beforeEach(fn () => actingAsAdmin());
 it('creates an avtoreferat with the dissertation-defense fields', function () {
     $place = PublicationPlace::factory()->create();
     $field = ResourceField::factory()->create();
+    $scienceField = ScienceField::factory()->create();
 
     $this->post(route('admin.avtoreferats.store'), [
         'title' => 'Veterinariya sohasida yangi usullar',
         'author' => 'Aliyev A.',
         'specialty' => '06.02.01 – Veterinariya mikrobiologiyasi',
+        'science_field_id' => $scienceField->id,
         'degree' => DissertationDegree::Dsc->value,
         'council_number' => 'DSc.03/30.12.2019.B.02.01',
         'defense_institution' => 'Samarqand davlat universiteti',
@@ -26,7 +29,7 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         'registration_number' => 'B24.15',
         'condition' => CopyCondition::New->value,
         'publication_place_id' => $place->id,
-        'publication_year' => 2024,
+        'defense_year' => 2024,
         'inventory_number' => 'AR-00123',
         'resource_field_id' => $field->id,
     ])->assertRedirect();
@@ -37,7 +40,8 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         ->and($avtoreferat->condition)->toBe(CopyCondition::New)
         ->and($avtoreferat->advisor)->toBe('Karimov K.')
         ->and($avtoreferat->publication_place_id)->toBe($place->id)
-        ->and($avtoreferat->publication_year)->toBe(2024)
+        ->and($avtoreferat->defense_year)->toBe(2024)
+        ->and($avtoreferat->science_field_id)->toBe($scienceField->id)
         ->and($avtoreferat->slug)->not->toBeEmpty()
         // No longer belongs to a journal issue.
         ->and($avtoreferat->getAttributes())->not->toHaveKey('journal_issue_id');
@@ -91,4 +95,26 @@ it('deletes an avtoreferat', function () {
     $this->delete(route('admin.avtoreferats.destroy', $avtoreferat))->assertRedirect();
 
     $this->assertDatabaseMissing('avtoreferats', ['id' => $avtoreferat->id]);
+});
+
+it('shows the science field and defense year on the show page', function () {
+    $scienceField = ScienceField::factory()->create(['name' => 'Veterinariya fanlari']);
+    $avtoreferat = Avtoreferat::factory()->create([
+        'science_field_id' => $scienceField->id,
+        'defense_year' => 2025,
+    ]);
+
+    $this->get(route('admin.avtoreferats.show', $avtoreferat))
+        ->assertSee('Veterinariya fanlari')
+        ->assertSee('Himoya yili')
+        ->assertSee('2025');
+});
+
+it('lets the inline lookup-create endpoint add a new science field from the avtoreferat form', function () {
+    $this->postJson(route('admin.lookups.store'), [
+        'type' => 'science_field',
+        'name' => 'Zootexniya fanlari',
+    ])->assertCreated()->assertJsonStructure(['id', 'name']);
+
+    expect(ScienceField::where('name', 'Zootexniya fanlari')->exists())->toBeTrue();
 });

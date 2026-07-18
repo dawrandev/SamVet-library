@@ -55,6 +55,9 @@
 
                     <x-admin.form.input name="specialty" :label="__('Ixtisoslik shifri va nomi')" :value="$avtoreferat?->specialty" :placeholder="__('masalan: 05.07.01 – ...')" />
 
+                    <x-admin.form.select name="science_field_id" :label="__('Fan nomi')" :options="$scienceFields" :selected="$avtoreferat?->science_field_id" :placeholder="__('Tanlang')"
+                        creatable create-type="science_field" :create-label="__('Yangi fan')" />
+
                     <div>
                         <label for="degree" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}</label>
                         <select name="degree" id="degree"
@@ -104,7 +107,7 @@
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.select name="publication_place_id" :label="__('Nashr joyi')" :options="$publicationPlaces" :selected="$avtoreferat?->publication_place_id" :placeholder="__('Tanlang')"
                             creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashr joyi')" />
-                        <x-admin.form.input type="number" name="publication_year" :label="__('Nashr yili')" :value="$avtoreferat?->publication_year" placeholder="masalan: 2024" />
+                        <x-admin.form.input type="number" name="defense_year" :label="__('Himoya yili')" :value="$avtoreferat?->defense_year" placeholder="masalan: 2024" />
                     </div>
 
                     <x-admin.form.input name="inventory_number" :label="__('Inventari')" :value="$avtoreferat?->inventory_number" />

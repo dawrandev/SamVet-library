@@ -7,6 +7,7 @@ use App\Models\Avtoreferat;
 use App\Models\ContributorRole;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
+use App\Models\ScienceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -56,6 +57,7 @@ class AvtoreferatService
             'resourceFields' => ResourceField::orderBy('id')->get(),
             'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
+            'scienceFields' => ScienceField::orderBy('name')->get(),
         ];
     }
 

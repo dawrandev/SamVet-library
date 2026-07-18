@@ -19,10 +19,10 @@ class Avtoreferat extends Model
     // `slug` (set by the observer) and `views_count` (DB default) are intentionally
     // NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
-        'title', 'author', 'specialty', 'degree', 'council_number',
+        'title', 'author', 'specialty', 'science_field_id', 'degree', 'council_number',
         'defense_institution', 'performed_institution', 'advisor',
         'udc', 'registration_number', 'condition',
-        'publication_place_id', 'publication_year', 'inventory_number',
+        'publication_place_id', 'defense_year', 'inventory_number',
         'resource_field_id', 'annotation', 'electronic_file',
     ];
 
@@ -31,7 +31,7 @@ class Avtoreferat extends Model
         return [
             'degree' => DissertationDegree::class,
             'condition' => CopyCondition::class,
-            'publication_year' => 'integer',
+            'defense_year' => 'integer',
             'views_count' => 'integer',
         ];
     }
@@ -41,6 +41,12 @@ class Avtoreferat extends Model
     public function resourceField(): BelongsTo
     {
         return $this->belongsTo(ResourceField::class);
+    }
+
+    /** "Fan nomi" — same lookup Dissertation uses. */
+    public function scienceField(): BelongsTo
+    {
+        return $this->belongsTo(ScienceField::class);
     }
 
     public function publicationPlace(): BelongsTo

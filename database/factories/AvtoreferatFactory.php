@@ -7,6 +7,7 @@ use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
 use App\Models\PublicationPlace;
 use App\Models\ResourceField;
+use App\Models\ScienceField;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class AvtoreferatFactory extends Factory
             'title' => $this->faker->unique()->sentence(5),
             'author' => $this->faker->name(),
             'specialty' => $this->faker->numerify('##.##.##') . ' – ' . $this->faker->words(3, true),
+            'science_field_id' => ScienceField::factory(),
             'degree' => $this->faker->randomElement(DissertationDegree::cases()),
             'council_number' => $this->faker->numerify('DSc.##/##.##.####.B.##.##'),
             'defense_institution' => $this->faker->company() . ' universiteti',
@@ -31,7 +33,7 @@ class AvtoreferatFactory extends Factory
             'registration_number' => $this->faker->numerify('B##.##'),
             'condition' => $this->faker->randomElement(CopyCondition::cases()),
             'publication_place_id' => PublicationPlace::factory(),
-            'publication_year' => $this->faker->numberBetween(2000, (int) date('Y')),
+            'defense_year' => $this->faker->numberBetween(2000, (int) date('Y')),
             'inventory_number' => $this->faker->numerify('INV-#####'),
             'resource_field_id' => ResourceField::factory(),
             'annotation' => $this->faker->paragraph(),
