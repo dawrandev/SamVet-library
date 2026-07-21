@@ -3,6 +3,7 @@
 use App\Enums\CatalogSort;
 use App\Models\Book;
 use App\Models\BookType;
+use App\Models\Category;
 use App\Models\Language;
 
 it('renders the catalog', function () {
@@ -50,4 +51,39 @@ it('filters by publication year range', function () {
 it('validates the sort parameter', function () {
     $this->get(route('catalog', ['sort' => 'not-a-sort']))->assertSessionHasErrors('sort');
     $this->get(route('catalog', ['sort' => CatalogSort::Popular->value]))->assertOk();
+});
+
+it('only lists top-level categories as filter facets, not children', function () {
+    $parent = Category::factory()->create(['name' => 'Ota kategoriya']);
+    $child = Category::factory()->create(['name' => 'Bola kategoriya', 'parent_id' => $parent->id]);
+
+    $res = $this->get(route('catalog'));
+
+    $labels = collect($res->viewData('categories'))->pluck('label');
+    expect($labels)->toContain('Ota kategoriya')
+        ->not->toContain('Bola kategoriya');
+});
+
+it('rolls up a child category count into its parent facet', function () {
+    $parent = Category::factory()->create(['name' => 'Ota kategoriya']);
+    $child = Category::factory()->create(['name' => 'Bola kategoriya', 'parent_id' => $parent->id]);
+    $book = Book::factory()->create();
+    $book->categories()->attach($child->id);
+
+    $res = $this->get(route('catalog'));
+
+    $parentFacet = collect($res->viewData('categories'))->firstWhere('id', $parent->id);
+    expect($parentFacet['count'])->toBe(1);
+});
+
+it('filtering by a parent category surfaces books tagged only with its child', function () {
+    $parent = Category::factory()->create();
+    $child = Category::factory()->create(['parent_id' => $parent->id]);
+    $book = Book::factory()->create();
+    $book->categories()->attach($child->id);
+    Book::factory()->create(); // unrelated book, must not match
+
+    $res = $this->get(route('catalog', ['categories' => [$parent->id]]));
+
+    expect($res->viewData('total'))->toBe(1);
 });

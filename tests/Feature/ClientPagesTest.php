@@ -2,6 +2,7 @@
 
 use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\Category;
 use App\Models\Journal;
 use App\Models\News;
 use App\Models\PublicationPlace;
@@ -35,6 +36,20 @@ it('shows a book detail page but hides admin-only data', function () {
         ->assertDontSee('7777');
     // The raw protected file path must never leak into the public HTML.
     $res->assertDontSee('books/electronic');
+});
+
+it('shows a book tagged with a child category under its parent category name, not the child\'s', function () {
+    $parent = Category::factory()->create(['name' => 'Ota kategoriya']);
+    $child = Category::factory()->create(['name' => 'Yashirin submavzu', 'parent_id' => $parent->id]);
+    $book = Book::factory()->create(['title' => 'Submavzuli kitob']);
+    $book->categories()->attach($child->id);
+
+    $res = $this->get(route('book.show', $book->slug));
+
+    $res->assertOk()
+        ->assertSee('Ota kategoriya')
+        ->assertDontSee('Yashirin submavzu')
+        ->assertSee(route('catalog', ['categories' => [$parent->id]]), false);
 });
 
 it('shows a journal detail page but hides library-internal fields', function () {

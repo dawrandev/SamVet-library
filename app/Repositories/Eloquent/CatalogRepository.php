@@ -31,9 +31,16 @@ class CatalogRepository implements CatalogRepositoryInterface
                         ->orWhere('udc', 'like', "%{$search}%");
                 });
             })
-            ->when($filters->categories, fn (Builder $query, array $ids) => $query->whereHas(
-                'categories', fn (Builder $q) => $q->whereIn('categories.id', $ids)
-            ))
+            ->when($filters->categories, function (Builder $query, array $ids): void {
+                // Client-submitted IDs are always top-level (only those are shown as
+                // filter options) — expand to their children so books tagged only with
+                // a child category still surface under the parent filter.
+                $expandedIds = Category::query()->where(
+                    fn (Builder $q) => $q->whereIn('id', $ids)->orWhereIn('parent_id', $ids)
+                )->pluck('id');
+
+                $query->whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $expandedIds));
+            })
             ->when($filters->types, fn (Builder $query, array $ids) => $query->whereIn('book_type_id', $ids))
             ->when($filters->languages, fn (Builder $query, array $ids) => $query->whereIn('language_id', $ids))
             ->when($filters->yearFrom, fn (Builder $query, int $year) => $query->where('publication_year', '>=', $year))
@@ -49,11 +56,20 @@ class CatalogRepository implements CatalogRepositoryInterface
 
     public function categoryFacets(): Collection
     {
+        // Client site only ever browses/filters by top-level categories — children
+        // stay admin-only granularity. A parent's count rolls up books tagged with
+        // any of its children too, so the number stays meaningful.
         return Category::query()
-            ->withCount('books')
+            ->whereNull('parent_id')
+            ->with('children:id,parent_id')
             ->orderBy('id')
             ->get()
-            ->map(fn (Category $category): array => $this->facet($category, $category->books_count));
+            ->map(function (Category $category): array {
+                $ids = $category->children->pluck('id')->push($category->id);
+                $count = Book::whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $ids))->count();
+
+                return $this->facet($category, $count);
+            });
     }
 
     public function typeFacets(): Collection
@@ -89,7 +105,7 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function findPublicBySlug(string $slug): ?Book
     {
         return Book::query()
-            ->with(['type', 'language', 'publicationPlace', 'authors', 'categories'])
+            ->with(['type', 'language', 'publicationPlace', 'authors', 'categories.parent'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])

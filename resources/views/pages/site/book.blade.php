@@ -99,9 +99,9 @@
                     @if ($book->type)
                         <span class="font-semibold text-blue-700">{{ $book->type->name }}</span>
                     @endif
-                    @if ($book->categories->isNotEmpty())
+                    @if ($displayCategories->isNotEmpty())
                         <span class="text-gray-300">·</span>
-                        <span class="text-gray-500">{{ $book->categories->pluck('name')->join(' · ') }}</span>
+                        <span class="text-gray-500">{{ $displayCategories->pluck('name')->join(' · ') }}</span>
                     @endif
                 </div>
 
@@ -125,11 +125,11 @@
                             </div>
                         @endforeach
 
-                        @if ($book->categories->isNotEmpty())
+                        @if ($displayCategories->isNotEmpty())
                             <div class="grid grid-cols-1 gap-1 px-5 py-3 sm:grid-cols-[200px_1fr] sm:gap-4">
                                 <dt class="text-sm text-gray-500">{{ __('Kategoriyalar') }}</dt>
                                 <dd class="flex flex-wrap gap-2">
-                                    @foreach ($book->categories as $category)
+                                    @foreach ($displayCategories as $category)
                                         <a href="{{ route('catalog', ['categories' => [$category->id]]) }}"
                                            class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100">{{ $category->name }}</a>
                                     @endforeach

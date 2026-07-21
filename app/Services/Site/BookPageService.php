@@ -38,6 +38,12 @@ class BookPageService
             // Online reading is offered only when a protected PDF is on file.
             'hasOnline' => filled($book->electronic_file),
             'similar' => $this->catalog->similar($book, self::SIMILAR_LIMIT),
+            // Client site only ever shows top-level categories — a book tagged with
+            // a child category displays (and links to) that child's parent instead.
+            'displayCategories' => $book->categories
+                ->map(fn ($category) => $category->parent ?? $category)
+                ->unique('id')
+                ->values(),
         ];
     }
 }
