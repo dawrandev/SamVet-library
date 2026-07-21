@@ -123,12 +123,12 @@
                     {{-- Date/time range filter --}}
                     <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                         <div class="flex-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kimdan') }}</label>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Vaqtdan') }}</label>
                             <input type="datetime-local" name="from" value="{{ $onlineReadingsFrom->format('Y-m-d\TH:i') }}"
                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
                         </div>
                         <div class="flex-1">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kimgacha') }}</label>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Vaqtgacha') }}</label>
                             <input type="datetime-local" name="to" value="{{ $onlineReadingsTo->format('Y-m-d\TH:i') }}"
                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
                         </div>
