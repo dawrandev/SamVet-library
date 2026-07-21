@@ -80,10 +80,14 @@ class NewsService
             if ($data->cover) {
                 $this->deleteFile($news->cover_image);
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'news/covers');
+            } elseif ($data->remove_cover && $news->cover_image) {
+                $this->deleteFile($news->cover_image);
+                $attributes['cover_image'] = null;
             }
 
             $news = $this->news->update($news, $attributes);
 
+            $this->removeGalleryImages($news, $data->remove_gallery_ids);
             $this->storeGallery($news, $data->gallery);
 
             return $news;
@@ -116,6 +120,26 @@ class NewsService
             static fn (string $html): string => Purifier::clean($html),
             $body,
         );
+    }
+
+    /**
+     * Deletes the chosen gallery images (file + row) — scoped to this news item,
+     * so a client-submitted id belonging to another news item is never touched.
+     *
+     * @param  int[]  $ids
+     */
+    private function removeGalleryImages(News $news, array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        $images = $news->images()->whereIn('id', $ids)->get();
+
+        foreach ($images as $image) {
+            $this->deleteFile($image->path);
+            $image->delete();
+        }
     }
 
     /**

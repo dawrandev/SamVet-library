@@ -38,8 +38,11 @@ class UpdateNewsRequest extends FormRequest
 
             // SVG is excluded (may contain JS — stored XSS).
             'cover' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
+            'remove_cover' => ['nullable', 'boolean'],
             'gallery' => ['nullable', 'array'],
             'gallery.*' => ['image', 'mimes:jpeg,jpg,png,webp,gif', 'max:5120'],
+            'remove_gallery_ids' => ['nullable', 'array'],
+            'remove_gallery_ids.*' => ['integer', 'exists:news_images,id'],
 
             'published_at' => ['nullable', 'date'],
         ];

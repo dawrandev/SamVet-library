@@ -23,8 +23,11 @@ class NewsData
         public readonly ?int $news_category_id,
         public readonly ?string $published_at,
         public readonly ?UploadedFile $cover,
+        public readonly bool $remove_cover,
         /** @var array<int, UploadedFile> */
         public readonly array $gallery,
+        /** @var int[] */
+        public readonly array $remove_gallery_ids,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -36,10 +39,12 @@ class NewsData
             news_category_id: $request->integer('news_category_id') ?: null,
             published_at: $request->input('published_at') ?: null,
             cover: $request->file('cover'),
+            remove_cover: $request->boolean('remove_cover'),
             gallery: array_values(array_filter(
                 (array) $request->file('gallery', []),
                 static fn ($file): bool => $file instanceof UploadedFile,
             )),
+            remove_gallery_ids: array_values(array_map('intval', $request->input('remove_gallery_ids', []))),
         );
     }
 

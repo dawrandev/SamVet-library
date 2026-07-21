@@ -2,6 +2,7 @@
 
 use App\Models\News;
 use App\Models\NewsCategory;
+use App\Models\NewsImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -77,4 +78,91 @@ it('deletes a news item', function () {
     $this->delete(route('admin.news.destroy', $news))->assertRedirect();
 
     $this->assertDatabaseMissing('news', ['id' => $news->id]);
+});
+
+it('removes the cover image on update when remove_cover is set', function () {
+    Storage::fake('public');
+    $path = UploadedFile::fake()->image('cover.jpg')->store('news/covers', 'public');
+    $news = News::factory()->create(['cover_image' => $path]);
+
+    $this->put(route('admin.news.update', $news), [
+        'title' => ['uz' => $news->getTranslation('title', 'uz')],
+        'body' => ['uz' => $news->getTranslation('body', 'uz')],
+        'news_category_id' => $news->news_category_id,
+        'remove_cover' => '1',
+    ])->assertRedirect();
+
+    expect($news->fresh()->cover_image)->toBeNull();
+    Storage::disk('public')->assertMissing($path);
+});
+
+it('keeps the cover when remove_cover is not set', function () {
+    Storage::fake('public');
+    $path = UploadedFile::fake()->image('cover.jpg')->store('news/covers', 'public');
+    $news = News::factory()->create(['cover_image' => $path]);
+
+    $this->put(route('admin.news.update', $news), [
+        'title' => ['uz' => $news->getTranslation('title', 'uz')],
+        'body' => ['uz' => $news->getTranslation('body', 'uz')],
+        'news_category_id' => $news->news_category_id,
+    ])->assertRedirect();
+
+    expect($news->fresh()->cover_image)->toBe($path);
+    Storage::disk('public')->assertExists($path);
+});
+
+it('a new cover upload wins even if remove_cover is also sent', function () {
+    Storage::fake('public');
+    $oldPath = UploadedFile::fake()->image('old.jpg')->store('news/covers', 'public');
+    $news = News::factory()->create(['cover_image' => $oldPath]);
+
+    $this->put(route('admin.news.update', $news), [
+        'title' => ['uz' => $news->getTranslation('title', 'uz')],
+        'body' => ['uz' => $news->getTranslation('body', 'uz')],
+        'news_category_id' => $news->news_category_id,
+        'remove_cover' => '1',
+        'cover' => UploadedFile::fake()->image('new.jpg'),
+    ])->assertRedirect();
+
+    expect($news->fresh()->cover_image)->not->toBeNull()->not->toBe($oldPath);
+    Storage::disk('public')->assertMissing($oldPath);
+});
+
+it('removes a chosen gallery image on update', function () {
+    Storage::fake('public');
+    $news = News::factory()->create();
+    $keepPath = UploadedFile::fake()->image('keep.jpg')->store('news/gallery', 'public');
+    $removePath = UploadedFile::fake()->image('remove.jpg')->store('news/gallery', 'public');
+    $keep = NewsImage::create(['news_id' => $news->id, 'path' => $keepPath, 'sort_order' => 1]);
+    $remove = NewsImage::create(['news_id' => $news->id, 'path' => $removePath, 'sort_order' => 2]);
+
+    $this->put(route('admin.news.update', $news), [
+        'title' => ['uz' => $news->getTranslation('title', 'uz')],
+        'body' => ['uz' => $news->getTranslation('body', 'uz')],
+        'news_category_id' => $news->news_category_id,
+        'remove_gallery_ids' => [$remove->id],
+    ])->assertRedirect();
+
+    $this->assertDatabaseMissing('news_images', ['id' => $remove->id]);
+    $this->assertDatabaseHas('news_images', ['id' => $keep->id]);
+    Storage::disk('public')->assertMissing($removePath);
+    Storage::disk('public')->assertExists($keepPath);
+});
+
+it('does not let a gallery image be removed through a different news item', function () {
+    Storage::fake('public');
+    $newsA = News::factory()->create();
+    $newsB = News::factory()->create();
+    $path = UploadedFile::fake()->image('a.jpg')->store('news/gallery', 'public');
+    $image = NewsImage::create(['news_id' => $newsA->id, 'path' => $path, 'sort_order' => 1]);
+
+    $this->put(route('admin.news.update', $newsB), [
+        'title' => ['uz' => $newsB->getTranslation('title', 'uz')],
+        'body' => ['uz' => $newsB->getTranslation('body', 'uz')],
+        'news_category_id' => $newsB->news_category_id,
+        'remove_gallery_ids' => [$image->id],
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('news_images', ['id' => $image->id]);
+    Storage::disk('public')->assertExists($path);
 });

@@ -7,7 +7,13 @@
     'currentUrl' => null,    // tahrirda mavjud fayl (rasm URL yoki nom)
     'currentName' => null,   // mavjud fayl nomi (rasm bo'lmasa)
     'withProgress' => false, // show an upload progress bar (form must use x-data="uploadForm")
+    'removable' => false,    // show an X button to remove the current file on save
+    'removeName' => null,    // hidden input name carrying the removal flag (defaults to "remove_{name}")
 ])
+
+@php
+    $removeName ??= "remove_{$name}";
+@endphp
 
 <div>
     @if ($label)
@@ -17,21 +23,42 @@
     <div x-data="{
             fileName: @js($currentName),
             preview: @js($image ? $currentUrl : null),
+            removed: false,
             handle(e) {
                 const f = e.target.files[0];
                 if (!f) return;
                 this.fileName = f.name;
+                this.removed = false;
                 if ({{ $image ? 'true' : 'false' }}) this.preview = URL.createObjectURL(f);
             }
          }">
+        @if ($removable)
+            <input type="hidden" name="{{ $removeName }}" :value="removed ? '1' : '0'" />
+        @endif
+
         <label class="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition hover:border-brand-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-white/[0.02] dark:hover:bg-white/[0.05]">
             <input type="file" name="{{ $name }}" class="hidden" @if ($accept) accept="{{ $accept }}" @endif @change="handle($event)" {{ $attributes }} />
 
             {{-- Rasm preview --}}
             @if ($image)
-                <template x-if="preview">
-                    <img :src="preview" alt="" class="mb-3 h-28 w-20 rounded-lg object-cover shadow-sm" />
+                <template x-if="preview && !removed">
+                    <span class="relative mb-3 inline-block">
+                        <img :src="preview" alt="" class="h-28 w-20 rounded-lg object-cover shadow-sm" />
+                        @if ($removable)
+                            <button type="button" @click.prevent.stop="removed = true; preview = null; fileName = null"
+                                    class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-800/80 text-white hover:bg-error-500"
+                                    :title="'{{ __('O‘chirish') }}'">&times;</button>
+                        @endif
+                    </span>
                 </template>
+            @endif
+
+            @if ($removable)
+                <p x-show="removed" x-cloak class="mb-2 text-theme-xs text-error-500">
+                    {{ __('Saqlaganda o‘chiriladi.') }}
+                    <button type="button" @click.prevent.stop="removed = false; preview = @js($image ? $currentUrl : null); fileName = @js($currentName)"
+                            class="font-medium text-brand-500 hover:text-brand-600">{{ __('Bekor qilish') }}</button>
+                </p>
             @endif
 
             <span class="text-gray-400" @if ($image) x-show="!preview" @endif><x-admin.icon name="upload" class="h-6 w-6" /></span>
