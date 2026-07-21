@@ -163,6 +163,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Reader card (ID card) PDF
     Route::get('readers/{reader}/card', [ReaderCardController::class, 'show'])->name('readers.card');
 
+    // Famulyar (practicum booklet) cover page PDF
+    Route::get('readers/{reader}/famulyar', [ReaderCardController::class, 'famulyar'])->name('readers.famulyar');
+
     // Reader lookup by ID number (before the resource's {reader} show route, or "lookup" gets bound as an id)
     Route::get('readers/lookup', [ReaderLookupController::class, 'show'])->name('readers.lookup');
 

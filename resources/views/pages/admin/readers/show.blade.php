@@ -265,6 +265,12 @@
                     <x-admin.icon name="identification" class="h-4 w-4 flex-none" /> {{ __('Kitobxon guvohnomasini yuklab olish') }}
                 </a>
 
+                {{-- Download famulyar (practicum booklet cover) PDF --}}
+                <a href="{{ route('admin.readers.famulyar', $reader) }}" target="_blank"
+                   class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800">
+                    <x-admin.icon name="identification" class="h-4 w-4 flex-none" /> {{ __('Famulyar yuklab olish') }}
+                </a>
+
                 {{-- Block indicator --}}
                 @if ($reader->status === \App\Enums\ReaderStatus::Blocked)
                     <div class="mt-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-left text-theme-sm text-error-600 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-500">
