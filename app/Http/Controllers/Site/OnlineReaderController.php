@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Services\BookReadingService;
 use App\Services\Site\OnlineReaderService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -16,11 +18,16 @@ class OnlineReaderController extends Controller
 {
     public function __construct(
         private readonly OnlineReaderService $reader,
+        private readonly BookReadingService $bookReadings,
     ) {}
 
     public function book(string $slug): View
     {
         $book = $this->reader->book($slug);
+
+        // One log row per opened reading session — lets the librarian see who
+        // read what electronically and exactly when, alongside physical loans.
+        $this->bookReadings->log(Auth::guard('reader')->user(), $book);
 
         return view('pages.site.reader', [
             'title' => $book->title,

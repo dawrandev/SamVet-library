@@ -53,6 +53,12 @@ class Reader extends Model implements Authenticatable
         return $this->hasMany(Loan::class)->latest('issued_at');
     }
 
+    /** Online reads (electronic books opened on the client site) — newest first. */
+    public function bookReadings(): HasMany
+    {
+        return $this->hasMany(BookReading::class)->latest('read_at');
+    }
+
     public function warnings(): HasMany
     {
         return $this->hasMany(ReaderWarning::class)->latest('warned_at');

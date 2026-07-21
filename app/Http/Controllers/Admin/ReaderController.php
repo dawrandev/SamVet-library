@@ -13,6 +13,7 @@ use App\Http\Requests\Admin\StoreReaderRequest;
 use App\Http\Requests\Admin\UpdateReaderRequest;
 use App\Models\Computer;
 use App\Models\Reader;
+use App\Services\BookReadingService;
 use App\Services\LoanService;
 use App\Services\ReaderService;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class ReaderController extends Controller
     public function __construct(
         private readonly ReaderService $readerService,
         private readonly LoanService $loanService,
+        private readonly BookReadingService $bookReadingService,
     ) {}
 
     public function index(Request $request): View
@@ -69,6 +71,7 @@ class ReaderController extends Controller
         return view('pages.admin.readers.show', [
             'reader' => $reader,
             'loans' => $this->loanService->paginateForReader($reader->id, $materialFilters),
+            'bookReadings' => $this->bookReadingService->paginateForReader($reader->id),
             'materialFilters' => $materialFilters,
             'materialTypes' => LoanMaterialType::cases(),
             'copyConditions' => CopyCondition::cases(),

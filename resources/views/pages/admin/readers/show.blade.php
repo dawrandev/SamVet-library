@@ -660,6 +660,45 @@
         </template>
     </div>
 
+    {{-- Online reads (electronic books opened on the client site) — alongside physical loans above --}}
+    <div class="mt-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Onlayn o‘qishlar') }}</h3>
+
+            @if ($bookReadings->isEmpty())
+                <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha onlayn o‘qish yo‘q.') }}</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-theme-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                                <th class="px-3 py-2 font-medium">{{ __('Kitob') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Sana va vaqti') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bookReadings as $reading)
+                                <tr class="border-b border-gray-50 dark:border-gray-800/50">
+                                    <td class="px-3 py-2">
+                                        @if ($reading->book)
+                                            <a href="{{ route('admin.books.show', $reading->book) }}" class="font-medium text-gray-800 hover:text-brand-600 dark:text-white/90 dark:hover:text-brand-400">{{ $reading->book->title }}</a>
+                                        @else
+                                            <span class="text-gray-400">{{ __('Kitob o‘chirilgan') }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $reading->read_at->format('d.m.Y H:i') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $bookReadings->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- Attended events and competitions — read-only here; managed from the Tadbirlar module --}}
     <div class="mt-6">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
