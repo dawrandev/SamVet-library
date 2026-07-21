@@ -62,20 +62,33 @@
             {{-- O'ng: media --}}
             <div class="space-y-6 lg:col-span-1">
                 <x-admin.form.section :title="__('Muqova')">
-                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif" with-progress
+                    <x-admin.form.file name="cover" :label="__('Muqova rasmi')" :image="true" accept="image/jpeg,image/png,image/webp,image/gif" with-progress removable
                         :currentUrl="$coverUrl"
                         :help="__('Ixtiyoriy. JPG/PNG/WebP, 2 MB gacha.')" />
                 </x-admin.form.section>
 
                 <x-admin.form.section :title="__('Galereya')">
-                    <div>
+                    <div x-data="{ removedGalleryIds: [] }">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Rasmlar (bir nechta)') }}</label>
                         @if ($page && $page->images->isNotEmpty())
                             <div class="mb-2 flex flex-wrap gap-2">
                                 @foreach ($page->images as $img)
-                                    <img src="{{ asset('storage/' . $img->path) }}" alt="" class="h-16 w-16 rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
+                                    <div x-show="! removedGalleryIds.includes({{ $img->id }})" class="relative">
+                                        <img src="{{ asset('storage/' . $img->path) }}" alt="" class="h-16 w-16 rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
+                                        <button type="button" @click="removedGalleryIds.push({{ $img->id }})"
+                                                class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800/80 text-xs text-white hover:bg-error-500"
+                                                :title="'{{ __('O‘chirish') }}'">&times;</button>
+                                    </div>
                                 @endforeach
                             </div>
+                            {{-- Only the actually-removed ids are ever submitted — a static
+                                 per-image hidden input would still POST even while hidden by x-show. --}}
+                            <template x-for="id in removedGalleryIds" :key="id">
+                                <input type="hidden" name="remove_gallery_ids[]" :value="id" />
+                            </template>
+                            <p x-show="removedGalleryIds.length > 0" x-cloak class="mb-2 text-theme-xs text-error-500">
+                                {{ __('Belgilangan rasmlar saqlaganda o‘chiriladi.') }}
+                            </p>
                         @endif
                         <input type="file" name="gallery[]" multiple accept="image/jpeg,image/png,image/webp,image/gif"
                                class="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-600 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-brand-500/15 dark:file:text-brand-400" />

@@ -39,10 +39,14 @@ class PageService
             if ($data->cover) {
                 $this->deleteFile($existing?->cover_image);
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'pages/covers');
+            } elseif ($data->remove_cover && $existing?->cover_image) {
+                $this->deleteFile($existing->cover_image);
+                $attributes['cover_image'] = null;
             }
 
             $page = $this->pages->updateOrCreateForMenuItem($menuItem, $attributes);
 
+            $this->removeGalleryImages($page, $data->remove_gallery_ids);
             $this->storeGallery($page, $data->gallery);
 
             return $page;
@@ -61,6 +65,26 @@ class PageService
             static fn (string $html): string => Purifier::clean($html),
             $body,
         );
+    }
+
+    /**
+     * Deletes the chosen gallery images (file + row) — scoped to this page,
+     * so a client-submitted id belonging to another page is never touched.
+     *
+     * @param  int[]  $ids
+     */
+    private function removeGalleryImages(Page $page, array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        $images = $page->images()->whereIn('id', $ids)->get();
+
+        foreach ($images as $image) {
+            $this->deleteFile($image->path);
+            $image->delete();
+        }
     }
 
     /**

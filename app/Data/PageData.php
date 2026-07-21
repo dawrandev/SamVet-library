@@ -19,8 +19,11 @@ class PageData
         /** @var array<string, string> Rich HTML (translation, raw) */
         public readonly array $body,
         public readonly ?UploadedFile $cover,
+        public readonly bool $remove_cover,
         /** @var array<int, UploadedFile> */
         public readonly array $gallery,
+        /** @var int[] */
+        public readonly array $remove_gallery_ids,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -29,7 +32,9 @@ class PageData
             title: self::filledStrings((array) $request->input('title', [])),
             body: self::filledStrings((array) $request->input('body', [])),
             cover: $request->file('cover'),
+            remove_cover: $request->boolean('remove_cover'),
             gallery: $request->file('gallery', []),
+            remove_gallery_ids: array_values(array_map('intval', $request->input('remove_gallery_ids', []))),
         );
     }
 

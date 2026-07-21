@@ -82,3 +82,65 @@ it('shows an empty state in the admin preview when no page content exists yet', 
         ->assertOk()
         ->assertSee('hali kiritilmagan');
 });
+
+it('removes the cover image on save when remove_cover is set', function () {
+    Storage::fake('public');
+    $menuItem = MenuItem::factory()->create();
+    $path = UploadedFile::fake()->image('cover.jpg')->store('pages/covers', 'public');
+    $page = Page::factory()->create(['menu_item_id' => $menuItem->id, 'cover_image' => $path]);
+
+    $this->put(route('admin.menu-items.page.update', $menuItem), [
+        'remove_cover' => '1',
+    ])->assertRedirect();
+
+    expect($page->fresh()->cover_image)->toBeNull();
+    Storage::disk('public')->assertMissing($path);
+});
+
+it('keeps the page cover when remove_cover is not set', function () {
+    Storage::fake('public');
+    $menuItem = MenuItem::factory()->create();
+    $path = UploadedFile::fake()->image('cover.jpg')->store('pages/covers', 'public');
+    $page = Page::factory()->create(['menu_item_id' => $menuItem->id, 'cover_image' => $path]);
+
+    $this->put(route('admin.menu-items.page.update', $menuItem), [])->assertRedirect();
+
+    expect($page->fresh()->cover_image)->toBe($path);
+    Storage::disk('public')->assertExists($path);
+});
+
+it('removes a chosen gallery image on a page save', function () {
+    Storage::fake('public');
+    $menuItem = MenuItem::factory()->create();
+    $page = Page::factory()->create(['menu_item_id' => $menuItem->id]);
+    $keepPath = UploadedFile::fake()->image('keep.jpg')->store('pages/gallery', 'public');
+    $removePath = UploadedFile::fake()->image('remove.jpg')->store('pages/gallery', 'public');
+    $keep = $page->images()->create(['path' => $keepPath, 'sort_order' => 1]);
+    $remove = $page->images()->create(['path' => $removePath, 'sort_order' => 2]);
+
+    $this->put(route('admin.menu-items.page.update', $menuItem), [
+        'remove_gallery_ids' => [$remove->id],
+    ])->assertRedirect();
+
+    $this->assertDatabaseMissing('page_images', ['id' => $remove->id]);
+    $this->assertDatabaseHas('page_images', ['id' => $keep->id]);
+    Storage::disk('public')->assertMissing($removePath);
+    Storage::disk('public')->assertExists($keepPath);
+});
+
+it('does not let a page gallery image be removed through a different page', function () {
+    Storage::fake('public');
+    $menuItemA = MenuItem::factory()->create();
+    $menuItemB = MenuItem::factory()->create();
+    $pageA = Page::factory()->create(['menu_item_id' => $menuItemA->id]);
+    $pageB = Page::factory()->create(['menu_item_id' => $menuItemB->id]);
+    $path = UploadedFile::fake()->image('a.jpg')->store('pages/gallery', 'public');
+    $image = $pageA->images()->create(['path' => $path, 'sort_order' => 1]);
+
+    $this->put(route('admin.menu-items.page.update', $menuItemB), [
+        'remove_gallery_ids' => [$image->id],
+    ])->assertRedirect();
+
+    $this->assertDatabaseHas('page_images', ['id' => $image->id]);
+    Storage::disk('public')->assertExists($path);
+});
