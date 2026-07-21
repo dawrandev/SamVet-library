@@ -20,7 +20,7 @@ class Journal extends Model
     protected $fillable = [
         'name', 'kind', 'slug', 'journal_type_id', 'newspaper_type', 'founder',
         'language_id', 'publisher', 'publication_place_id',
-        'issn', 'index', 'periodicity', 'periodicity_count',
+        'issn', 'index', 'periodicity',
     ];
 
     protected function casts(): array
@@ -29,7 +29,6 @@ class Journal extends Model
             'kind' => PublicationKind::class,
             'newspaper_type' => NewspaperType::class,
             'periodicity' => JournalPeriodicity::class,
-            'periodicity_count' => 'integer',
         ];
     }
 

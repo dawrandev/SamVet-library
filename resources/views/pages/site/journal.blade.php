@@ -8,11 +8,7 @@
 
     // Muassis/Nashr joyi/Nashriyoti/Indeks are library-internal (kutubxona
     // ichki ma'lumoti) — shown only in the admin panel, not on the public site.
-    $periodicity = match (true) {
-        $journal->periodicity && $journal->periodicity_count => "{$journal->periodicity_count} marta / {$journal->periodicity->label()}",
-        (bool) $journal->periodicity => $journal->periodicity->label(),
-        default => null,
-    };
+    $periodicity = $journal->periodicity?->label();
 
     // Newspapers use the fixed NewspaperType enum; journals keep the journal_type_id lookup.
     $type = $isNewspaper ? $journal->newspaper_type?->label() : $journal->type?->name;

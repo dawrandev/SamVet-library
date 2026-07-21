@@ -33,7 +33,6 @@ class StoreJournalRequest extends FormRequest
             'issn' => ['nullable', 'string', 'max:30'],
             'index' => ['nullable', 'string', 'max:50'],
             'periodicity' => ['nullable', new Enum(JournalPeriodicity::class)],
-            'periodicity_count' => ['nullable', 'integer', 'min:1', 'max:31'],
         ];
     }
 
@@ -53,8 +52,7 @@ class StoreJournalRequest extends FormRequest
             'publication_place_id' => __('Nashr joyi'),
             'issn' => __('ISSN'),
             'index' => __('Indeks'),
-            'periodicity' => __('Davriylik birligi'),
-            'periodicity_count' => __('Necha marta'),
+            'periodicity' => __('Davriylik'),
         ];
     }
 }

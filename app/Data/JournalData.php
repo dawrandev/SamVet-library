@@ -22,7 +22,6 @@ class JournalData
         public readonly ?string $issn,
         public readonly ?string $index,
         public readonly ?string $periodicity,
-        public readonly ?int $periodicity_count,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -39,7 +38,6 @@ class JournalData
             issn: $request->input('issn'),
             index: $request->input('index'),
             periodicity: $request->input('periodicity') ?: null,
-            periodicity_count: $request->integer('periodicity_count') ?: null,
         );
     }
 
@@ -62,7 +60,6 @@ class JournalData
             'issn' => $this->issn,
             'index' => $this->index,
             'periodicity' => $this->periodicity,
-            'periodicity_count' => $this->periodicity_count,
         ];
     }
 }

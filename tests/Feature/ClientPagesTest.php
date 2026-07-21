@@ -61,13 +61,12 @@ it('shows a journal detail page but hides library-internal fields', function () 
         'publisher' => 'Maxfiy nashriyot',
         'publication_place_id' => $place->id,
         'periodicity' => 'weekly',
-        'periodicity_count' => 3,
     ]);
 
     $res = $this->get(route('journal.show', $journal->slug));
 
     $res->assertOk()->assertSee('Ochiq jurnal')
-        ->assertSee('3 marta / Haftalik');
+        ->assertSee('Haftalik');
     // Indeks, muassis, nashr joyi and nashriyoti are library-internal —
     // admin-only, never shown on the public site.
     $res->assertDontSee('IDX-SECRET')

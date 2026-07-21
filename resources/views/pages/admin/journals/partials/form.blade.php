@@ -128,21 +128,16 @@
                                 creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
                         </div>
 
-                        <div class="grid gap-5 sm:grid-cols-2">
-                            <div>
-                                <label for="periodicity" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Davriylik birligi') }}</label>
-                                <select name="periodicity" id="periodicity"
-                                        class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('periodicity') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                                    <option value="">{{ __('Tanlang') }}</option>
-                                    @foreach ($periodicityOptions as $opt)
-                                        <option value="{{ $opt->value }}" @selected($currentPeriodicity === $opt->value)>{{ $opt->label() }}</option>
-                                    @endforeach
-                                </select>
-                                @error('periodicity')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
-                            </div>
-                            <x-admin.form.input name="periodicity_count" type="number" min="1" max="31" :label="__('Necha marta')"
-                                :value="$journal?->periodicity_count" :placeholder="__('masalan: 3')"
-                                :help="__('masalan: haftada 3 marta, oyda 2 marta')" />
+                        <div>
+                            <label for="periodicity" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Davriylik') }}</label>
+                            <select name="periodicity" id="periodicity"
+                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('periodicity') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                <option value="">{{ __('Tanlang') }}</option>
+                                @foreach ($periodicityOptions as $opt)
+                                    <option value="{{ $opt->value }}" @selected($currentPeriodicity === $opt->value)>{{ $opt->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('periodicity')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                         </div>
                     </div>
                 </x-admin.form.section>

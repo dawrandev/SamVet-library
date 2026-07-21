@@ -31,37 +31,34 @@ it('creates a journal', function () {
         ->and($journal->slug)->not->toBeEmpty();
 });
 
-it('creates a journal with a periodicity unit and a free "necha marta" count', function () {
+it('creates a journal with a named periodicity', function () {
     $this->post(route('admin.journals.store'), [
         'name' => 'Haftalik axborotnoma',
         'kind' => 'journal',
-        'periodicity' => 'weekly',
-        'periodicity_count' => 3,
+        'periodicity' => 'semiweekly',
     ])->assertRedirect();
 
     $journal = Journal::firstWhere('name', 'Haftalik axborotnoma');
-    expect($journal->periodicity->value)->toBe('weekly')
-        ->and($journal->periodicity_count)->toBe(3);
+    expect($journal->periodicity->value)->toBe('semiweekly');
 });
 
-it('rejects a periodicity count outside the valid range', function () {
+it('rejects an invalid periodicity value', function () {
     $this->from(route('admin.journals.create'))
         ->post(route('admin.journals.store'), [
             'name' => 'X',
             'kind' => 'journal',
-            'periodicity_count' => 32,
+            'periodicity' => 'yearly', // not a JournalPeriodicity case
         ])
-        ->assertSessionHasErrors('periodicity_count');
+        ->assertSessionHasErrors('periodicity');
 });
 
-it('shows the combined periodicity ("necha marta / birlik") on the journal show page', function () {
+it('shows the periodicity label on the journal show page', function () {
     $journal = Journal::factory()->create([
-        'periodicity' => 'weekly',
-        'periodicity_count' => 5,
+        'periodicity' => 'biweekly',
     ]);
 
     $this->get(route('admin.journals.show', $journal))
-        ->assertSee('5 marta / Haftalik');
+        ->assertSee('2 haftada bir');
 });
 
 it('creates a newspaper (kind = newspaper)', function () {

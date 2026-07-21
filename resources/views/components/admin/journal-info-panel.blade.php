@@ -3,11 +3,7 @@
 @php
     $isNewspaper = $journal->kind === \App\Enums\PublicationKind::Newspaper;
 
-    $periodicity = match (true) {
-        $journal->periodicity && $journal->periodicity_count => "{$journal->periodicity_count} marta / {$journal->periodicity->label()}",
-        (bool) $journal->periodicity => $journal->periodicity->label(),
-        default => null,
-    };
+    $periodicity = $journal->periodicity?->label();
 
     $details = array_filter([
         ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal->name,

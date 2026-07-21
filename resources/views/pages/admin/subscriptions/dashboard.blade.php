@@ -46,9 +46,7 @@
                     @forelse ($coverage as $i => $row)
                         @php
                             $journal = $row['journal'];
-                            $periodicity = $journal->periodicity && $journal->periodicity_count
-                                ? "{$journal->periodicity_count} marta / {$journal->periodicity->label()}"
-                                : '—';
+                            $periodicity = $journal->periodicity?->label() ?? '—';
                         @endphp
                         <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
                             <td class="px-3 py-3 text-theme-sm text-gray-500 dark:text-gray-400">{{ $i + 1 }}</td>
