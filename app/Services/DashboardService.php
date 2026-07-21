@@ -9,10 +9,10 @@ use App\Models\Article;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\BookReading;
 use App\Models\Category;
 use App\Models\Computer;
 use App\Models\Journal;
-use App\Models\JournalCopy;
 use App\Models\Loan;
 use App\Models\News;
 use App\Models\Reader;
@@ -27,7 +27,7 @@ class DashboardService
     /**
      * @return array<string, mixed>
      */
-    public function stats(): array
+    public function stats(?string $from = null, ?string $to = null): array
     {
         // Status breakdowns in a single grouped query each (no per-status count queries).
         $copiesByStatus = BookCopy::query()->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
@@ -40,7 +40,18 @@ class DashboardService
             ->whereDate('due_at', '<', Carbon::today())
             ->count();
 
+        [$rangeFrom, $rangeTo] = $this->resolveReadingRange($from, $to);
+
+        $onlineReadings = BookReading::with(['reader', 'book'])
+            ->whereBetween('read_at', [$rangeFrom, $rangeTo])
+            ->latest('read_at')
+            ->paginate(20, ['*'], 'readings_page')
+            ->withQueryString();
+
         return [
+            'onlineReadingsFrom' => $rangeFrom,
+            'onlineReadingsTo' => $rangeTo,
+            'onlineReadings' => $onlineReadings,
             // KPI
             'booksTotal' => Book::count(),
             'copiesTotal' => BookCopy::count(),
@@ -64,14 +75,33 @@ class DashboardService
             'subscriptionsAmount' => (float) Subscription::sum('amount'),
             'categoriesTotal' => Category::count(),
             'authorsTotal' => Author::count(),
-
-            // Recent activity
-            'recentLoans' => Loan::with(['reader', 'loanable' => function ($morphTo) {
-                $morphTo->morphWith([
-                    BookCopy::class => ['book'],
-                    JournalCopy::class => ['issue.journal'],
-                ]);
-            }])->latest('id')->limit(6)->get(),
         ];
+    }
+
+    /**
+     * The librarian picks a from/to; defaults to "today so far" when not given.
+     * Datetime-local inputs submit "Y-m-d\TH:i" — Carbon parses that natively.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function resolveReadingRange(?string $from, ?string $to): array
+    {
+        try {
+            $rangeFrom = $from ? Carbon::parse($from) : Carbon::today();
+        } catch (\Exception) {
+            $rangeFrom = Carbon::today();
+        }
+
+        try {
+            $rangeTo = $to ? Carbon::parse($to) : Carbon::now();
+        } catch (\Exception) {
+            $rangeTo = Carbon::now();
+        }
+
+        if ($rangeFrom->gt($rangeTo)) {
+            [$rangeFrom, $rangeTo] = [$rangeTo, $rangeFrom];
+        }
+
+        return [$rangeFrom, $rangeTo];
     }
 }

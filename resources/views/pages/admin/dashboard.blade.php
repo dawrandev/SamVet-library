@@ -4,8 +4,6 @@
 
 @section('content')
     @php
-        $today = now()->startOfDay();
-
         // --- Donut: fund (copy status) ---
         $copyClr = ['available' => '#12b76a', 'borrowed' => '#465fff', 'lost' => '#f04438', 'written_off' => '#98a2b3'];
         $fundSeries = $fundLabels = $fundColors = [];
@@ -113,12 +111,29 @@
             </div>
         </div>
 
-        {{-- ===== Recent loans + quick counts ===== --}}
+        {{-- ===== Online readings filter + quick counts ===== --}}
         <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
             <div class="lg:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                <div class="flex items-center justify-between px-5 py-4 sm:px-6">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('So‘nggi berilgan kitoblar') }}</h3>
-                    <a href="{{ route('admin.loans.index') }}" class="text-theme-sm font-medium text-brand-500 hover:text-brand-600">{{ __('Barchasi') }}</a>
+                <div class="flex flex-col gap-3 px-5 py-4 sm:px-6">
+                    <div class="flex items-center justify-between gap-3">
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Onlayn o‘qishlar') }}</h3>
+                        <span class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ number_format($onlineReadings->total(), 0, '.', ' ') }}</span>
+                    </div>
+
+                    {{-- Date/time range filter --}}
+                    <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div class="flex-1">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kimdan') }}</label>
+                            <input type="datetime-local" name="from" value="{{ $onlineReadingsFrom->format('Y-m-d\TH:i') }}"
+                                   class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Kimgacha') }}</label>
+                            <input type="datetime-local" name="to" value="{{ $onlineReadingsTo->format('Y-m-d\TH:i') }}"
+                                   class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                        </div>
+                        <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Filtrlash') }}</button>
+                    </form>
                 </div>
                 <div class="max-w-full overflow-x-auto">
                     <table class="min-w-full">
@@ -126,32 +141,32 @@
                             <tr class="border-y border-gray-100 dark:border-gray-800">
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('Foydalanuvchi') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kitob') }}</th>
-                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Berilgan') }}</th>
-                                <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('Muddat') }}</th>
+                                <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('O‘qilgan vaqti') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($recentLoans as $loan)
-                                @php $isOverdue = $loan->status === \App\Enums\LoanStatus::OnLoan && $loan->due_at && $loan->due_at->lt($today); @endphp
+                            @forelse ($onlineReadings as $reading)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/60">
-                                    <td class="px-5 py-3.5 text-theme-sm font-medium text-gray-800 dark:text-white/90 sm:px-6">{{ $loan->reader?->full_name ?? '—' }}</td>
-                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($loan->materialTitle(), 30) }}</td>
-                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
-                                    <td class="px-5 py-3.5 text-right sm:px-6">
-                                        <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $isOverdue ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }}">{{ $loan->due_at?->format('d.m.Y') ?? '—' }}</span>
-                                    </td>
+                                    <td class="px-5 py-3.5 text-theme-sm font-medium text-gray-800 dark:text-white/90 sm:px-6">{{ $reading->reader?->full_name ?? '—' }}</td>
+                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($reading->book?->title ?? '—', 30) }}</td>
+                                    <td class="px-5 py-3.5 text-right text-theme-sm text-gray-600 dark:text-gray-400 sm:px-6">{{ $reading->read_at->format('d.m.Y H:i') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-10 text-center">
+                                    <td colspan="3" class="px-6 py-10 text-center">
                                         <x-admin.icon name="book" class="mx-auto h-9 w-9 text-gray-300 dark:text-gray-600" />
-                                        <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hali kitob berilmagan.') }}</p>
+                                        <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Bu oraliqda onlayn o‘qish topilmadi.') }}</p>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+                @if ($onlineReadings->hasPages())
+                    <div class="px-5 py-4 sm:px-6">
+                        {{ $onlineReadings->links() }}
+                    </div>
+                @endif
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
