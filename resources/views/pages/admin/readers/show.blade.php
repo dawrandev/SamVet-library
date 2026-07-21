@@ -262,7 +262,7 @@
                 {{-- Download reader card (ID-card PDF) --}}
                 <a href="{{ route('admin.readers.card', $reader) }}" target="_blank"
                    class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-                    <span class="text-base leading-none">🪪</span> {{ __('Kitobxon guvohnomasini yuklab olish') }}
+                    <x-admin.icon name="identification" class="h-4 w-4 flex-none" /> {{ __('Kitobxon guvohnomasini yuklab olish') }}
                 </a>
 
                 {{-- Block indicator --}}
