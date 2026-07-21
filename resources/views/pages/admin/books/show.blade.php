@@ -26,8 +26,11 @@
             __('Sahifalar soni') => $book->pages,
             __('ISBN') => $book->isbn,
             __('UO‘K') => $book->udc,
-            __('Avtorlik belgi') => $book->author_mark,
-            __('Tiraj') => $book->print_run,
+            __('Mualliflik belgi') => $book->author_mark,
+            __('Tiraji') => $book->print_run,
+            __('O‘lchami') => $book->size_cm ? $book->size_cm . ' ' . __('sm') : null,
+            __('Bosma taboq') => $book->print_sheets,
+            __('Kimlar uchun') => $book->target_audience,
         ], fn ($v) => filled($v));
 
         $statusColor = [

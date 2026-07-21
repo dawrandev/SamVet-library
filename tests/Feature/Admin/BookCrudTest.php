@@ -82,3 +82,45 @@ it('deletes a book', function () {
 
     $this->assertDatabaseMissing('books', ['id' => $book->id]);
 });
+
+it('saves target audience, size and print sheets, all nullable', function () {
+    $this->post(route('admin.books.store'), [
+        'title' => 'To‘liq maydonli kitob',
+        'target_audience' => 'Talabalar uchun',
+        'size_cm' => 21,
+        'print_sheets' => '20,5',
+    ])->assertRedirect();
+
+    $book = Book::firstWhere('title', 'To‘liq maydonli kitob');
+    expect($book->target_audience)->toBe('Talabalar uchun')
+        ->and($book->size_cm)->toBe(21)
+        ->and($book->print_sheets)->toBe('20,5');
+});
+
+it('creates a book with target_audience, size_cm and print_sheets left blank', function () {
+    $this->post(route('admin.books.store'), [
+        'title' => 'Maydonlarsiz kitob',
+    ])->assertSessionDoesntHaveErrors(['target_audience', 'size_cm', 'print_sheets']);
+
+    $book = Book::firstWhere('title', 'Maydonlarsiz kitob');
+    expect($book)->not->toBeNull()
+        ->and($book->target_audience)->toBeNull()
+        ->and($book->size_cm)->toBeNull()
+        ->and($book->print_sheets)->toBeNull();
+});
+
+it('shows the new fields on the book show page', function () {
+    $book = Book::factory()->create([
+        'target_audience' => 'Kattalar uchun',
+        'size_cm' => 22,
+        'print_sheets' => '18,0',
+    ]);
+
+    $this->get(route('admin.books.show', $book))
+        ->assertSee('Kimlar uchun')
+        ->assertSee('Kattalar uchun')
+        ->assertSee('O‘lchami')
+        ->assertSee('22 sm')
+        ->assertSee('Bosma taboq')
+        ->assertSee('18,0');
+});

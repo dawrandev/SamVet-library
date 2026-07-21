@@ -24,6 +24,9 @@ class BookData
         public readonly ?string $isbn,
         public readonly ?int $print_run,
         public readonly ?string $annotation,
+        public readonly ?string $target_audience,
+        public readonly ?int $size_cm,
+        public readonly ?string $print_sheets,
         /** @var int[] */
         public readonly array $author_ids,
         /** @var int[] */
@@ -50,6 +53,9 @@ class BookData
             isbn: $request->input('isbn'),
             print_run: $request->integer('print_run') ?: null,
             annotation: $request->input('annotation'),
+            target_audience: $request->input('target_audience') ?: null,
+            size_cm: $request->integer('size_cm') ?: null,
+            print_sheets: $request->input('print_sheets') ?: null,
             author_ids: $request->input('author_ids', []),
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
@@ -79,6 +85,9 @@ class BookData
             'isbn' => $this->isbn,
             'print_run' => $this->print_run,
             'annotation' => $this->annotation,
+            'target_audience' => $this->target_audience,
+            'size_cm' => $this->size_cm,
+            'print_sheets' => $this->print_sheets,
         ];
     }
 }

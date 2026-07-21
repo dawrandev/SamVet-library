@@ -67,68 +67,77 @@
     <div class="grid grid-cols-12 gap-6">
         {{-- LEFT: main --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
-            <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
-                <div class="space-y-5">
-                    <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$book?->title" required :placeholder="__('Kitob nomi')" />
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {{-- Asosiy ma'lumotlar --}}
+                <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
+                    <div class="space-y-5">
+                        <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$book?->title" required :placeholder="__('Kitob nomi')" />
 
-                    <x-admin.form.multiselect name="author_ids" :label="__('Mualliflar')" :options="$authorOptions"
-                        :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
-                        creatable create-type="author" :create-label="__('Yangi muallif...')" />
+                        <x-admin.form.multiselect name="author_ids" :label="__('Mualliflar')" :options="$authorOptions"
+                            :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
+                            creatable create-type="author" :create-label="__('Yangi muallif...')" />
 
-                    <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"
-                        :value="$book?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
-                        :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
+                        <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa mualliflar')"
+                            :value="$book?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
+                            :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
 
-                    @php
-                        // The language is picked first: it decides which translation
-                        // the book type options are labelled with.
-                        $languageLocales = collect($languages)->mapWithKeys(fn ($l) => [(string) $l->id => $l->locale]);
-                        $typeTranslations = collect($types)->mapWithKeys(fn ($t) => [(string) $t->id => $t->getTranslations('name')]);
-                    @endphp
+                        @php
+                            // The language is picked first: it decides which translation
+                            // the book type options are labelled with.
+                            $languageLocales = collect($languages)->mapWithKeys(fn ($l) => [(string) $l->id => $l->locale]);
+                            $typeTranslations = collect($types)->mapWithKeys(fn ($t) => [(string) $t->id => $t->getTranslations('name')]);
+                        @endphp
 
-                    <div class="grid gap-5 sm:grid-cols-3">
-                        <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
-                            :locale-map="$languageLocales"
-                            creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
                         <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
                             :translations="$typeTranslations" await-locale
                             creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
-                        <x-admin.form.select name="publication_place_id" :label="__('Nashriyot joyi')" :options="$publicationPlaces" :selected="$prePublicationPlaceId" :placeholder="__('Tanlang')"
+                        <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
+                            :locale-map="$languageLocales"
+                            creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
+                    </div>
+                </x-admin.form.section>
+
+                {{-- Nashr ma'lumotlari --}}
+                <x-admin.form.section :title="__('Nashr ma’lumotlari')">
+                    <div class="space-y-5">
+                        <x-admin.form.select name="publication_place_id" :label="__('Nashr joyi')" :options="$publicationPlaces" :selected="$prePublicationPlaceId" :placeholder="__('Tanlang')"
                             creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
-                    </div>
-                </div>
-            </x-admin.form.section>
-
-            <x-admin.form.section :title="__('Qo‘shimcha ma’lumotlar')">
-                <div class="space-y-5">
-                    <div class="grid gap-5 sm:grid-cols-2">
-                        <x-admin.form.input name="udc" :label="__('UO‘K')" :value="$book?->udc" :placeholder="__('masalan: 330.1')" />
-                        <x-admin.form.input name="author_mark" :label="__('Avtorlik belgi')" :value="$book?->author_mark" :placeholder="__('masalan: O-56')" />
-                    </div>
-                    <div class="grid gap-5 sm:grid-cols-3">
-                        <x-admin.form.input name="isbn" :label="__('ISBN')" :value="$book?->isbn" />
+                        <x-admin.form.input name="publisher" :label="__('Nashriyoti')"
+                            :value="$prePublisher" placeholder="{{ __('masalan: Iqtisod-moliya') }}" />
                         <x-admin.form.input name="publication_year" type="number" :label="__('Nashr yili')" :value="$prePublicationYear" placeholder="2024" />
-                        <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" :value="$book?->pages" />
                     </div>
-                    <div class="grid gap-5 sm:grid-cols-2">
-                        <x-admin.form.input name="print_run" type="number" :label="__('Tiraj')" :value="$book?->print_run" />
+                </x-admin.form.section>
+
+                {{-- Kataloglashtirish --}}
+                <x-admin.form.section :title="__('Kataloglashtirish')">
+                    <div class="space-y-5">
+                        <x-admin.form.input name="udc" :label="__('UO‘K')" :value="$book?->udc" :placeholder="__('masalan: 330.1')" />
+                        <x-admin.form.input name="author_mark" :label="__('Mualliflik belgi')" :value="$book?->author_mark" :placeholder="__('masalan: O-56')" />
+
+                        <x-admin.form.multiselect name="category_ids" :label="__('Kategoriyalar')" :options="$categoryOptions"
+                            :selected="$preCategoryIds" :placeholder="__('Kategoriya(lar)ni tanlang')"
+                            creatable create-translatable create-with-parent :create-parents="$categoryOptions"
+                            create-type="category" :create-label="__('Yangi kategoriya')" />
                     </div>
+                </x-admin.form.section>
 
-                    <x-admin.form.input name="publisher" :label="__('Nashriyoti')"
-                        :value="$prePublisher" placeholder="{{ __('masalan: Iqtisod-moliya') }}" />
-                </div>
-            </x-admin.form.section>
-
-            <x-admin.form.section :title="__('Annotatsiya')">
-                <x-admin.form.textarea name="annotation" :value="$book?->annotation" :rows="5" :placeholder="__('Kitob haqida qisqacha...')" />
-            </x-admin.form.section>
-
-            <x-admin.form.section :title="__('Kategoriyalar')" :description="__('Kitob tegishli bo‘lgan mavzu(lar)')">
-                <x-admin.form.multiselect name="category_ids" :options="$categoryOptions"
-                    :selected="$preCategoryIds" :placeholder="__('Kategoriya(lar)ni tanlang')"
-                    creatable create-translatable create-with-parent :create-parents="$categoryOptions"
-                    create-type="category" :create-label="__('Yangi kategoriya')" />
-            </x-admin.form.section>
+                {{-- Qo'shimcha ma'lumotlar --}}
+                <x-admin.form.section :title="__('Qo‘shimcha ma’lumotlar')">
+                    <div class="space-y-5">
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <x-admin.form.input name="isbn" :label="__('ISBN')" :value="$book?->isbn" />
+                            <x-admin.form.input name="print_run" type="number" :label="__('Tiraji')" :value="$book?->print_run" />
+                        </div>
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" :value="$book?->pages" />
+                            <x-admin.form.input name="size_cm" type="number" :label="__('O‘lchami (sm)')" :value="$book?->size_cm" :placeholder="__('masalan: 21')" />
+                        </div>
+                        <x-admin.form.input name="print_sheets" :label="__('Bosma taboq')" :value="$book?->print_sheets" :placeholder="__('masalan: 20,5')" />
+                        <x-admin.form.input name="target_audience" :label="__('Kimlar uchun')" :value="$book?->target_audience" :placeholder="__('masalan: talabalar, o‘quvchilar uchun')" />
+                        <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$book?->annotation" :rows="4" :placeholder="__('Kitob haqida qisqacha...')" />
+                    </div>
+                </x-admin.form.section>
+            </div>
         </div>
 
         {{-- RIGHT: cover + files --}}

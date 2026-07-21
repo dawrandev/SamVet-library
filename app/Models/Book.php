@@ -20,6 +20,7 @@ class Book extends Model
         'title', 'slug', 'udc', 'author_mark',
         'book_type_id', 'language_id', 'publisher', 'publication_place_id', 'work_id',
         'publication_year', 'pages', 'isbn', 'print_run', 'annotation',
+        'target_audience', 'size_cm', 'print_sheets',
         'cover_image', 'electronic_file', 'audio_file',
         'views_count',
     ];
@@ -31,6 +32,7 @@ class Book extends Model
             'publication_year' => 'integer',
             'pages' => 'integer',
             'print_run' => 'integer',
+            'size_cm' => 'integer',
         ];
     }
 

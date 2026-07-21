@@ -30,6 +30,9 @@ class BookFactory extends Factory
             'isbn' => $this->faker->isbn13(),
             'udc' => (string) $this->faker->randomFloat(2, 1, 900),
             'annotation' => $this->faker->paragraph(),
+            'target_audience' => $this->faker->randomElement(['Talabalar uchun', 'Kattalar uchun', 'O‘quvchilar uchun']),
+            'size_cm' => $this->faker->numberBetween(15, 30),
+            'print_sheets' => (string) $this->faker->randomFloat(1, 5, 40),
             // slug is set by the observer
         ];
     }
