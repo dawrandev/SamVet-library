@@ -11,6 +11,7 @@ enum EventRole: string
     case Host = 'host';               // Host
     case Spectator = 'spectator';     // Spectator
     case Jury = 'jury';               // Jury
+    case Guest = 'guest';             // Guest
 
     public function label(): string
     {
@@ -19,6 +20,7 @@ enum EventRole: string
             self::Host => __('Boshlovchi'),
             self::Spectator => __('Tomoshabin'),
             self::Jury => __('Juri'),
+            self::Guest => __('Mehmon'),
         };
     }
 }
