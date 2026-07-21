@@ -9,6 +9,8 @@
 @section('title', $pageTitle)
 
 @section('content')
+    @include('partials.admin.periodicals-tabs', ['activeTab' => 'articles'])
+
     {{-- Title + New article --}}
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -31,12 +33,21 @@
     {{-- Search / filter --}}
     <form method="GET" action="{{ route('admin.articles.index') }}"
           class="mb-5 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:flex-row sm:items-end">
-        <input type="hidden" name="kind" value="{{ $filters['kind'] ?? '' }}" />
         <div class="flex-1">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qidirish') }}</label>
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                    placeholder="{{ __('Sarlavha yoki muallif...') }}"
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+        </div>
+        <div class="sm:w-44">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr turi') }}</label>
+            <select name="kind"
+                    class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
+                <option value="" @selected(empty($filters['kind'] ?? null))>{{ __('Barchasi') }}</option>
+                @foreach (\App\Enums\PublicationKind::cases() as $kind)
+                    <option value="{{ $kind->value }}" @selected(($filters['kind'] ?? null) === $kind->value)>{{ $kind->label() }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="sm:w-48">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ $isNewspaper ? __('Gazeta') : __('Jurnal') }}</label>

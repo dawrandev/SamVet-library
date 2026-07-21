@@ -45,25 +45,18 @@
                             || request()->routeIs('admin.dissertations.*')
                             || request()->routeIs('admin.avtoreferats.*');
 
-                        // Journals and newspapers share the same routes/table (kind=journal|newspaper) —
-                        // merged into one "Davriy nashrlar" entry, since the librarian said there's no
-                        // real distinction worth a separate sidebar item for.
+                        // Journals, newspapers AND articles are all reachable from one "Davriy
+                        // nashrlar" sidebar entry — Maqolalar/Gazeta maqolalari no longer get
+                        // their own sidebar links, since the in-page tab nav on both the
+                        // journals and articles index pages (partials/admin/periodicals-tabs)
+                        // already lets you jump between them, and articles' own "Nashr turi"
+                        // filter (like journals') covers the journal/gazeta split in-page.
                         $onJournalRoute = request()->routeIs('admin.journals.*');
-
-                        // Same split for articles: journal articles vs newspaper (gazeta) articles —
-                        // kind comes from the bound Article's parent journal, or the ?kind= query.
-                        $boundArticle = request()->route('article');
-                        $articleKindInPlay = $boundArticle instanceof \App\Models\Article
-                            ? $boundArticle->journalIssue?->journal?->kind?->value
-                            : request()->query('kind', \App\Enums\PublicationKind::Journal->value);
-
                         $onArticleRoute = request()->routeIs('admin.articles.*');
 
                         $resourceLinks = [
                             ['route' => 'admin.books.index', 'params' => [], 'active' => request()->routeIs('admin.books.*'), 'label' => __('Kitoblar')],
-                            ['route' => 'admin.journals.index', 'params' => [], 'active' => $onJournalRoute, 'label' => __('Davriy nashrlar')],
-                            ['route' => 'admin.articles.index', 'params' => ['kind' => 'journal'], 'active' => $onArticleRoute && $articleKindInPlay !== \App\Enums\PublicationKind::Newspaper->value, 'label' => __('Maqolalar')],
-                            ['route' => 'admin.articles.index', 'params' => ['kind' => 'newspaper'], 'active' => $onArticleRoute && $articleKindInPlay === \App\Enums\PublicationKind::Newspaper->value, 'label' => __('Gazeta maqolalari')],
+                            ['route' => 'admin.journals.index', 'params' => [], 'active' => $onJournalRoute || $onArticleRoute, 'label' => __('Davriy nashrlar')],
                             ['route' => 'admin.dissertations.index', 'params' => [], 'active' => request()->routeIs('admin.dissertations.*'), 'label' => __('Dissertatsiyalar')],
                             ['route' => 'admin.avtoreferats.index', 'params' => [], 'active' => request()->routeIs('admin.avtoreferats.*'), 'label' => __('Avtoreferatlar')],
                         ];
