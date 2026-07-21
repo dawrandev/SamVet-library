@@ -60,7 +60,7 @@
                         </div>
                         <div class="rounded-xl bg-white/10 p-4">
                             <p class="text-2xl font-bold">{{ number_format($stats['periodicals'], 0, '.', ' ') }}</p>
-                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Jurnal / gazetalar') }}</p>
+                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Davriy nashrlar') }}</p>
                         </div>
                         <div class="rounded-xl bg-white/10 p-4">
                             <p class="text-2xl font-bold">{{ number_format($stats['articles'], 0, '.', ' ') }}</p>
@@ -80,7 +80,7 @@
                     ['icon' => 'book', 'value' => $stats['copies'], 'label' => __('Jami kitoblar')],
                     ['icon' => 'book', 'value' => $stats['titles'], 'label' => __('Kitob nomlari')],
                     ['icon' => 'users', 'value' => $stats['readers'], 'label' => __('Foydalanuvchilar')],
-                    ['icon' => 'news', 'value' => $stats['periodicals'], 'label' => __('Jurnal / gazetalar')],
+                    ['icon' => 'news', 'value' => $stats['periodicals'], 'label' => __('Davriy nashrlar')],
                     ['icon' => 'doc', 'value' => $stats['articles'], 'label' => __('Maqolalar')],
                 ];
             @endphp
