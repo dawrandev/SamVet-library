@@ -187,3 +187,27 @@ it('keeps the kind select editable when correcting an existing journal', functio
         ->assertSee('<select name="kind"', false)
         ->assertSee('value="newspaper" selected', false);
 });
+
+it('offers Maqola as a third Turi option on the create form, but not on edit', function () {
+    $this->get(route('admin.journals.create'))
+        ->assertSee('value="article"', false)
+        ->assertSee('Maqola');
+
+    $journal = Journal::factory()->create();
+    $this->get(route('admin.journals.edit', $journal))
+        ->assertDontSee('value="article"', false);
+});
+
+it('creates an article (via admin.articles.store) when Turi=article is submitted from the unified form', function () {
+    $issue = \App\Models\JournalIssue::factory()->create();
+
+    $this->post(route('admin.articles.store'), [
+        'kind' => 'article', // sent by the unified Turi select, harmlessly ignored by StoreArticleRequest
+        'journal_issue_id' => $issue->id,
+        'title' => 'Davriy nashr formasidan qo‘shilgan maqola',
+    ])->assertRedirect();
+
+    $article = \App\Models\Article::firstWhere('title', 'Davriy nashr formasidan qo‘shilgan maqola');
+    expect($article)->not->toBeNull()
+        ->and($article->journal_issue_id)->toBe($issue->id);
+});

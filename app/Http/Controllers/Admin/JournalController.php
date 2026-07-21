@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreJournalRequest;
 use App\Http\Requests\Admin\UpdateJournalRequest;
 use App\Models\Journal;
+use App\Services\ArticleService;
 use App\Services\JournalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,24 @@ class JournalController extends Controller
 {
     public function __construct(
         private readonly JournalService $journalService,
+        private readonly ArticleService $articleService,
     ) {}
+
+    /**
+     * The Turi selector's "Maqola" branch needs the article form's own lookups
+     * (Journal's own formOptions() already covers `languages`, shared by both).
+     *
+     * @return array<string, mixed>
+     */
+    private function articleFieldOptions(): array
+    {
+        $options = $this->articleService->formOptions();
+
+        return [
+            'resourceFields' => $options['resourceFields'],
+            'contributorRoles' => $options['contributorRoles'],
+        ];
+    }
 
     public function index(Request $request): View
     {
@@ -42,6 +60,7 @@ class JournalController extends Controller
         return view('pages.admin.journals.create', [
             'kind' => $request->string('kind')->toString() ?: null,
             ...$this->journalService->formOptions(),
+            ...$this->articleFieldOptions(),
         ]);
     }
 
@@ -63,6 +82,7 @@ class JournalController extends Controller
         return view('pages.admin.journals.edit', [
             'journal' => $journal,
             ...$this->journalService->formOptions(),
+            ...$this->articleFieldOptions(),
         ]);
     }
 
