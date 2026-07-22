@@ -205,20 +205,21 @@
         </div>
 
         {{-- Create / edit modal --}}
-        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
+        <div x-show="open" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
             <div class="fixed inset-0 bg-gray-900/50" @click="open = false"></div>
 
-            <div class="relative my-8 max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
-                <div class="mb-5 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
-                        <span x-show="!editing">{{ __('Yangi obuna') }}</span>
-                        <span x-show="editing" x-cloak>{{ __('Obunani tahrirlash') }}</span>
-                    </h3>
-                    <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
-                </div>
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+                    <div class="mb-5 flex items-center justify-between">
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+                            <span x-show="!editing">{{ __('Yangi obuna') }}</span>
+                            <span x-show="editing" x-cloak>{{ __('Obunani tahrirlash') }}</span>
+                        </h3>
+                        <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
+                    </div>
 
-                <form method="POST" :action="action" enctype="multipart/form-data" class="space-y-4"
-                      x-data="uploadForm" @submit="submitUpload($event)">
+                    <form method="POST" :action="action" enctype="multipart/form-data" class="space-y-4"
+                          x-data="uploadForm" @submit="submitUpload($event)">
                     @csrf
                     <template x-if="editing"><input type="hidden" name="_method" value="PUT" /></template>
                     <input type="hidden" name="subscription_id" :value="form.id" />
@@ -356,7 +357,8 @@
                         <button type="submit"
                                 class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Saqlash') }}</button>
                     </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
