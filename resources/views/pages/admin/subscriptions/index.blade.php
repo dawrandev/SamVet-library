@@ -208,7 +208,7 @@
         <div x-show="open" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
             <div class="fixed inset-0 bg-gray-900/50" @click="open = false"></div>
 
-            <div class="flex min-h-full items-center justify-center p-4">
+            <div class="flex min-h-screen items-center justify-center p-4">
                 <div class="relative max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
                     <div class="mb-5 flex items-center justify-between">
                         <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
