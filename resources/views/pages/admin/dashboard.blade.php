@@ -25,19 +25,40 @@
             }
         }
 
-        // --- Donut: computers by status ---
-        $compClr = ['working' => '#12b76a', 'broken' => '#f04438', 'in_repair' => '#f79009'];
-        $compSeries = $compLabels = $compColors = [];
-        foreach (\App\Enums\ComputerStatus::cases() as $st) {
-            $compSeries[] = (int) ($computersByStatus[$st->value] ?? 0);
-            $compLabels[] = $st->label();
-            $compColors[] = $compClr[$st->value] ?? '#98a2b3';
+        // --- Donut: copies by format (bosma/elektron/brayl) ---
+        $formatClr = ['print' => '#465fff', 'electronic' => '#12b76a', 'braille' => '#f79009'];
+        $fmtSeries = $fmtLabels = $fmtColors = [];
+        foreach (\App\Enums\BookFormat::cases() as $fmt) {
+            $fmtSeries[] = (int) ($copiesByFormat[$fmt->value] ?? 0);
+            $fmtLabels[] = $fmt->label();
+            $fmtColors[] = $formatClr[$fmt->value] ?? '#98a2b3';
+        }
+
+        // --- Donut: books by language (top slices; the rest folds into "Boshqa") ---
+        $langPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#7592ff', '#32d583'];
+        $langEntries = collect($booksByLanguage)
+            ->map(fn ($count, $langId) => ['label' => $languageNames[$langId] ?? '—', 'count' => (int) $count])
+            ->values()
+            ->sortByDesc('count')
+            ->values();
+        $langSeries = $langLabels = $langColors = [];
+        foreach ($langEntries->take(count($langPalette)) as $i => $entry) {
+            $langSeries[] = $entry['count'];
+            $langLabels[] = $entry['label'];
+            $langColors[] = $langPalette[$i];
+        }
+        if ($langEntries->count() > count($langPalette)) {
+            $langSeries[] = $langEntries->slice(count($langPalette))->sum('count');
+            $langLabels[] = __('Boshqa');
+            $langColors[] = '#98a2b3';
         }
     @endphp
 
     <div data-dashboard>
-        {{-- ===== KPI cards ===== --}}
-        <div class="grid grid-cols-2 gap-4 xl:grid-cols-4 md:gap-5">
+        {{-- ===== KPI cards =====
+             Loan/overdue counts live on the "Berilgan kitoblar" page itself
+             (and the always-visible header/sidebar badge) — not duplicated here. --}}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5">
                 <div class="flex items-center gap-4">
                     <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"><x-admin.icon name="book" class="h-5 w-5" /></span>
@@ -59,39 +80,24 @@
                 </div>
                 <p class="text-theme-xs mt-3 text-success-600 dark:text-success-500">{{ number_format($readersActive, 0, '.', ' ') }} {{ __('faol') }}</p>
             </div>
-
-            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5">
-                <div class="flex items-center gap-4">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"><x-admin.icon name="book" class="h-5 w-5" /></span>
-                    <div class="min-w-0">
-                        <h4 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ number_format($loansActive, 0, '.', ' ') }}</h4>
-                        <span class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozir berilgan') }}</span>
-                    </div>
-                </div>
-                <p class="text-theme-xs mt-3 text-gray-400">{{ __('foydalanuvchilarda') }}</p>
-            </div>
-
-            <a href="{{ route('admin.loans.index', ['scope' => 'overdue']) }}"
-               class="block rounded-2xl border border-gray-200 bg-white p-4 transition hover:border-error-300 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/40 sm:p-5">
-                <div class="flex items-center gap-4">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500"><x-admin.icon name="clock" class="h-5 w-5" /></span>
-                    <div class="min-w-0">
-                        <h4 class="text-xl font-bold {{ $overdue > 0 ? 'text-error-600 dark:text-error-500' : 'text-gray-800 dark:text-white/90' }}">{{ number_format($overdue, 0, '.', ' ') }}</h4>
-                        <span class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Muddati o‘tgan') }}</span>
-                    </div>
-                </div>
-                <p class="text-theme-xs mt-3 text-gray-400">{{ __('ko‘rish uchun bosing') }}</p>
-            </a>
         </div>
 
         {{-- ===== Donut charts ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
+        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
                 <div id="chart-fund" data-donut class="mt-1"
                      data-series="{{ json_encode($fundSeries) }}" data-labels="{{ json_encode($fundLabels) }}"
                      data-colors="{{ json_encode($fundColors) }}" data-center="{{ __('Nusxa') }}"></div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Nusxalar shakli') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Bosma, elektron, brayl') }}</p>
+                <div id="chart-format" data-donut class="mt-1"
+                     data-series="{{ json_encode($fmtSeries) }}" data-labels="{{ json_encode($fmtLabels) }}"
+                     data-colors="{{ json_encode($fmtColors) }}" data-center="{{ __('Nusxa') }}"></div>
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -103,11 +109,11 @@
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kompyuterlar holati') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Elektron o‘qish zali') }}</p>
-                <div id="chart-computers" data-donut class="mt-1"
-                     data-series="{{ json_encode($compSeries) }}" data-labels="{{ json_encode($compLabels) }}"
-                     data-colors="{{ json_encode($compColors) }}" data-center="{{ __('Dona') }}"></div>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitoblar tili bo‘yicha taqsimot') }}</p>
+                <div id="chart-language" data-donut class="mt-1"
+                     data-series="{{ json_encode($langSeries) }}" data-labels="{{ json_encode($langLabels) }}"
+                     data-colors="{{ json_encode($langColors) }}" data-center="{{ __('Kitob') }}"></div>
             </div>
         </div>
 

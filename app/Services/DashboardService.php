@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\CopyStatus;
-use App\Enums\LoanStatus;
 use App\Enums\ReaderStatus;
 use App\Models\Article;
 use App\Models\Author;
@@ -13,7 +12,7 @@ use App\Models\BookReading;
 use App\Models\Category;
 use App\Models\Computer;
 use App\Models\Journal;
-use App\Models\Loan;
+use App\Models\Language;
 use App\Models\News;
 use App\Models\Reader;
 use App\Models\Subscription;
@@ -31,14 +30,15 @@ class DashboardService
     {
         // Status breakdowns in a single grouped query each (no per-status count queries).
         $copiesByStatus = BookCopy::query()->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
+        $copiesByFormat = BookCopy::query()->selectRaw('format, COUNT(*) as c')->groupBy('format')->pluck('c', 'format');
         $readersByType = Reader::query()->selectRaw('type, COUNT(*) as c')->groupBy('type')->pluck('c', 'type');
-        $computersByStatus = Computer::query()->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
 
-        $overdue = Loan::query()
-            ->where('status', LoanStatus::OnLoan->value)
-            ->whereNotNull('due_at')
-            ->whereDate('due_at', '<', Carbon::today())
-            ->count();
+        $booksByLanguage = Book::query()
+            ->whereNotNull('language_id')
+            ->selectRaw('language_id, COUNT(*) as c')
+            ->groupBy('language_id')
+            ->pluck('c', 'language_id');
+        $languageNames = Language::query()->whereIn('id', $booksByLanguage->keys())->pluck('name', 'id');
 
         [$rangeFrom, $rangeTo] = $this->resolveReadingRange($from, $to);
 
@@ -58,13 +58,15 @@ class DashboardService
             'copiesAvailable' => (int) ($copiesByStatus[CopyStatus::Available->value] ?? 0),
             'readersTotal' => Reader::count(),
             'readersActive' => Reader::where('status', ReaderStatus::Active->value)->count(),
-            'loansActive' => Loan::where('status', LoanStatus::OnLoan->value)->count(),
-            'overdue' => $overdue,
 
-            // Breakdowns (value => count)
+            // Breakdowns (value => count) — loan/overdue counts live on the
+            // "Berilgan kitoblar" page itself (and the header/sidebar badge),
+            // not duplicated here.
             'copiesByStatus' => $copiesByStatus,
+            'copiesByFormat' => $copiesByFormat,
             'readersByType' => $readersByType,
-            'computersByStatus' => $computersByStatus,
+            'booksByLanguage' => $booksByLanguage,
+            'languageNames' => $languageNames,
 
             // Secondary counts
             'journalsTotal' => Journal::count(),
