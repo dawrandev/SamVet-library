@@ -29,10 +29,22 @@
 
         {{-- Player --}}
         <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5">
-            <p class="text-sm font-semibold text-gray-900" x-text="currentTrack?.title"></p>
+            <div class="flex items-center gap-4">
+                <div class="flex h-16 w-16 flex-none items-center justify-center overflow-hidden rounded-xl bg-blue-50">
+                    @if ($audiobook->cover_image)
+                        <img src="{{ asset('storage/'.$audiobook->cover_image) }}" alt="{{ $audiobook->name }}" class="h-full w-full object-cover" />
+                    @else
+                        <svg class="h-7 w-7 text-blue-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.5a.75.75 0 0 1-.75-.75v-6a.75.75 0 0 1 .75-.75h2.25Z" /></svg>
+                    @endif
+                </div>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-gray-900" x-text="currentTrack?.title"></p>
+                    <p class="truncate text-xs text-gray-500">{{ $audiobook->name }}</p>
+                </div>
+            </div>
             {{-- controlsList="nodownload" only hides the browser's own download button —
                  the real protection is server-side (reader.auth + no direct file URL). --}}
-            <audio x-ref="player" controls controlsList="nodownload" class="mt-3 w-full" :src="currentTrack?.url"></audio>
+            <audio x-ref="player" controls controlsList="nodownload" class="mt-4 w-full" :src="currentTrack?.url"></audio>
         </div>
 
         {{-- Track list --}}

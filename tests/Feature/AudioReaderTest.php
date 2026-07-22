@@ -29,6 +29,17 @@ it('lets a signed-in reader open the listen page', function () {
     $this->get(route('listen.audiobook', $audiobook->slug))->assertOk();
 });
 
+it('shows the audiobook cover on the listen page', function () {
+    Storage::fake('local');
+    actingAsReader();
+    $audiobook = Audiobook::factory()->create(['cover_image' => 'audiobook-covers/x.jpg']);
+    AudioTrack::factory()->for($audiobook)->create();
+
+    $this->get(route('listen.audiobook', $audiobook->slug))
+        ->assertOk()
+        ->assertSee('audiobook-covers/x.jpg', false);
+});
+
 it('404s when a reader opens an audiobook that has no tracks', function () {
     actingAsReader();
     $audiobook = Audiobook::factory()->create();
