@@ -28,10 +28,68 @@
         </div>
     </div>
 
+    {{-- Kategoriya: a collapsible tree — each parent's children stay tucked
+         under a dropdown toggle (auto-open when one of them is selected),
+         since a flat list gets unwieldy once there are many. --}}
+    @php
+        $categoryTree = collect($categories)->where('parentId', null)->map(fn ($parent) => [
+            ...$parent,
+            'children' => collect($categories)->where('parentId', $parent['id'])->values(),
+        ])->values();
+    @endphp
+
+    @if ($categoryTree->isNotEmpty())
+        <fieldset class="mt-6 border-t border-gray-100 pt-5">
+            <legend class="text-sm font-semibold text-gray-900">{{ __('Kategoriya') }}</legend>
+            <div class="mt-3 space-y-1">
+                @foreach ($categoryTree as $parent)
+                    @php
+                        $childIds = $parent['children']->pluck('id')->all();
+                        $hasActiveChild = array_intersect($childIds, $filters->categories) !== [];
+                    @endphp
+                    <div @if ($parent['children']->isNotEmpty()) x-data="{ open: {{ $hasActiveChild ? 'true' : 'false' }} }" @endif>
+                        <div class="flex items-center gap-2 py-1">
+                            <label class="flex flex-1 cursor-pointer items-center justify-between gap-2 text-sm">
+                                <span class="flex items-center gap-2.5 text-gray-600">
+                                    <input type="checkbox" name="categories[]" value="{{ $parent['id'] }}" onchange="this.form.submit()"
+                                           @checked(in_array($parent['id'], $filters->categories, true))
+                                           class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/40" />
+                                    {{ $parent['label'] }}
+                                </span>
+                                <span class="text-xs tabular-nums text-gray-400">{{ $parent['count'] }}</span>
+                            </label>
+                            @if ($parent['children']->isNotEmpty())
+                                <button type="button" @click="open = !open"
+                                        class="flex h-5 w-5 flex-none items-center justify-center text-gray-400 hover:text-gray-600"
+                                        aria-label="{{ __('Ochish/yopish') }}">
+                                    <svg class="h-3.5 w-3.5 transition-transform" :class="open && 'rotate-180'" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m5 7.5 5 5 5-5" /></svg>
+                                </button>
+                            @endif
+                        </div>
+                        @if ($parent['children']->isNotEmpty())
+                            <div x-show="open" x-cloak class="ml-5 space-y-1.5 border-l border-gray-100 py-1 pl-3">
+                                @foreach ($parent['children'] as $child)
+                                    <label class="flex cursor-pointer items-center justify-between gap-2 text-sm">
+                                        <span class="flex items-center gap-2.5 text-gray-500">
+                                            <input type="checkbox" name="categories[]" value="{{ $child['id'] }}" onchange="this.form.submit()"
+                                                   @checked(in_array($child['id'], $filters->categories, true))
+                                                   class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/40" />
+                                            {{ $child['label'] }}
+                                        </span>
+                                        <span class="text-xs tabular-nums text-gray-400">{{ $child['count'] }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </fieldset>
+    @endif
+
     @php
         // Reusable facet groups: [legend, request key, facet collection, selected ids].
         $groups = [
-            [__('Kategoriya'), 'categories', $categories, $filters->categories],
             [__('Shakli'), 'formats', $formats, $filters->formats],
             [__('Turi'), 'types', $types, $filters->types],
             [__('Tili'), 'languages', $languages, $filters->languages],
@@ -44,9 +102,8 @@
                 <legend class="text-sm font-semibold text-gray-900">{{ $legend }}</legend>
                 <div class="mt-3 space-y-2.5">
                     @foreach ($facets as $facet)
-                        @php $isChild = ($facet['parentId'] ?? null) !== null; @endphp
-                        <label class="flex cursor-pointer items-center justify-between gap-2 text-sm {{ $isChild ? 'pl-5' : '' }}">
-                            <span class="flex items-center gap-2.5 {{ $isChild ? 'text-gray-500' : 'text-gray-600' }}">
+                        <label class="flex cursor-pointer items-center justify-between gap-2 text-sm">
+                            <span class="flex items-center gap-2.5 text-gray-600">
                                 <input type="checkbox" name="{{ $key }}[]" value="{{ $facet['id'] }}" onchange="this.form.submit()"
                                        @checked(in_array($facet['id'], $selected, true))
                                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/40" />

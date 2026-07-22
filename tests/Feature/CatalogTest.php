@@ -91,6 +91,20 @@ it('lists every category — parent and child alike — as a filter facet', func
         ->and($childFacet['parentId'])->toBe($parent->id);
 });
 
+it('renders each category child under a collapsible dropdown toggle beneath its parent', function () {
+    $parent = Category::factory()->create(['name' => 'Ota kategoriya']);
+    $child = Category::factory()->create(['name' => 'Bola kategoriya', 'parent_id' => $parent->id]);
+
+    $res = $this->get(route('catalog'));
+
+    $res->assertOk()
+        ->assertSee('Ota kategoriya')
+        ->assertSee('Bola kategoriya')
+        // The collapse toggle button and its Alpine-driven visibility state.
+        ->assertSee('x-show="open"', false)
+        ->assertSee('@click="open = !open"', false);
+});
+
 it('counts a child category facet by only its own directly-tagged books, not its siblings\'', function () {
     $parent = Category::factory()->create();
     $child = Category::factory()->create(['parent_id' => $parent->id]);

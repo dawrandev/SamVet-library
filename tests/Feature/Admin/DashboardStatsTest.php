@@ -39,6 +39,26 @@ it('shows a copies-by-format donut (bosma/elektron/brayl)', function () {
         ->assertSee('Brayl');
 });
 
+it('counts a book with an online-readable PDF as "elektron", even with no electronic BookCopy row', function () {
+    // Regression: the format donut used to count only BookCopy rows, so a
+    // real digitized book (electronic_file set, actually read online) with
+    // no separate "electronic copy" catalog record showed up as 0.
+    Book::factory()->create(['electronic_file' => 'books/electronic/real.pdf']);
+
+    $res = $this->get(route('admin.dashboard'));
+
+    expect($res->viewData('copiesByFormat')['electronic'])->toBe(1);
+});
+
+it('does not double-count a book that has both an electronic_file and an electronic BookCopy row', function () {
+    $book = Book::factory()->create(['electronic_file' => 'books/electronic/real.pdf']);
+    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'electronic']);
+
+    $res = $this->get(route('admin.dashboard'));
+
+    expect($res->viewData('copiesByFormat')['electronic'])->toBe(1);
+});
+
 it('groups the language donut by each book’s primary language', function () {
     $uz = Language::factory()->create(['name' => 'Ochiq til nomi']);
     Book::factory()->create(['language_id' => $uz->id]);

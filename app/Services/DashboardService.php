@@ -30,7 +30,22 @@ class DashboardService
     {
         // Status breakdowns in a single grouped query each (no per-status count queries).
         $copiesByStatus = BookCopy::query()->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
-        $copiesByFormat = BookCopy::query()->selectRaw('format, COUNT(*) as c')->groupBy('format')->pluck('c', 'format');
+
+        // Bosma/brayl are real physical inventory — a BookCopy row per unit,
+        // so counting rows is correct stock. "Elektron" isn't stock in that
+        // sense (BookFormat's own docblock: "the online-reading PDF is
+        // stored separately in books.electronic_file") — a book is
+        // digitized once, not "N electronic copies", so it's counted as
+        // distinct books, via either signal (a cataloged electronic
+        // BookCopy row, or a real online-readable PDF file).
+        $copiesByFormat = collect([
+            'print' => BookCopy::where('format', 'print')->count(),
+            'braille' => BookCopy::where('format', 'braille')->count(),
+            'electronic' => Book::where(
+                fn ($q) => $q->whereNotNull('electronic_file')->orWhereHas('copies', fn ($q2) => $q2->where('format', 'electronic'))
+            )->count(),
+        ]);
+
         $readersByType = Reader::query()->selectRaw('type, COUNT(*) as c')->groupBy('type')->pluck('c', 'type');
 
         $booksByLanguage = Book::query()
