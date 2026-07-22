@@ -105,7 +105,7 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function findPublicBySlug(string $slug): ?Book
     {
         return Book::query()
-            ->with(['type', 'language', 'publicationPlace', 'authors', 'categories.parent'])
+            ->with(['type', 'language', 'languages', 'publicationPlace', 'authors', 'categories.parent'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])

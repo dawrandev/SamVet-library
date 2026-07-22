@@ -15,11 +15,17 @@
         : old('publisher', $book?->publisher);
     $prePublicationYear = $translating ? old('publication_year', $sourceBook->publication_year) : $book?->publication_year;
 
+    // Parallel titles / multi-language start empty for a new translation —
+    // it's its own edition with its own single language, not inherited.
+    $preParallelTitles = old('parallel_titles', $book?->parallel_titles ?? []);
+    $preLanguageIds = old('language_ids', $editing ? $book->languages->pluck('id')->all() : []);
+
     $authorOptions = $authors->map(fn ($a) => ['id' => $a->id, 'label' => $a->name])->all();
     $categoryOptions = $categories->map(fn ($c) => [
         'id' => $c->id,
         'label' => $c->parent ? $c->parent->name . ' › ' . $c->name : $c->name,
     ])->all();
+    $languageOptions = $languages->map(fn ($l) => ['id' => $l->id, 'label' => $l->name])->all();
 @endphp
 
 <form
@@ -70,8 +76,34 @@
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {{-- Asosiy ma'lumotlar --}}
                 <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
-                    <div class="space-y-5">
-                        <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$book?->title" required :placeholder="__('Kitob nomi')" />
+                    <div class="space-y-5"
+                         x-data="{
+                             parallelTitles: @js($preParallelTitles),
+                             addParallelTitle() { this.parallelTitles.push('') },
+                             removeParallelTitle(i) { this.parallelTitles.splice(i, 1) },
+                             get hasParallel() { return this.parallelTitles.length > 0 },
+                         }">
+                        <div>
+                            <x-admin.form.input name="title" :label="__('Sarlavha')" :value="$book?->title" required :placeholder="__('Kitob nomi')" />
+
+                            {{-- Parallel title: the same book's title printed in another
+                                 language on the same title page — still one catalogued
+                                 book, so this stays a plain repeatable text list, not a
+                                 separate edition. --}}
+                            <div class="mt-2">
+                                <template x-for="(pt, i) in parallelTitles" :key="i">
+                                    <div class="mb-2 flex items-center gap-2">
+                                        <input type="text" :name="`parallel_titles[${i}]`" x-model="parallelTitles[i]"
+                                               placeholder="{{ __('Boshqa tildagi sarlavha') }}" autocomplete="off"
+                                               class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                                        <button type="button" @click="removeParallelTitle(i)"
+                                                class="flex h-11 w-11 flex-none items-center justify-center rounded-lg border border-gray-300 text-gray-400 hover:bg-gray-50 hover:text-error-500 dark:border-gray-700 dark:hover:bg-white/5">&times;</button>
+                                    </div>
+                                </template>
+                                <button type="button" @click="addParallelTitle()"
+                                        class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">+ {{ __('Parallel sarlavha qo‘shish') }}</button>
+                            </div>
+                        </div>
 
                         <x-admin.form.multiselect name="author_ids" :label="__('Mualliflar')" :options="$authorOptions"
                             :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
@@ -91,9 +123,26 @@
                         <x-admin.form.select name="book_type_id" :label="__('Turi')" :options="$types" :selected="$preBookTypeId" :placeholder="__('Tanlang')"
                             :translations="$typeTranslations" await-locale
                             creatable create-translatable create-type="book_type" :create-label="__('Yangi tur')" />
-                        <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
-                            :locale-map="$languageLocales"
-                            creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
+
+                        {{-- Normally a single language; once a parallel title exists, the
+                             title is written in more than one language at once, so this
+                             switches to a multiselect. Only one of the two is ever
+                             actually in the DOM (x-if, not x-show) — otherwise the hidden
+                             one would still submit its value alongside the visible one. --}}
+                        <template x-if="!hasParallel">
+                            <div>
+                                <x-admin.form.select name="language_id" :label="__('Tili')" :options="$languages" :selected="$book?->language_id" :placeholder="__('Tanlang')"
+                                    :locale-map="$languageLocales"
+                                    creatable create-translatable create-type="language" :create-label="__('Yangi til')" />
+                            </div>
+                        </template>
+                        <template x-if="hasParallel">
+                            <div>
+                                <x-admin.form.multiselect name="language_ids" :label="__('Tillari')" :options="$languageOptions"
+                                    :selected="$preLanguageIds" :placeholder="__('Til(lar)ni tanlang')"
+                                    :help="__('1-tanlangan til statistikada asosiy til sifatida hisoblanadi.')" />
+                            </div>
+                        </template>
                     </div>
                 </x-admin.form.section>
 

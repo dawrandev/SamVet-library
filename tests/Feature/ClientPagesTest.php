@@ -44,6 +44,23 @@ it('shows a book detail page but hides admin-only data', function () {
     $res->assertDontSee('books/electronic');
 });
 
+it('shows a book\'s parallel title and all its languages on the public detail page', function () {
+    $uz = \App\Models\Language::factory()->create(['name' => 'Oʻzbek']);
+    $ru = \App\Models\Language::factory()->create(['name' => 'Rus']);
+    $book = Book::factory()->create([
+        'title' => 'Veterinariya asoslari',
+        'parallel_titles' => ['Основы ветеринарии'],
+        'language_id' => $uz->id,
+    ]);
+    $book->languages()->sync([$uz->id, $ru->id]);
+
+    $this->get(route('book.show', $book->slug))
+        ->assertOk()
+        ->assertSee('Основы ветеринарии')
+        ->assertSee($uz->name)
+        ->assertSee($ru->name);
+});
+
 it('shows a book tagged with a child category under its parent category name, not the child\'s', function () {
     $parent = Category::factory()->create(['name' => 'Ota kategoriya']);
     $child = Category::factory()->create(['name' => 'Yashirin submavzu', 'parent_id' => $parent->id]);

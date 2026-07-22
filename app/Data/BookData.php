@@ -13,10 +13,14 @@ class BookData
 {
     public function __construct(
         public readonly string $title,
+        /** @var string[] */
+        public readonly array $parallel_titles,
         public readonly ?string $udc,
         public readonly ?string $author_mark,
         public readonly ?int $book_type_id,
         public readonly ?int $language_id,
+        /** @var int[] full set — $language_id is its first entry, kept for stats/back-compat */
+        public readonly array $language_ids,
         public readonly ?string $publisher,
         public readonly ?int $publication_place_id,
         public readonly ?int $publication_year,
@@ -39,12 +43,32 @@ class BookData
 
     public static function fromRequest(Request $request): self
     {
+        // The form submits either "language_id" (single select — the common
+        // case) or "language_ids[]" (multiselect — once a parallel title is
+        // added). Either way, the FIRST id is what "language_id" ends up
+        // being — the one every existing filter/stat already reads.
+        $languageIds = $request->input('language_ids');
+        if (! is_array($languageIds) || $languageIds === []) {
+            $single = $request->integer('language_id') ?: null;
+            $languageIds = $single ? [$single] : [];
+        } else {
+            $languageIds = array_values(array_unique(array_map('intval', $languageIds)));
+        }
+
+        $parallelTitles = collect($request->input('parallel_titles', []))
+            ->map(fn ($t) => trim((string) $t))
+            ->filter()
+            ->values()
+            ->all();
+
         return new self(
             title: $request->string('title')->toString(),
+            parallel_titles: $parallelTitles,
             udc: $request->input('udc'),
             author_mark: $request->input('author_mark'),
             book_type_id: $request->integer('book_type_id') ?: null,
-            language_id: $request->integer('language_id') ?: null,
+            language_id: $languageIds[0] ?? null,
+            language_ids: $languageIds,
             publisher: $request->input('publisher') ?: null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             publication_year: $request->integer('publication_year') ?: null,
@@ -72,6 +96,7 @@ class BookData
     {
         return [
             'title' => $this->title,
+            'parallel_titles' => $this->parallel_titles ?: null,
             'udc' => $this->udc,
             'author_mark' => $this->author_mark,
             'book_type_id' => $this->book_type_id,

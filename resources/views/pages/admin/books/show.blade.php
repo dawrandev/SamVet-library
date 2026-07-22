@@ -18,7 +18,7 @@
         $meta = array_filter([
             __('Mualliflar') => $book->authors->pluck('name')->join(', '),
             __('Turi') => $book->type?->name,
-            __('Tili') => $book->language?->name,
+            __('Tili') => $book->languages->isNotEmpty() ? $book->languages->pluck('name')->join(', ') : $book->language?->name,
             __('Nashriyoti') => $book->publisher,
             __('Nashriyot joyi') => $book->publicationPlace?->name,
             __('Nashr yili') => $book->publication_year,
@@ -49,7 +49,12 @@
     <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.books.index') }}" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800">&larr;</a>
-            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $book->title }}</h2>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ $book->title }}</h2>
+                @if (! empty($book->parallel_titles))
+                    <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ collect($book->parallel_titles)->join(' / ') }}</p>
+                @endif
+            </div>
         </div>
         <div class="flex items-center gap-2">
             <a href="{{ route('admin.books.translations.create', $book) }}" class="rounded-lg border border-brand-200 px-4 py-2 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-500/30 dark:text-brand-400 dark:hover:bg-brand-500/10">+ {{ __('Tarjima qo‘shish') }}</a>

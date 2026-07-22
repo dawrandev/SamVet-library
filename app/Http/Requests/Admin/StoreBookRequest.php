@@ -21,11 +21,17 @@ class StoreBookRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:255'],
+            // Titles printed in another language on the same title page — a row is dropped client-side if left blank.
+            'parallel_titles' => ['nullable', 'array'],
+            'parallel_titles.*' => ['nullable', 'string', 'max:255'],
             'udc' => ['nullable', 'string', 'max:50'],
             'author_mark' => ['nullable', 'string', 'max:50'],
             'isbn' => ['nullable', 'string', 'max:30'],
             'book_type_id' => ['nullable', 'exists:book_types,id'],
+            // Single select in the common case ("language_id"), multiselect once a parallel title is added ("language_ids[]").
             'language_id' => ['nullable', 'exists:languages,id'],
+            'language_ids' => ['nullable', 'array'],
+            'language_ids.*' => ['integer', 'exists:languages,id'],
             'publisher' => ['nullable', 'string', 'max:255'],
             'publication_place_id' => ['nullable', 'exists:publication_places,id'],
             'publication_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
@@ -60,11 +66,13 @@ class StoreBookRequest extends FormRequest
     {
         return [
             'title' => __('Sarlavha'),
+            'parallel_titles' => __('Parallel sarlavhalar'),
             'udc' => __('UO‘K'),
             'author_mark' => __('Mualliflik belgi'),
             'isbn' => __('ISBN'),
             'book_type_id' => __('Turi'),
             'language_id' => __('Tili'),
+            'language_ids' => __('Tillari'),
             'publisher' => __('Nashriyoti'),
             'publication_place_id' => __('Nashr joyi'),
             'publication_year' => __('Nashr yili'),

@@ -17,7 +17,7 @@ class Book extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'udc', 'author_mark',
+        'title', 'slug', 'parallel_titles', 'udc', 'author_mark',
         'book_type_id', 'language_id', 'publisher', 'publication_place_id', 'work_id',
         'publication_year', 'pages', 'isbn', 'print_run', 'annotation',
         'target_audience', 'size_cm', 'print_sheets',
@@ -28,6 +28,7 @@ class Book extends Model
     protected function casts(): array
     {
         return [
+            'parallel_titles' => 'array',
             'views_count' => 'integer',
             'publication_year' => 'integer',
             'pages' => 'integer',
@@ -46,6 +47,17 @@ class Book extends Model
     public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class);
+    }
+
+    /**
+     * Every language this book's title (including parallel titles) is
+     * written in. `language()`/`language_id` above stays the single
+     * "primary" one (the first chosen) for stats and filtering — this is
+     * the full set, kept in sync alongside it.
+     */
+    public function languages(): BelongsToMany
+    {
+        return $this->belongsToMany(Language::class, 'book_language');
     }
 
     public function publicationPlace(): BelongsTo

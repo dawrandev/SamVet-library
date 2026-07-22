@@ -86,6 +86,7 @@ class BookService
 
             $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
+            $book->languages()->sync($data->language_ids);
             $this->contributors->sync($book, $data->contributors);
 
             return $book;
@@ -126,6 +127,7 @@ class BookService
 
             $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
+            $book->languages()->sync($data->language_ids);
             $this->contributors->sync($book, $data->contributors);
 
             return $book;

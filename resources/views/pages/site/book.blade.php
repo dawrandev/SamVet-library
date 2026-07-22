@@ -16,7 +16,7 @@
         [__('Turi'), $book->type?->name],
         [__('Nashr joyi'), $book->publicationPlace?->name],
         ['ISBN', $book->isbn],
-        [__('Tili'), $book->language?->name],
+        [__('Tili'), $book->languages->isNotEmpty() ? $book->languages->pluck('name')->join(', ') : $book->language?->name],
         [__('Nashriyoti'), $book->publisher],
         [__('Beti'), $book->pages ? __(':n b.', ['n' => $book->pages]) : null],
         [__('Yili'), $book->publication_year],
@@ -106,6 +106,9 @@
                 </div>
 
                 <h1 class="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-gray-900">{{ $book->title }}</h1>
+                @if (! empty($book->parallel_titles))
+                    <p class="mt-1 text-base text-gray-500">{{ collect($book->parallel_titles)->join(' / ') }}</p>
+                @endif
                 <p class="mt-2 text-base text-gray-500">
                     {{ $authors ?: '—' }}@if ($book->publication_year) · {{ $book->publication_year }}@endif
                 </p>
