@@ -8,13 +8,11 @@ use App\Models\Journal;
 use App\Models\PostBranch;
 use App\Models\Reader;
 use App\Models\Subscription;
-use App\Models\SubscriptionCatalog;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 
 class SubscriptionService
 {
@@ -57,59 +55,13 @@ class SubscriptionService
             'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind', 'index']),
             'deliveryLocations' => DeliveryLocation::orderBy('name')->get(['id', 'name']),
             'postBranches' => PostBranch::orderBy('name')->get(['id', 'name']),
-            // Shortlisted catalog entries grouped by year — drives the year-aware
-            // journal picker + auto price calculation on the create/edit form.
-            'catalogByYear' => SubscriptionCatalog::with('journal')
-                ->where('is_selected', true)
-                ->get()
-                ->groupBy('year')
-                ->map(fn ($entries) => $entries->map(fn (SubscriptionCatalog $e) => [
-                    'journal_id' => (string) $e->journal_id,
-                    'journal_name' => $e->journal?->name,
-                    'annual_price' => (float) $e->annual_price,
-                ])->values()),
         ];
-    }
-
-    /**
-     * Per-journal breakdown for the given year (Table 1 / "Tahlil"):
-     * how many subscriptions, and which of the 12 months they cover.
-     *
-     * @return list<array{journal: Journal, months: array<int, int>, count: int, percentage: int}>
-     */
-    public function journalCoverage(int $year): array
-    {
-        $byJournal = Subscription::where('year', $year)->get()->groupBy('journal_id');
-
-        return Journal::orderBy('name')->get()
-            ->map(function (Journal $journal) use ($byJournal) {
-                $rows = $byJournal->get($journal->id, collect());
-                $months = array_fill(1, 12, 0);
-
-                foreach ($rows as $row) {
-                    for ($m = $row->start_month->value; $m <= $row->end_month->value; $m++) {
-                        $months[$m]++;
-                    }
-                }
-
-                $coveredMonths = count(array_filter($months, fn (int $count) => $count > 0));
-
-                return [
-                    'journal' => $journal,
-                    'months' => $months,
-                    'count' => $rows->count(),
-                    'percentage' => (int) round($coveredMonths / 12 * 100),
-                ];
-            })
-            ->filter(fn (array $row) => $row['count'] > 0)
-            ->values()
-            ->all();
     }
 
     public function create(SubscriptionData $data): Subscription
     {
         return DB::transaction(function () use ($data) {
-            $attributes = $this->resolveAttributes($data);
+            $attributes = $data->toAttributes();
 
             if ($data->receipt_file) {
                 $attributes['receipt_file'] = $this->storeProtected($data->receipt_file);
@@ -122,7 +74,7 @@ class SubscriptionService
     public function update(Subscription $subscription, SubscriptionData $data): Subscription
     {
         return DB::transaction(function () use ($subscription, $data) {
-            $attributes = $this->resolveAttributes($data);
+            $attributes = $data->toAttributes();
 
             if ($data->receipt_file) {
                 $this->deleteFile($subscription->receipt_file);
@@ -139,31 +91,6 @@ class SubscriptionService
             $this->deleteFile($subscription->receipt_file);
             $this->subscriptions->delete($subscription);
         });
-    }
-
-    /**
-     * From CATALOG_ENFORCED_FROM_YEAR on, the amount is never trusted from the
-     * client — it's always the catalog's annual price, prorated for the period.
-     *
-     * @return array<string, mixed>
-     */
-    private function resolveAttributes(SubscriptionData $data): array
-    {
-        $attributes = $data->toAttributes();
-
-        if ($data->year >= Subscription::CATALOG_ENFORCED_FROM_YEAR) {
-            $catalogEntry = SubscriptionCatalog::where('year', $data->year)
-                ->where('journal_id', $data->journal_id)
-                ->first();
-
-            if (! $catalogEntry) {
-                throw new RuntimeException(__('Bu nashr uchun :year yil katalogida narx topilmadi.', ['year' => $data->year]));
-            }
-
-            $attributes['amount'] = $catalogEntry->amountFor($data->start_month, $data->end_month);
-        }
-
-        return $attributes;
     }
 
     private function storeProtected(UploadedFile $file): string

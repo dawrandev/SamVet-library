@@ -37,30 +37,11 @@
                 'group' => $r->affiliation_group,
             ])->values()),
             journalsData: @js($journals->map(fn ($j) => ['id' => (string) $j->id, 'index' => $j->index])->values()),
-            // Shortlisted catalog entries by year — drives the year-aware journal
-            // picker + auto price calculation from {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }} on.
-            catalogByYear: @js($catalogByYear),
-            catalogEnforcedFromYear: {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }},
             get selectedReader() {
                 return this.readersData.find(r => r.id === this.form.reader_id) || null;
             },
             get selectedJournal() {
                 return this.journalsData.find(j => j.id === this.form.journal_id) || null;
-            },
-            get isCatalogDriven() {
-                return Number(this.form.year) >= this.catalogEnforcedFromYear;
-            },
-            get catalogOptions() {
-                return this.catalogByYear[this.form.year] || [];
-            },
-            get selectedCatalogEntry() {
-                return this.catalogOptions.find(c => c.journal_id === this.form.journal_id) || null;
-            },
-            get monthCount() {
-                return Number(this.form.end_month) - Number(this.form.start_month) + 1;
-            },
-            get computedAmount() {
-                return this.selectedCatalogEntry ? Math.round(this.selectedCatalogEntry.annual_price / 12 * this.monthCount) : null;
             },
             openCreate() {
                 this.editing = false;
@@ -84,14 +65,6 @@
                 <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $subscriptions->total() }}</p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('admin.subscription-catalog.index') }}"
-                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
-                    {{ __('Katalog') }}
-                </a>
-                <a href="{{ route('admin.subscriptions.dashboard') }}"
-                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
-                    {{ __('Tahlil') }}
-                </a>
                 <button type="button" @click="openCreate()"
                         class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
                     <span class="text-lg leading-none">+</span> {{ __('Yangi obuna') }}
@@ -292,21 +265,7 @@
                     <div>
                         <label for="m_journal" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr') }}<span class="text-error-500">*</span></label>
 
-                        {{-- Catalog-driven years: only the library's own shortlist for that year. --}}
-                        <select x-show="isCatalogDriven" name="journal_id" x-model="form.journal_id" :required="isCatalogDriven"
-                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
-                            <option value="">{{ __('Tanlang') }}</option>
-                            <template x-for="c in catalogOptions" :key="c.journal_id">
-                                <option :value="c.journal_id" x-text="c.journal_name"></option>
-                            </template>
-                        </select>
-                        <p x-show="isCatalogDriven && catalogOptions.length === 0" x-cloak class="mt-1.5 text-theme-xs text-warning-600 dark:text-warning-500">
-                            {{ __('Bu yil uchun katalogda hech narsa yo‘q — avval qo‘shing:') }}
-                            <a href="{{ route('admin.subscription-catalog.index') }}" class="font-medium underline">{{ __('Katalog') }}</a>
-                        </p>
-
-                        {{-- Legacy years — free choice, as before. --}}
-                        <select x-show="!isCatalogDriven" id="m_journal" name="journal_id" x-model="form.journal_id" :required="!isCatalogDriven"
+                        <select id="m_journal" name="journal_id" x-model="form.journal_id" required
                                 class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                             <option value="">{{ __('Tanlang') }}</option>
                             @foreach (\App\Enums\PublicationKind::cases() as $kind)
@@ -321,7 +280,7 @@
                         </select>
                         @error('journal_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
 
-                        <p x-show="!isCatalogDriven && selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                        <p x-show="selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
                             {{ __('Indeks') }}: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="selectedJournal?.index"></span>
                         </p>
                     </div>
@@ -380,18 +339,9 @@
                         </div>
                     </div>
 
-                    {{-- Catalog-driven years: amount is always computed from the catalog, never typed. --}}
-                    <div x-show="isCatalogDriven" x-cloak>
-                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}</label>
-                        <p class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300"
-                           x-text="selectedCatalogEntry ? (computedAmount.toLocaleString('ru-RU') + ' {{ __('so‘m') }} (' + monthCount + ' {{ __('oy') }})') : '{{ __('Avval nashrni tanlang') }}'"></p>
-                        <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Katalogdagi yillik summadan avtomat hisoblanadi — qo‘lda o‘zgartirilmaydi.') }}</p>
-                    </div>
-
-                    {{-- Legacy years — manual amount, as before. --}}
-                    <div x-show="!isCatalogDriven">
+                    <div>
                         <label for="m_amount" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}<span class="text-error-500">*</span></label>
-                        <input type="number" name="amount" id="m_amount" x-model="form.amount" :required="!isCatalogDriven" min="0" step="1"
+                        <input type="number" name="amount" id="m_amount" x-model="form.amount" required min="0" step="1"
                                placeholder="{{ __('masalan: 150000') }}"
                                class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('amount') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                         @error('amount')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror

@@ -20,7 +20,6 @@ class SubscriptionData
         public readonly int $year,
         public readonly int $start_month,
         public readonly int $end_month,
-        /** Only trusted for years before Subscription::CATALOG_ENFORCED_FROM_YEAR — the Service computes it otherwise. */
         public readonly ?float $amount,
         public readonly ?UploadedFile $receipt_file,
     ) {}

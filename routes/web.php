@@ -28,7 +28,6 @@ use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
 use App\Http\Controllers\Admin\ReaderLookupController;
 use App\Http\Controllers\Admin\ReaderStatusController;
-use App\Http\Controllers\Admin\SubscriptionCatalogController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\VideoTrackController;
@@ -242,15 +241,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::patch('loans/{loan}/return', [LoanController::class, 'return'])->name('loans.return');
 
     // Periodical subscriptions — attached to a reader (Foydalanuvchi)
-    Route::get('subscriptions/dashboard', [SubscriptionController::class, 'dashboard'])->name('subscriptions.dashboard');
     Route::get('subscriptions/{subscription}/receipt', [SubscriptionController::class, 'receipt'])->name('subscriptions.receipt');
     Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
-
-    // Yearly subscription catalog (annual price per journal) — narrowed to the
-    // library's own shortlist, drives auto price calculation on Subscription.
-    Route::resource('subscription-catalog', SubscriptionCatalogController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['subscription-catalog' => 'subscriptionCatalog']);
 
     // Computers (electronic reading room inventory)
     Route::resource('computers', ComputerController::class);
