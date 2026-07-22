@@ -13,14 +13,17 @@
             'suspended' => 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500',
         ];
 
-        // Affiliation labels — depending on student/staff
-        $affiliation = array_filter([
+        // Affiliation, personal and administrative fields are considered "required" —
+        // shown even when blank, so a librarian can see at a glance (in red) what the
+        // Excel import (or manual entry) left missing. Only the free-text supplementary
+        // fields (note, other_library_member) stay hidden entirely when blank.
+        $affiliation = [
             ($isStudent ? __('O‘qish joyi') : __('Ish joyi')) => $reader->affiliation_place,
             ($isStudent ? __('Mutaxassisligi') : __('Bo‘limi')) => $reader->affiliation_unit,
             ($isStudent ? __('Guruhi') : __('Lavozimi')) => $reader->affiliation_group,
-        ], fn ($v) => filled($v));
+        ];
 
-        $personal = array_filter([
+        $personal = [
             __('Millati') => $reader->nationality,
             __('Tug‘ilgan sana') => $reader->birth_date?->format('d.m.Y'),
             __('Jinsi') => $reader->gender?->label(),
@@ -30,14 +33,13 @@
             __('Manzil') => $reader->address,
             __('Telefon') => $reader->phone,
             __('A‘zolik yili') => $reader->member_year,
-        ], fn ($v) => filled($v));
+        ];
 
-        $additional = array_filter([
+        $additional = [
             __('ID raqami') => $reader->id_number,
             __('Ro‘yxat raqami') => $reader->registration_number,
             __('Berilgan sana') => $reader->issued_date?->format('d.m.Y'),
-            __('Boshqa kutubxona a‘zosi') => $reader->other_library_member,
-        ], fn ($v) => filled($v));
+        ];
     @endphp
 
     @php
@@ -287,50 +289,50 @@
             </div>
 
             {{-- Affiliation --}}
-            @if ($affiliation)
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                    <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ $isStudent ? __('O‘qish ma’lumotlari') : __('Ish ma’lumotlari') }}</h3>
-                    <dl class="space-y-3">
-                        @foreach ($affiliation as $label => $value)
-                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                </div>
-            @endif
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ $isStudent ? __('O‘qish ma’lumotlari') : __('Ish ma’lumotlari') }}</h3>
+                <dl class="space-y-3">
+                    @foreach ($affiliation as $label => $value)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dd class="text-theme-sm text-right font-medium {{ filled($value) ? 'text-gray-800 dark:text-white/90' : 'text-error-500 dark:text-error-500' }}">{{ filled($value) ? $value : __('To‘ldirilmagan') }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </div>
         </div>
 
         {{-- Right: personal + additional + note --}}
         <div class="col-span-12 space-y-6 xl:col-span-8">
-            @if ($personal)
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Shaxsiy ma’lumotlar') }}</h3>
-                    <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-                        @foreach ($personal as $label => $value)
-                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                </div>
-            @endif
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Shaxsiy ma’lumotlar') }}</h3>
+                <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                    @foreach ($personal as $label => $value)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dd class="text-theme-sm text-right font-medium {{ filled($value) ? 'text-gray-800 dark:text-white/90' : 'text-error-500 dark:text-error-500' }}">{{ filled($value) ? $value : __('To‘ldirilmagan') }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </div>
 
-            @if ($additional)
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qo‘shimcha ma’lumotlar') }}</h3>
-                    <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-                        @foreach ($additional as $label => $value)
-                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                </div>
-            @endif
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Qo‘shimcha ma’lumotlar') }}</h3>
+                <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                    @foreach ($additional as $label => $value)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dd class="text-theme-sm text-right font-medium {{ filled($value) ? 'text-gray-800 dark:text-white/90' : 'text-error-500 dark:text-error-500' }}">{{ filled($value) ? $value : __('To‘ldirilmagan') }}</dd>
+                        </div>
+                    @endforeach
+                    @if ($reader->other_library_member)
+                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Boshqa kutubxona a‘zosi') }}</dt>
+                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $reader->other_library_member }}</dd>
+                        </div>
+                    @endif
+                </dl>
+            </div>
 
             @if ($reader->note)
                 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
