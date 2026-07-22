@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy([ReaderObserver::class])]
@@ -25,9 +26,9 @@ class Reader extends Model implements Authenticatable
     protected $fillable = [
         'id_number', 'registration_number', 'issued_date',
         'type', 'full_name',
-        'affiliation_place', 'affiliation_unit', 'affiliation_group',
+        'affiliation_place_id', 'affiliation_unit_id', 'affiliation_group_id',
         'nationality', 'birth_date', 'passport', 'pinfl', 'gender',
-        'district', 'address', 'phone', 'member_year',
+        'region_id', 'district_id', 'address', 'phone', 'member_year',
         'photo', 'other_library_member', 'note',
         'status', 'blocked_until', 'block_reason', 'left_reason',
     ];
@@ -47,6 +48,31 @@ class Reader extends Model implements Authenticatable
     }
 
     // --- Relationships ---
+
+    public function affiliationPlace(): BelongsTo
+    {
+        return $this->belongsTo(AffiliationPlace::class);
+    }
+
+    public function affiliationUnit(): BelongsTo
+    {
+        return $this->belongsTo(AffiliationUnit::class);
+    }
+
+    public function affiliationGroup(): BelongsTo
+    {
+        return $this->belongsTo(AffiliationGroup::class);
+    }
+
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
+    }
 
     public function loans(): HasMany
     {

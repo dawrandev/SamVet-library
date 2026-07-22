@@ -12,8 +12,12 @@ use App\Exports\ReadersExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreReaderRequest;
 use App\Http\Requests\Admin\UpdateReaderRequest;
+use App\Models\AffiliationGroup;
+use App\Models\AffiliationPlace;
+use App\Models\AffiliationUnit;
 use App\Models\Computer;
 use App\Models\Reader;
+use App\Models\Region;
 use App\Services\BookReadingService;
 use App\Services\LoanService;
 use App\Services\ReaderService;
@@ -57,7 +61,23 @@ class ReaderController extends Controller
             'types' => ReaderType::cases(),
             'statuses' => ReaderStatus::cases(),
             'genders' => Gender::cases(),
+            ...$this->lookupOptions(),
         ]);
+    }
+
+    /**
+     * Options for the affiliation + region/district lookup selects — shared by create() and edit().
+     *
+     * @return array<string, mixed>
+     */
+    private function lookupOptions(): array
+    {
+        return [
+            'affiliationPlaces' => AffiliationPlace::orderBy('name')->get(),
+            'affiliationUnits' => AffiliationUnit::orderBy('name')->get(),
+            'affiliationGroups' => AffiliationGroup::orderBy('name')->get(),
+            'regions' => Region::orderBy('name')->get(),
+        ];
     }
 
     public function store(StoreReaderRequest $request): RedirectResponse
@@ -71,7 +91,10 @@ class ReaderController extends Controller
 
     public function show(Reader $reader, Request $request): View
     {
-        $reader->load(['warnings', 'eventParticipations.event.locations', 'computerSessions.computer']);
+        $reader->load([
+            'warnings', 'eventParticipations.event.locations', 'computerSessions.computer',
+            'affiliationPlace', 'affiliationUnit', 'affiliationGroup', 'region', 'district',
+        ]);
 
         $materialFilters = [
             'search' => $request->input('material_search'),
@@ -99,6 +122,7 @@ class ReaderController extends Controller
             'types' => ReaderType::cases(),
             'statuses' => ReaderStatus::cases(),
             'genders' => Gender::cases(),
+            ...$this->lookupOptions(),
         ]);
     }
 

@@ -5,7 +5,12 @@ namespace App\Services;
 use App\Enums\Gender;
 use App\Enums\ReaderStatus;
 use App\Enums\ReaderType;
+use App\Models\AffiliationGroup;
+use App\Models\AffiliationPlace;
+use App\Models\AffiliationUnit;
+use App\Models\District;
 use App\Models\Reader;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -390,15 +395,15 @@ class ReaderImportService
             'full_name' => $fullName,
             'registration_number' => $get('registration_number'),
             'issued_date' => $this->parseDate($this->rawValue($row, $columnMap, 'issued_date')),
-            'affiliation_place' => $get('affiliation_place'),
-            'affiliation_unit' => $get('affiliation_unit'),
-            'affiliation_group' => $get('affiliation_group'),
+            'affiliation_place_id' => $this->resolveLookupId(AffiliationPlace::class, $get('affiliation_place')),
+            'affiliation_unit_id' => $this->resolveLookupId(AffiliationUnit::class, $get('affiliation_unit')),
+            'affiliation_group_id' => $this->resolveLookupId(AffiliationGroup::class, $get('affiliation_group')),
             'nationality' => $get('nationality'),
             'birth_date' => $this->parseDate($this->rawValue($row, $columnMap, 'birth_date')),
             'passport' => $passport,
             'pinfl' => $pinfl,
             'gender' => $this->parseGender($get('gender')),
-            'district' => $get('district'),
+            'district_id' => $this->resolveLookupId(District::class, $get('district')),
             'address' => $get('address'),
             'phone' => $get('phone'),
             'member_year' => $this->parseYear($get('member_year')),
@@ -431,6 +436,22 @@ class ReaderImportService
     private function upsert(array $keys, array $attributes): Reader
     {
         return Reader::updateOrCreate($keys, $attributes);
+    }
+
+    /**
+     * Resolves a free-text lookup value (affiliation place/unit/group, district)
+     * to its id, creating the lookup row on first sight — same "text -> lookup"
+     * normalization the one-time backfill migration did for pre-existing data.
+     *
+     * @param  class-string<Model>  $modelClass
+     */
+    private function resolveLookupId(string $modelClass, ?string $name): ?int
+    {
+        if ($name === null) {
+            return null;
+        }
+
+        return $modelClass::query()->firstOrCreate(['name' => $name])->id;
     }
 
     /**

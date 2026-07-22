@@ -1,6 +1,9 @@
 <?php
 
 use App\Enums\ReaderType;
+use App\Models\AffiliationGroup;
+use App\Models\AffiliationPlace;
+use App\Models\AffiliationUnit;
 use App\Models\Reader;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,9 +23,9 @@ it('splits full_name into Familyasi/Ismi/Sharifi and shows staff labels', functi
         'type' => ReaderType::BranchStaff->value,
         'full_name' => 'Palensheyev Tólenshe Tólensheyevich',
         'id_number' => 'FX0119001',
-        'affiliation_place' => 'Ish joyi nomi',
-        'affiliation_unit' => 'Bo‘limi nomi',
-        'affiliation_group' => 'Lavozim nomi',
+        'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Ish joyi nomi'])->id,
+        'affiliation_unit_id' => AffiliationUnit::factory()->create(['name' => 'Bo‘limi nomi'])->id,
+        'affiliation_group_id' => AffiliationGroup::factory()->create(['name' => 'Lavozim nomi'])->id,
     ]);
 
     $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();

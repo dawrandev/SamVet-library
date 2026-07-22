@@ -42,11 +42,11 @@ class ReaderLookupController extends Controller
             'status' => $reader->status->label(),
             'affiliation' => [
                 'place_label' => $isStudent ? __('O‘qish joyi') : __('Ish joyi'),
-                'place' => $reader->affiliation_place,
+                'place' => $reader->affiliationPlace?->name,
                 'unit_label' => $isStudent ? __('Mutaxassisligi') : __('Bo‘limi'),
-                'unit' => $reader->affiliation_unit,
+                'unit' => $reader->affiliationUnit?->name,
                 'group_label' => $isStudent ? __('Guruhi') : __('Lavozimi'),
-                'group' => $reader->affiliation_group,
+                'group' => $reader->affiliationGroup?->name,
             ],
         ]);
     }

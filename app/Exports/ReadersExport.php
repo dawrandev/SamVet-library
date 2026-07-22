@@ -23,7 +23,9 @@ class ReadersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
 
     public function query(): Builder
     {
-        return app(ReaderRepositoryInterface::class)->filtered($this->filters)->latest('id');
+        return app(ReaderRepositoryInterface::class)->filtered($this->filters)
+            ->with(['affiliationPlace', 'affiliationUnit', 'affiliationGroup', 'region', 'district'])
+            ->latest('id');
     }
 
     /**
@@ -35,7 +37,7 @@ class ReadersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
             'ID', 'F.I.Sh.', 'ID raqami', "Ro'yxatga olingan raqami", "Ro'yxatga olingan sanasi", 'Turi',
             "O'qish/ish joyi", 'Mutaxassisligi/bo\'limi', 'Guruhi/lavozimi',
             'Millati', "Tug'ilgan sana", 'Passport', 'JShShIR', 'Jinsi',
-            'Tuman', 'Manzil', 'Telefon', "A'zolik yili", 'Boshqa kutubxona a\'zoligi',
+            'Viloyat', 'Tuman', 'Manzil', 'Telefon', "A'zolik yili", 'Boshqa kutubxona a\'zoligi',
             'Holati', 'Bloklangan muddat', 'Bloklash sababi', 'Chiqib ketish sababi', 'Izoh',
         ];
     }
@@ -53,15 +55,16 @@ class ReadersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
             $reader->registration_number,
             $reader->issued_date?->format('d.m.Y'),
             $reader->type?->label(),
-            $reader->affiliation_place,
-            $reader->affiliation_unit,
-            $reader->affiliation_group,
+            $reader->affiliationPlace?->name,
+            $reader->affiliationUnit?->name,
+            $reader->affiliationGroup?->name,
             $reader->nationality,
             $reader->birth_date?->format('d.m.Y'),
             $reader->passport,
             $reader->pinfl,
             $reader->gender?->label(),
-            $reader->district,
+            $reader->region?->name,
+            $reader->district?->name,
             $reader->address,
             $reader->phone,
             $reader->member_year,

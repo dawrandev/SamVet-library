@@ -32,9 +32,9 @@
                 'id' => (string) $r->id,
                 'label' => $r->full_name,
                 'isStudent' => $r->type->isStudent(),
-                'place' => $r->affiliation_place,
-                'unit' => $r->affiliation_unit,
-                'group' => $r->affiliation_group,
+                'place' => $r->affiliationPlace?->name,
+                'unit' => $r->affiliationUnit?->name,
+                'group' => $r->affiliationGroup?->name,
             ])->values()),
             journalsData: @js($journals->map(fn ($j) => ['id' => (string) $j->id, 'index' => $j->index])->values()),
             get selectedReader() {
@@ -157,7 +157,7 @@
                                         <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $subscription->reader?->full_name ?? '—' }}</span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->reader?->affiliation_group ?? '—' }}</td>
+                                <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $subscription->reader?->affiliationGroup?->name ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $subscription->journal?->name ?? '—' }}</p>
                                     <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">{{ $subscription->journal?->kind?->label() ?? '—' }}</span>

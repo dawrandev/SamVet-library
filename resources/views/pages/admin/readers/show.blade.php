@@ -18,9 +18,9 @@
         // Excel import (or manual entry) left missing. Only the free-text supplementary
         // fields (note, other_library_member) stay hidden entirely when blank.
         $affiliation = [
-            ($isStudent ? __('O‘qish joyi') : __('Ish joyi')) => $reader->affiliation_place,
-            ($isStudent ? __('Mutaxassisligi') : __('Bo‘limi')) => $reader->affiliation_unit,
-            ($isStudent ? __('Guruhi') : __('Lavozimi')) => $reader->affiliation_group,
+            ($isStudent ? __('O‘qish joyi') : __('Ish joyi')) => $reader->affiliationPlace?->name,
+            ($isStudent ? __('Mutaxassisligi') : __('Bo‘limi')) => $reader->affiliationUnit?->name,
+            ($isStudent ? __('Guruhi') : __('Lavozimi')) => $reader->affiliationGroup?->name,
         ];
 
         $personal = [
@@ -29,7 +29,8 @@
             __('Jinsi') => $reader->gender?->label(),
             __('Passport') => $reader->passport,
             __('JSHSHIR (PINFL)') => $reader->pinfl,
-            __('Tuman') => $reader->district,
+            __('Viloyat') => $reader->region?->name,
+            __('Tuman') => $reader->district?->name,
             __('Manzil') => $reader->address,
             __('Telefon') => $reader->phone,
             __('A‘zolik yili') => $reader->member_year,

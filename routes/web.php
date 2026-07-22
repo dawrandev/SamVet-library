@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\CopyLookupController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DissertationController;
+use App\Http\Controllers\Admin\DistrictLookupController;
 use App\Http\Controllers\Admin\EditorImageController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
@@ -32,11 +33,15 @@ use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\VideoTrackController;
 use App\Http\Controllers\Admin\WarningController;
+use App\Http\Controllers\Admin\Lookups\AffiliationGroupController;
+use App\Http\Controllers\Admin\Lookups\AffiliationPlaceController;
+use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
 use App\Http\Controllers\Admin\Lookups\DeliveryLocationController;
+use App\Http\Controllers\Admin\Lookups\DistrictController;
 use App\Http\Controllers\Admin\Lookups\EventLocationController;
 use App\Http\Controllers\Admin\Lookups\JournalTypeController;
 use App\Http\Controllers\Admin\Lookups\LanguageController;
@@ -47,6 +52,7 @@ use App\Http\Controllers\Admin\Lookups\MasterSpecialtyController;
 use App\Http\Controllers\Admin\Lookups\PostBranchController;
 use App\Http\Controllers\Admin\Lookups\ScienceFieldController;
 use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
+use App\Http\Controllers\Admin\Lookups\RegionController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Site\ArticleController as SiteArticleController;
@@ -217,6 +223,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->only(['store', 'update', 'destroy'])
         ->parameters(['journal-issues' => 'journalIssue', 'copies' => 'copy']);
 
+    // Districts of a region (dependent select in the reader form)
+    Route::get('regions/{region}/districts', [DistrictLookupController::class, 'byRegion'])->name('regions.districts.lookup');
+
     // Import users via Excel (BEFORE the resource — so it doesn't clash with `readers/{reader}`)
     Route::get('readers/import', [ReaderImportController::class, 'create'])->name('readers.import.create');
     Route::post('readers/import', [ReaderImportController::class, 'store'])->name('readers.import.store');
@@ -301,6 +310,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('science-fields', ScienceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['science-fields' => 'scienceField']);
         Route::resource('doctoral-specialties', DoctoralSpecialtyController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['doctoral-specialties' => 'doctoralSpecialty']);
         Route::resource('master-specialties', MasterSpecialtyController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['master-specialties' => 'masterSpecialty']);
+        Route::resource('affiliation-places', AffiliationPlaceController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['affiliation-places' => 'affiliationPlace']);
+        Route::resource('affiliation-units', AffiliationUnitController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['affiliation-units' => 'affiliationUnit']);
+        Route::resource('affiliation-groups', AffiliationGroupController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['affiliation-groups' => 'affiliationGroup']);
+        Route::resource('regions', RegionController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('districts', DistrictController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');

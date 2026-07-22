@@ -37,6 +37,7 @@ class ReaderRepository implements ReaderRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->filtered($filters)
+            ->with('affiliationGroup')
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

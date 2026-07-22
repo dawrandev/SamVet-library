@@ -218,6 +218,11 @@
                                         'science-fields' => __('Fan nomlari'),
                                         'doctoral-specialties' => __('Ixtisosliklar (PhD/DSc)'),
                                         'master-specialties' => __('Mutaxassisliklar (Magistrlik)'),
+                                        'affiliation-places' => __('O‘qish/ish joylari'),
+                                        'affiliation-units' => __('Mutaxassislik/bo‘limlar'),
+                                        'affiliation-groups' => __('Guruh/lavozimlar'),
+                                        'regions' => __('Viloyatlar'),
+                                        'districts' => __('Tumanlar'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

@@ -116,7 +116,7 @@
                             <td class="px-5 py-4">
                                 <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->label() }}</span>
                             </td>
-                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $reader->affiliation_group ?: '—' }}</td>
+                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $reader->affiliationGroup?->name ?? '—' }}</td>
                             <td class="px-5 py-4">
                                 <span class="text-theme-xs inline-flex rounded-full px-2.5 py-0.5 font-medium {{ $statusColor[$reader->status->value] ?? '' }}">{{ $reader->status->label() }}</span>
                             </td>

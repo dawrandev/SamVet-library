@@ -91,11 +91,11 @@
                 </div>
 
                 <div class="affiliation-box">
-                    <p>{{ $placeLabel }}: <b>{{ $reader->affiliation_place ?: '—' }}</b></p>
+                    <p>{{ $placeLabel }}: <b>{{ $reader->affiliationPlace?->name ?: '—' }}</b></p>
                     <table class="affiliation-sub">
                         <tr>
-                            <td>{{ $unitLabel }}: <b>{{ $reader->affiliation_unit ?: '—' }}</b></td>
-                            <td>{{ $groupLabel }}: <b>{{ $reader->affiliation_group ?: '—' }}</b></td>
+                            <td>{{ $unitLabel }}: <b>{{ $reader->affiliationUnit?->name ?: '—' }}</b></td>
+                            <td>{{ $groupLabel }}: <b>{{ $reader->affiliationGroup?->name ?: '—' }}</b></td>
                         </tr>
                     </table>
                 </div>

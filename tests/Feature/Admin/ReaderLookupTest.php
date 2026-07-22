@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\AffiliationGroup;
+use App\Models\AffiliationPlace;
+use App\Models\AffiliationUnit;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Loan;
@@ -12,9 +15,9 @@ it('finds a reader by id number with student-labeled affiliation fields', functi
         'type' => 'bachelor',
         'id_number' => 'BT0199001',
         'full_name' => 'Test Talaba',
-        'affiliation_place' => 'Veterinariya fakulteti',
-        'affiliation_unit' => 'Veterinariya',
-        'affiliation_group' => '2-21',
+        'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Veterinariya fakulteti'])->id,
+        'affiliation_unit_id' => AffiliationUnit::factory()->create(['name' => 'Veterinariya'])->id,
+        'affiliation_group_id' => AffiliationGroup::factory()->create(['name' => '2-21'])->id,
         'status' => 'active',
     ]);
 
@@ -40,9 +43,9 @@ it('finds a reader by id number with staff-labeled affiliation fields', function
     Reader::factory()->create([
         'type' => 'professor',
         'id_number' => 'PF0199002',
-        'affiliation_place' => 'Kafedra',
-        'affiliation_unit' => 'Ichki kasalliklar',
-        'affiliation_group' => 'Dotsent',
+        'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Kafedra'])->id,
+        'affiliation_unit_id' => AffiliationUnit::factory()->create(['name' => 'Ichki kasalliklar'])->id,
+        'affiliation_group_id' => AffiliationGroup::factory()->create(['name' => 'Dotsent'])->id,
         'status' => 'active',
     ]);
 

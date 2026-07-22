@@ -8,6 +8,10 @@
     $curType = old('type', $reader?->type?->value);
     $curStatus = old('status', $reader?->status?->value);
     $curGender = old('gender', $reader?->gender?->value);
+    $curAffiliationPlace = old('affiliation_place_id', $reader?->affiliation_place_id);
+    $curAffiliationUnit = old('affiliation_unit_id', $reader?->affiliation_unit_id);
+    $curAffiliationGroup = old('affiliation_group_id', $reader?->affiliation_group_id);
+    $curRegion = old('region_id', $reader?->region_id);
 
     $base = 'shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90';
 @endphp
@@ -16,7 +20,14 @@
     method="POST"
     action="{{ $editing ? route('admin.readers.update', $reader) : route('admin.readers.store') }}"
     enctype="multipart/form-data"
-    x-data="readerForm({ studentTypes: @js($studentTypes), type: @js((string) $curType) })"
+    x-data="readerForm({
+        studentTypes: @js($studentTypes),
+        type: @js((string) $curType),
+        districtsUrlTemplate: '{{ route('admin.regions.districts.lookup', ['region' => '__RID__']) }}',
+        initialRegionId: @js($curRegion ? (int) $curRegion : null),
+        initialDistrictId: @js(old('district_id', $reader?->district_id)),
+    })"
+    x-init="initDistricts()"
     @submit="submitUpload($event)"
 >
     @csrf
@@ -80,29 +91,41 @@
                 </div>
             </x-admin.form.section>
 
-            {{-- Affiliation — labels change via Alpine depending on student/staff --}}
+            {{-- Affiliation --}}
             <x-admin.form.section :title="__('Mansublik')" :description="__('O‘qish yoki ish joyi ma’lumotlari')">
                 <div class="grid gap-5 sm:grid-cols-3">
                     <div>
-                        <label for="affiliation_place" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                               x-text="isStudent ? '{{ __('O‘qish joyi') }}' : '{{ __('Ish joyi') }}'"></label>
-                        <input type="text" name="affiliation_place" id="affiliation_place" value="{{ old('affiliation_place', $reader?->affiliation_place) }}"
-                               class="{{ $base }} {{ $errors->has('affiliation_place') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}" />
-                        @error('affiliation_place')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        <label for="affiliation_place_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('O‘qish/ish joyi') }}</label>
+                        <select name="affiliation_place_id" id="affiliation_place_id"
+                                class="{{ $base }} {{ $errors->has('affiliation_place_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <option value="">{{ __('Tanlanmagan') }}</option>
+                            @foreach ($affiliationPlaces as $place)
+                                <option value="{{ $place->id }}" @selected((string) $curAffiliationPlace === (string) $place->id)>{{ $place->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('affiliation_place_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label for="affiliation_unit" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                               x-text="isStudent ? '{{ __('Mutaxassisligi') }}' : '{{ __('Bo‘limi') }}'"></label>
-                        <input type="text" name="affiliation_unit" id="affiliation_unit" value="{{ old('affiliation_unit', $reader?->affiliation_unit) }}"
-                               class="{{ $base }} {{ $errors->has('affiliation_unit') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}" />
-                        @error('affiliation_unit')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        <label for="affiliation_unit_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Mutaxassisligi/bo‘limi') }}</label>
+                        <select name="affiliation_unit_id" id="affiliation_unit_id"
+                                class="{{ $base }} {{ $errors->has('affiliation_unit_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <option value="">{{ __('Tanlanmagan') }}</option>
+                            @foreach ($affiliationUnits as $unit)
+                                <option value="{{ $unit->id }}" @selected((string) $curAffiliationUnit === (string) $unit->id)>{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('affiliation_unit_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label for="affiliation_group" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                               x-text="isStudent ? '{{ __('Guruhi') }}' : '{{ __('Lavozimi') }}'"></label>
-                        <input type="text" name="affiliation_group" id="affiliation_group" value="{{ old('affiliation_group', $reader?->affiliation_group) }}"
-                               class="{{ $base }} {{ $errors->has('affiliation_group') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}" />
-                        @error('affiliation_group')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        <label for="affiliation_group_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Guruhi/lavozimi') }}</label>
+                        <select name="affiliation_group_id" id="affiliation_group_id"
+                                class="{{ $base }} {{ $errors->has('affiliation_group_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <option value="">{{ __('Tanlanmagan') }}</option>
+                            @foreach ($affiliationGroups as $group)
+                                <option value="{{ $group->id }}" @selected((string) $curAffiliationGroup === (string) $group->id)>{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('affiliation_group_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                     </div>
                 </div>
             </x-admin.form.section>
@@ -131,11 +154,35 @@
                         <x-admin.form.input name="pinfl" :label="__('JSHSHIR (PINFL)')" :value="$reader?->pinfl" />
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
-                        <x-admin.form.input name="district" :label="__('Tuman')" :value="$reader?->district" />
-                        <x-admin.form.input name="phone" :label="__('Telefon')" :value="$reader?->phone" :placeholder="'+998 __ ___ __ __'" />
+                        <div>
+                            <label for="region_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Viloyat') }}</label>
+                            <select name="region_id" id="region_id" x-model="regionId" @change="pickRegion($event.target.value)"
+                                    class="{{ $base }} {{ $errors->has('region_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                <option value="">{{ __('Tanlanmagan') }}</option>
+                                @foreach ($regions as $region)
+                                    <option value="{{ $region->id }}">{{ $region->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('region_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label for="district_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Tuman') }}</label>
+                            <select name="district_id" id="district_id" x-ref="districtSelect" x-model="districtId" :disabled="regionId === null || loadingDistricts"
+                                    class="{{ $base }} {{ $errors->has('district_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                <option value="" x-text="regionId === null ? '{{ __('Avval viloyatni tanlang') }}' : '{{ __('Tanlanmagan') }}'"></option>
+                                <template x-for="d in districts" :key="d.id">
+                                    <option :value="d.id" x-text="d.name"></option>
+                                </template>
+                            </select>
+                            <p x-show="loadingDistricts" x-cloak class="mt-1.5 text-theme-xs text-gray-400">{{ __('Tumanlar yuklanmoqda...') }}</p>
+                            @error('district_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        </div>
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.input name="address" :label="__('Manzil')" :value="$reader?->address" />
+                        <x-admin.form.input name="phone" :label="__('Telefon')" :value="$reader?->phone" :placeholder="'+998 __ ___ __ __'" />
+                    </div>
+                    <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.input name="member_year" type="number" :label="__('A‘zolik yili')" :value="$reader?->member_year" placeholder="2024" />
                     </div>
                 </div>
