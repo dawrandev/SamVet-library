@@ -25,6 +25,7 @@ use App\Repositories\Contracts\ReaderRepositoryInterface;
 use App\Repositories\Contracts\StatisticsRepositoryInterface;
 use App\Repositories\Contracts\SubscriptionCatalogRepositoryInterface;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
+use App\Repositories\Contracts\VideoRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\ArticleRepository;
 use App\Repositories\Eloquent\AudiobookRepository;
@@ -49,6 +50,7 @@ use App\Repositories\Eloquent\ReaderRepository;
 use App\Repositories\Eloquent\StatisticsRepository;
 use App\Repositories\Eloquent\SubscriptionCatalogRepository;
 use App\Repositories\Eloquent\SubscriptionRepository;
+use App\Repositories\Eloquent\VideoRepository;
 use App\Repositories\Eloquent\WarningRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -84,6 +86,7 @@ class RepositoryServiceProvider extends ServiceProvider
         StatisticsRepositoryInterface::class => StatisticsRepository::class,
         SubscriptionCatalogRepositoryInterface::class => SubscriptionCatalogRepository::class,
         SubscriptionRepositoryInterface::class => SubscriptionRepository::class,
+        VideoRepositoryInterface::class => VideoRepository::class,
         WarningRepositoryInterface::class => WarningRepository::class,
     ];
 }

@@ -44,7 +44,8 @@
                             || request()->routeIs('admin.articles.*')
                             || request()->routeIs('admin.dissertations.*')
                             || request()->routeIs('admin.avtoreferats.*')
-                            || request()->routeIs('admin.audiobooks.*');
+                            || request()->routeIs('admin.audiobooks.*')
+                            || request()->routeIs('admin.videos.*');
 
                         // Journals, newspapers AND articles are all reachable from one "Davriy
                         // nashrlar" sidebar entry — Maqolalar/Gazeta maqolalari no longer get
@@ -61,6 +62,7 @@
                             ['route' => 'admin.dissertations.index', 'params' => [], 'active' => request()->routeIs('admin.dissertations.*'), 'label' => __('Dissertatsiyalar')],
                             ['route' => 'admin.avtoreferats.index', 'params' => [], 'active' => request()->routeIs('admin.avtoreferats.*'), 'label' => __('Avtoreferatlar')],
                             ['route' => 'admin.audiobooks.index', 'params' => [], 'active' => request()->routeIs('admin.audiobooks.*'), 'label' => __('Audiolar')],
+                            ['route' => 'admin.videos.index', 'params' => [], 'active' => request()->routeIs('admin.videos.*'), 'label' => __('Videolar')],
                         ];
                     @endphp
                     <li x-data="{ open: {{ $resourceGroupActive ? 'true' : 'false' }} }">

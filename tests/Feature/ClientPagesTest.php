@@ -8,6 +8,8 @@ use App\Models\Category;
 use App\Models\Journal;
 use App\Models\News;
 use App\Models\PublicationPlace;
+use App\Models\Video;
+use App\Models\VideoTrack;
 
 it('renders the core public pages', function (string $path) {
     $this->get($path)->assertOk();
@@ -17,6 +19,7 @@ it('renders the core public pages', function (string $path) {
     'sections' => '/bolimlar',
     'periodicals' => '/jurnallar',
     'audiobooks' => '/audiokitoblar',
+    'videos' => '/videolar',
     'statistics' => '/statistika',
     'news' => '/yangiliklar',
     'login' => '/kirish',
@@ -100,6 +103,20 @@ it('shows an audiobook detail page with its track list, but no direct file link'
         ->assertSee('1-qism');
     // The raw protected file path must never leak into the public HTML.
     $res->assertDontSee($track->audio_file);
+});
+
+it('shows a video detail page with its track list, but no direct file link', function () {
+    $video = Video::factory()->create(['name' => 'Ochiq video', 'author' => 'Ochiq muallif']);
+    $track = VideoTrack::factory()->for($video)->create(['title' => '1-qism', 'video_file' => 'videos/video/secret.mp4']);
+
+    $res = $this->get(route('video.show', $video->slug));
+
+    $res->assertOk()
+        ->assertSee('Ochiq video')
+        ->assertSee('Ochiq muallif')
+        ->assertSee('1-qism');
+    // The raw protected file path must never leak into the public HTML.
+    $res->assertDontSee($track->video_file);
 });
 
 it('shows a published news item and hides drafts', function () {

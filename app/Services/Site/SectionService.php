@@ -7,6 +7,7 @@ use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Journal;
+use App\Models\Video;
 use Illuminate\Support\Collection;
 
 /**
@@ -61,6 +62,12 @@ class SectionService
                 'label' => __('Audiokitoblar'),
                 'count' => Audiobook::count(),
                 'url' => route('audiobooks.index'),
+            ])
+            ->push([
+                'key' => 'videos',
+                'label' => __('Videolar'),
+                'count' => Video::count(),
+                'url' => route('videos.index'),
             ])
             ->values();
     }

@@ -30,6 +30,8 @@ use App\Http\Controllers\Admin\ReaderLookupController;
 use App\Http\Controllers\Admin\ReaderStatusController;
 use App\Http\Controllers\Admin\SubscriptionCatalogController;
 use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\VideoController;
+use App\Http\Controllers\Admin\VideoTrackController;
 use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
@@ -62,6 +64,8 @@ use App\Http\Controllers\Site\PeriodicalController;
 use App\Http\Controllers\Site\ReaderAuthController;
 use App\Http\Controllers\Site\SectionController;
 use App\Http\Controllers\Site\StatisticsController as SiteStatisticsController;
+use App\Http\Controllers\Site\VideoController as SiteVideoController;
+use App\Http\Controllers\Site\VideoReaderController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +83,8 @@ Route::get('/jurnal/{slug}', [SiteJournalController::class, 'show'])->name('jour
 Route::get('/maqola/{slug}', [SiteArticleController::class, 'show'])->name('article.show');
 Route::get('/audiokitoblar', [SiteAudiobookController::class, 'index'])->name('audiobooks.index');
 Route::get('/audiokitob/{slug}', [SiteAudiobookController::class, 'show'])->name('audiobook.show');
+Route::get('/videolar', [SiteVideoController::class, 'index'])->name('videos.index');
+Route::get('/video/{slug}', [SiteVideoController::class, 'show'])->name('video.show');
 Route::get('/yangiliklar', [SiteNewsController::class, 'index'])->name('news.index');
 Route::get('/yangiliklar/{slug}', [SiteNewsController::class, 'show'])->name('news.show');
 Route::get('/sahifa/{id}', [SitePageController::class, 'show'])->whereNumber('id')->name('page.show');
@@ -113,6 +119,16 @@ Route::middleware('reader.auth')->prefix('oqish')->group(function () {
 Route::middleware('reader.auth')->prefix('tinglash')->group(function () {
     Route::get('audiokitob/{slug}', [AudioReaderController::class, 'show'])->name('listen.audiobook');
     Route::get('audiokitob/{slug}/{track}/fayl', [AudioReaderController::class, 'trackFile'])->name('listen.audiobook.file');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Protected online watching — signed-in readers only, no download
+|--------------------------------------------------------------------------
+*/
+Route::middleware('reader.auth')->prefix('tomosha')->group(function () {
+    Route::get('video/{slug}', [VideoReaderController::class, 'show'])->name('watch.video');
+    Route::get('video/{slug}/{track}/fayl', [VideoReaderController::class, 'trackFile'])->name('watch.video.file');
 });
 
 // Language switch (for everyone — including the login page)
@@ -169,6 +185,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Audio tracks (modal on the audiobook show page)
     Route::resource('audiobooks.tracks', AudioTrackController::class)->only(['store', 'update', 'destroy']);
+
+    // Videos CRUD (title level)
+    Route::resource('videos', VideoController::class);
+
+    // Video tracks (modal on the video show page)
+    Route::resource('videos.tracks', VideoTrackController::class)->only(['store', 'update', 'destroy']);
 
     // Journal issues (modal on the journal show page + issue page)
     Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);
