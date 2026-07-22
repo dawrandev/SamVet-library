@@ -8,6 +8,7 @@ use App\Enums\Gender;
 use App\Enums\LoanMaterialType;
 use App\Enums\ReaderStatus;
 use App\Enums\ReaderType;
+use App\Exports\ReadersExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreReaderRequest;
 use App\Http\Requests\Admin\UpdateReaderRequest;
@@ -19,7 +20,9 @@ use App\Services\ReaderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReaderController extends Controller
 {
@@ -39,6 +42,13 @@ class ReaderController extends Controller
             'types' => ReaderType::cases(),
             'statuses' => ReaderStatus::cases(),
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search', 'type', 'status']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new ReadersExport($filters), 'foydalanuvchilar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function create(): View

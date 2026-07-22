@@ -48,3 +48,12 @@ it('deletes a dissertation', function () {
 
     $this->assertDatabaseMissing('dissertations', ['id' => $dissertation->id]);
 });
+
+it('downloads an Excel export of the dissertation list', function () {
+    Dissertation::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.dissertations.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});

@@ -6,17 +6,13 @@ use App\Enums\CopyStatus;
 use App\Models\Book;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class BookRepository implements BookRepositoryInterface
 {
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function filtered(array $filters = []): Builder
     {
         return Book::query()
-            ->with(['type', 'language', 'authors'])
-            ->withCount([
-                'copies',
-                'copies as available_copies_count' => fn ($q) => $q->where('status', CopyStatus::Available->value),
-            ])
             // Search (title, ISBN, UDC)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -30,7 +26,17 @@ class BookRepository implements BookRepositoryInterface
             })
             ->when($filters['language_id'] ?? null, function ($query, int $languageId) {
                 $query->where('language_id', $languageId);
-            })
+            });
+    }
+
+    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->filtered($filters)
+            ->with(['type', 'language', 'authors'])
+            ->withCount([
+                'copies',
+                'copies as available_copies_count' => fn ($q) => $q->where('status', CopyStatus::Available->value),
+            ])
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

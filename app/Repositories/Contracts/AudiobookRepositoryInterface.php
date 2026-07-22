@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Audiobook;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -14,6 +15,13 @@ use Illuminate\Support\Collection;
  */
 interface AudiobookRepositoryInterface
 {
+    /**
+     * Filtered (unpaginated) query builder — shared by the paginated list and exports.
+     *
+     * @param  array{search?: string}  $filters
+     */
+    public function filtered(array $filters = []): Builder;
+
     /**
      * Filtered, paginated list of audiobooks (name/author search).
      *

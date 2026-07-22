@@ -118,3 +118,12 @@ it('lets the inline lookup-create endpoint add a new science field from the avto
 
     expect(ScienceField::where('name', 'Zootexniya fanlari')->exists())->toBeTrue();
 });
+
+it('downloads an Excel export of the avtoreferat list', function () {
+    Avtoreferat::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.avtoreferats.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});

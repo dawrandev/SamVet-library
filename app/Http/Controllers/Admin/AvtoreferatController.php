@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\AvtoreferatData;
+use App\Exports\AvtoreferatsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AvtoreferatRequest;
 use App\Models\Avtoreferat;
@@ -10,6 +11,8 @@ use App\Services\AvtoreferatService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AvtoreferatController extends Controller
 {
@@ -26,6 +29,13 @@ class AvtoreferatController extends Controller
             'filters' => $filters,
             ...$this->avtoreferatService->filterOptions(),
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new AvtoreferatsExport($filters), 'avtoreferatlar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function create(): View

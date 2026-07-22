@@ -5,14 +5,13 @@ namespace App\Repositories\Eloquent;
 use App\Models\Journal;
 use App\Repositories\Contracts\JournalRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class JournalRepository implements JournalRepositoryInterface
 {
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function filtered(array $filters = []): Builder
     {
         return Journal::query()
-            ->with(['type', 'language'])
-            ->withCount('issues')
             // Search (name, ISSN)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -25,7 +24,14 @@ class JournalRepository implements JournalRepositoryInterface
             })
             ->when($filters['kind'] ?? null, function ($query, string $kind) {
                 $query->where('kind', $kind);
-            })
+            });
+    }
+
+    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->filtered($filters)
+            ->with(['type', 'language'])
+            ->withCount('issues')
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

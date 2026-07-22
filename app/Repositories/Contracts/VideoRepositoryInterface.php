@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Video;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -13,6 +14,13 @@ use Illuminate\Support\Collection;
  */
 interface VideoRepositoryInterface
 {
+    /**
+     * Filtered (unpaginated) query builder — shared by the paginated list and exports.
+     *
+     * @param  array{search?: string}  $filters
+     */
+    public function filtered(array $filters = []): Builder;
+
     /**
      * Filtered, paginated list of videos (name/author search).
      *

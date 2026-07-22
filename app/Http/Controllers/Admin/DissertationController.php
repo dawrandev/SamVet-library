@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\DissertationData;
+use App\Exports\DissertationsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DissertationRequest;
 use App\Models\Dissertation;
@@ -10,6 +11,8 @@ use App\Services\DissertationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DissertationController extends Controller
 {
@@ -26,6 +29,13 @@ class DissertationController extends Controller
             'filters' => $filters,
             ...$this->dissertationService->filterOptions(),
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search', 'journal_id', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new DissertationsExport($filters), 'dissertatsiyalar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function create(Request $request): View

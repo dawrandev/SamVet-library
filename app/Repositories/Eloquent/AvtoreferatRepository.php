@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Avtoreferat;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class AvtoreferatRepository implements AvtoreferatRepositoryInterface
 {
@@ -18,10 +19,9 @@ class AvtoreferatRepository implements AvtoreferatRepositoryInterface
         'publicationPlace',
     ];
 
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function filtered(array $filters = []): Builder
     {
         return Avtoreferat::query()
-            ->with(self::RELATIONS)
             // Search (title or author)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -31,7 +31,13 @@ class AvtoreferatRepository implements AvtoreferatRepositoryInterface
             })
             ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {
                 $query->where('resource_field_id', $fieldId);
-            })
+            });
+    }
+
+    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->filtered($filters)
+            ->with(self::RELATIONS)
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

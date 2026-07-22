@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\VideoData;
+use App\Exports\VideosExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreVideoRequest;
 use App\Http\Requests\Admin\UpdateVideoRequest;
@@ -11,6 +12,8 @@ use App\Services\VideoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VideoController extends Controller
 {
@@ -26,6 +29,13 @@ class VideoController extends Controller
             'videos' => $this->videoService->paginate($filters),
             'filters' => $filters,
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new VideosExport($filters), 'videolar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function show(Video $video): View

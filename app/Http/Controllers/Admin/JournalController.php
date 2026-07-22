@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Data\JournalData;
 use App\Enums\PublicationKind;
+use App\Exports\JournalsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreJournalRequest;
 use App\Http\Requests\Admin\UpdateJournalRequest;
@@ -13,6 +14,8 @@ use App\Services\JournalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class JournalController extends Controller
 {
@@ -46,6 +49,13 @@ class JournalController extends Controller
             'filters' => $filters,
             ...$this->journalService->filterOptions(),
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search', 'journal_type_id', 'kind']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new JournalsExport($filters), 'nashrlar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function show(Journal $journal): View

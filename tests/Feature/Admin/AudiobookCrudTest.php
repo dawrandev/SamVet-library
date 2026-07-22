@@ -156,3 +156,12 @@ it('404s when the track does not belong to the given audiobook', function () {
 
     $this->delete(route('admin.audiobooks.tracks.destroy', [$audiobook, $track]))->assertNotFound();
 });
+
+it('downloads an Excel export of the audiobook list', function () {
+    Audiobook::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.audiobooks.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});

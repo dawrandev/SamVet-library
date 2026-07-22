@@ -204,3 +204,20 @@ it('shows the parallel title and all languages on the book show page', function 
         ->assertSee($uz->name)
         ->assertSee($ru->name);
 });
+
+it('downloads an Excel export of the book list', function () {
+    Book::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.books.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});
+
+it('respects the current filters when exporting books', function () {
+    $type = BookType::factory()->create();
+    Book::factory()->create(['book_type_id' => $type->id, 'title' => 'Filtrlangan kitob']);
+    Book::factory()->create(['title' => 'Boshqa kitob']);
+
+    $this->get(route('admin.books.export', ['category_id' => 999999]))->assertOk();
+});

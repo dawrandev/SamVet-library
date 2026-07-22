@@ -155,6 +155,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('books/import', [BookImportController::class, 'create'])->name('books.import.create');
     Route::post('books/import', [BookImportController::class, 'store'])->name('books.import.store');
 
+    // Export books to Excel (BEFORE the resource — so it doesn't clash with `books/{book}`)
+    Route::get('books/export', [BookController::class, 'export'])->name('books.export');
+
     // Books CRUD
     Route::get('books/{book}/translations/create', [BookController::class, 'createTranslation'])->name('books.translations.create');
     Route::resource('books', BookController::class);
@@ -167,23 +170,38 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('journals/search', [JournalLookupController::class, 'show'])->name('journals.search');
     Route::get('journals/{journal}/issues', [JournalLookupController::class, 'issues'])->name('journals.issues.lookup');
 
+    // Export journals to Excel (BEFORE the resource — so it doesn't clash with `journals/{journal}`)
+    Route::get('journals/export', [JournalController::class, 'export'])->name('journals.export');
+
     // Journals CRUD (title level)
     Route::resource('journals', JournalController::class);
 
     // Journal articles CRUD
     Route::resource('articles', ArticleController::class);
 
+    // Export dissertations to Excel (BEFORE the resource — so it doesn't clash with `dissertations/{dissertation}`)
+    Route::get('dissertations/export', [DissertationController::class, 'export'])->name('dissertations.export');
+
     // Dissertations CRUD (catalogued like an article — belongs to a journal issue)
     Route::resource('dissertations', DissertationController::class);
 
+    // Export avtoreferats to Excel (BEFORE the resource — so it doesn't clash with `avtoreferats/{avtoreferat}`)
+    Route::get('avtoreferats/export', [AvtoreferatController::class, 'export'])->name('avtoreferats.export');
+
     // Avtoreferats CRUD (same shape as a dissertation)
     Route::resource('avtoreferats', AvtoreferatController::class);
+
+    // Export audiobooks to Excel (BEFORE the resource — so it doesn't clash with `audiobooks/{audiobook}`)
+    Route::get('audiobooks/export', [AudiobookController::class, 'export'])->name('audiobooks.export');
 
     // Audiobooks CRUD (title level)
     Route::resource('audiobooks', AudiobookController::class);
 
     // Audio tracks (modal on the audiobook show page)
     Route::resource('audiobooks.tracks', AudioTrackController::class)->only(['store', 'update', 'destroy']);
+
+    // Export videos to Excel (BEFORE the resource — so it doesn't clash with `videos/{video}`)
+    Route::get('videos/export', [VideoController::class, 'export'])->name('videos.export');
 
     // Videos CRUD (title level)
     Route::resource('videos', VideoController::class);
@@ -202,6 +220,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Import users via Excel (BEFORE the resource — so it doesn't clash with `readers/{reader}`)
     Route::get('readers/import', [ReaderImportController::class, 'create'])->name('readers.import.create');
     Route::post('readers/import', [ReaderImportController::class, 'store'])->name('readers.import.store');
+
+    // Export users to Excel (BEFORE the resource — so it doesn't clash with `readers/{reader}`)
+    Route::get('readers/export', [ReaderController::class, 'export'])->name('readers.export');
 
     // Reader card (ID card) PDF
     Route::get('readers/{reader}/card', [ReaderCardController::class, 'show'])->name('readers.card');

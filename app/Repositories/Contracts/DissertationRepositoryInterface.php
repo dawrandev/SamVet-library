@@ -4,9 +4,17 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Dissertation;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 interface DissertationRepositoryInterface
 {
+    /**
+     * Filtered (unpaginated) query builder — shared by the paginated list and exports.
+     *
+     * @param  array{search?: string, journal_id?: int, resource_field_id?: int}  $filters
+     */
+    public function filtered(array $filters = []): Builder;
+
     /**
      * Filtered, paginated list of dissertations.
      *

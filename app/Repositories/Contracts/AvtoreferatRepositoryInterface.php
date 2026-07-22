@@ -4,9 +4,17 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Avtoreferat;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 interface AvtoreferatRepositoryInterface
 {
+    /**
+     * Filtered (unpaginated) query builder — shared by the paginated list and exports.
+     *
+     * @param  array{search?: string, resource_field_id?: int}  $filters
+     */
+    public function filtered(array $filters = []): Builder;
+
     /**
      * Filtered, paginated list of avtoreferats.
      *

@@ -6,10 +6,11 @@ use App\Enums\ReaderStatus;
 use App\Models\Reader;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReaderRepository implements ReaderRepositoryInterface
 {
-    public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    public function filtered(array $filters = []): Builder
     {
         return Reader::query()
             // Search (full name, ID number, PINFL)
@@ -30,7 +31,12 @@ class ReaderRepository implements ReaderRepositoryInterface
             // (The record is kept; to view them, select the status=left filter.)
             ->when(empty($filters['status']), function ($query) {
                 $query->where('status', '!=', ReaderStatus::Left->value);
-            })
+            });
+    }
+
+    public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->filtered($filters)
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

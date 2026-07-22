@@ -235,3 +235,12 @@ it('creates an article (via admin.articles.store) when Turi=article is submitted
     expect($article)->not->toBeNull()
         ->and($article->journal_issue_id)->toBe($issue->id);
 });
+
+it('downloads an Excel export of the journal list', function () {
+    Journal::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.journals.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});

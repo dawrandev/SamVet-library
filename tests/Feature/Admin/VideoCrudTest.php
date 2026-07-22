@@ -121,3 +121,12 @@ it('404s when the track does not belong to the given video', function () {
 
     $this->delete(route('admin.videos.tracks.destroy', [$video, $track]))->assertNotFound();
 });
+
+it('downloads an Excel export of the video list', function () {
+    Video::factory()->count(2)->create();
+
+    $response = $this->get(route('admin.videos.export'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheet');
+});

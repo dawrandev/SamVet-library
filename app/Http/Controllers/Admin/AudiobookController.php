@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\AudiobookData;
+use App\Exports\AudiobooksExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAudiobookRequest;
 use App\Http\Requests\Admin\UpdateAudiobookRequest;
@@ -11,6 +12,8 @@ use App\Services\AudiobookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AudiobookController extends Controller
 {
@@ -26,6 +29,13 @@ class AudiobookController extends Controller
             'audiobooks' => $this->audiobookService->paginate($filters),
             'filters' => $filters,
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new AudiobooksExport($filters), 'audiokitoblar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function show(Audiobook $audiobook): View

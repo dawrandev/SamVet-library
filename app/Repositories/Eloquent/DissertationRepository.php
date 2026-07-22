@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Dissertation;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class DissertationRepository implements DissertationRepositoryInterface
 {
@@ -19,10 +20,9 @@ class DissertationRepository implements DissertationRepositoryInterface
         'resourceField',
     ];
 
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function filtered(array $filters = []): Builder
     {
         return Dissertation::query()
-            ->with(self::RELATIONS)
             // Search (title or author)
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($q) use ($search) {
@@ -38,7 +38,13 @@ class DissertationRepository implements DissertationRepositoryInterface
             })
             ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {
                 $query->where('resource_field_id', $fieldId);
-            })
+            });
+    }
+
+    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->filtered($filters)
+            ->with(self::RELATIONS)
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

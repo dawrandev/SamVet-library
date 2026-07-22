@@ -9,10 +9,16 @@
             <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ __('Videolar') }}</h2>
             <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $videos->total() }}</p>
         </div>
-        <a href="{{ route('admin.videos.create') }}"
-           class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-            <span class="text-lg leading-none">+</span> {{ __('Yangi video') }}
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.videos.export', $filters) }}"
+               class="shadow-theme-xs inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.06]">
+                <x-admin.icon name="download" class="h-4 w-4" /> {{ __('Excel export') }}
+            </a>
+            <a href="{{ route('admin.videos.create') }}"
+               class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
+                <span class="text-lg leading-none">+</span> {{ __('Yangi video') }}
+            </a>
+        </div>
     </div>
 
     {{-- Success message --}}

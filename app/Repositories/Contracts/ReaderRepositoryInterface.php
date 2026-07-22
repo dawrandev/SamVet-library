@@ -4,9 +4,17 @@ namespace App\Repositories\Contracts;
 
 use App\Models\Reader;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 interface ReaderRepositoryInterface
 {
+    /**
+     * Filtered (unpaginated) query builder — shared by the paginated list and exports.
+     *
+     * @param  array{search?: string, type?: string, status?: string}  $filters
+     */
+    public function filtered(array $filters = []): Builder;
+
     /**
      * Filtered, paginated list of members.
      *

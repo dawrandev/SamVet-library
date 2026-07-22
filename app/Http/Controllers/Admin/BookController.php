@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Data\BookData;
+use App\Exports\BooksExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBookRequest;
 use App\Http\Requests\Admin\UpdateBookRequest;
@@ -11,6 +12,8 @@ use App\Services\BookService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class BookController extends Controller
 {
@@ -27,6 +30,13 @@ class BookController extends Controller
             'filters' => $filters,
             ...$this->bookService->filterOptions(),
         ]);
+    }
+
+    public function export(Request $request): BinaryFileResponse
+    {
+        $filters = array_filter($request->only(['search', 'category_id', 'language_id']), fn ($v) => $v !== null && $v !== '');
+
+        return Excel::download(new BooksExport($filters), 'kitoblar-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function show(Book $book): View
