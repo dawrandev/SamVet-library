@@ -18,7 +18,7 @@ class StoreAudioTrackRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'audio_file' => ['required', 'mimes:mp3,mpga,wav', 'max:102400'], // 100 MB
+            'audio_file' => ['required', 'mimes:mp3,mpga,wav,m4a,aac,ogg', 'max:102400'], // 100 MB
         ];
     }
 

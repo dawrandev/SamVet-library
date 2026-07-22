@@ -75,6 +75,21 @@ it('adds an audio track to an audiobook', function () {
     Storage::disk('local')->assertExists($track->audio_file);
 });
 
+it('accepts an m4a (MPEG-4 audio) file for a track', function () {
+    Storage::fake('local');
+    $audiobook = Audiobook::factory()->create();
+
+    $this->post(route('admin.audiobooks.tracks.store', $audiobook), [
+        'title' => '1-qism',
+        'audio_file' => UploadedFile::fake()->create('track.m4a', 5000, 'audio/mp4'),
+    ])->assertRedirect(route('admin.audiobooks.show', $audiobook));
+
+    $track = $audiobook->tracks()->first();
+    expect($track)->not->toBeNull()
+        ->and($track->audio_file)->not->toBeNull();
+    Storage::disk('local')->assertExists($track->audio_file);
+});
+
 it('rejects a non-audio file for a track', function () {
     $audiobook = Audiobook::factory()->create();
 

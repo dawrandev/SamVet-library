@@ -19,7 +19,7 @@ class UpdateAudioTrackRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             // Optional on update — only replaces the file when a new one is uploaded.
-            'audio_file' => ['nullable', 'mimes:mp3,mpga,wav', 'max:102400'], // 100 MB
+            'audio_file' => ['nullable', 'mimes:mp3,mpga,wav,m4a,aac,ogg', 'max:102400'], // 100 MB
         ];
     }
 

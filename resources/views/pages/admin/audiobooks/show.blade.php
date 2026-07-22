@@ -132,7 +132,7 @@
                             <x-admin.form.uploading-overlay />
 
                             <x-admin.form.input name="title" :label="__('Nomi')" required :placeholder="__('masalan: 1-qism')" />
-                            <x-admin.form.file name="audio_file" :label="__('Audio fayl')" accept="audio/*" with-progress :help="__('MP3/WAV, 100 MB gacha')" />
+                            <x-admin.form.file name="audio_file" :label="__('Audio fayl')" accept="audio/*" with-progress :help="__('MP3, WAV, M4A, AAC yoki OGG, 100 MB gacha')" />
 
                             <div class="flex justify-end gap-3 pt-2">
                                 <button type="button" @click="showStore = false"
