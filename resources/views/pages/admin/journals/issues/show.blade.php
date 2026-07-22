@@ -58,7 +58,7 @@
                     </div>
                     @if ($issue->issue_date)
                         <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Kelgan vaqti') }}</dt>
+                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Chiqgan vaqti') }}</dt>
                             <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $issue->issue_date->format('d.m.Y') }}</dd>
                         </div>
                     @endif
@@ -92,7 +92,7 @@
                 class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
             >
                 <div class="flex items-center justify-between border-b border-gray-100 p-5 dark:border-gray-800 sm:px-6">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jismoniy nusxalar') }}</h3>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Nusxalar') }}</h3>
                     <button type="button" @click="showStore = true"
                             class="bg-brand-500 hover:bg-brand-600 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white">
                         + {{ __('Nusxa qo‘shish') }}

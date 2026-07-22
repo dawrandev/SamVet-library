@@ -6,9 +6,9 @@
     $kind = $journal->kind;   // PublicationKind (journal / newspaper)
     $isNewspaper = $kind === \App\Enums\PublicationKind::Newspaper;
 
-    // Muassis/Nashr joyi/Nashriyoti/Indeks are library-internal (kutubxona
-    // ichki ma'lumoti) — shown only in the admin panel, not on the public site.
-    $periodicity = $journal->periodicity?->label();
+    // Muassis/Nashr joyi/Indeks are library-internal (kutubxona ichki
+    // ma'lumoti) — shown only in the admin panel, not on the public site.
+    $periodicity = $journal->periodicityLabel();
 
     // Newspapers use the fixed NewspaperType enum; journals keep the journal_type_id lookup.
     $type = $isNewspaper ? $journal->newspaper_type?->label() : $journal->type?->name;

@@ -17,48 +17,75 @@ it('creates a journal', function () {
         'kind' => 'journal',
         'journal_type_id' => $type->id,
         'language_id' => $language->id,
-        'publisher' => 'SDVUNF nashriyoti',
         'publication_place_id' => $place->id,
         'issn' => '1234-5678',
-        'periodicity' => 'monthly',
+        'periodicity_unit' => 'month',
     ])->assertRedirect();
 
     $journal = Journal::firstWhere('name', 'Veterinariya axborotnomasi');
     expect($journal)->not->toBeNull()
         ->and($journal->kind->value)->toBe('journal')
-        ->and($journal->publisher)->toBe('SDVUNF nashriyoti')
         ->and($journal->publication_place_id)->toBe($place->id)
         ->and($journal->slug)->not->toBeEmpty();
 });
 
-it('creates a journal with a named periodicity', function () {
+it('creates a journal with a dynamic periodicity (unit + interval + count)', function () {
     $this->post(route('admin.journals.store'), [
-        'name' => 'Haftalik axborotnoma',
+        'name' => 'Ikki haftada uch marta',
         'kind' => 'journal',
-        'periodicity' => 'semiweekly',
+        'periodicity_unit' => 'week',
+        'periodicity_interval' => 2,
+        'periodicity_count' => 3,
     ])->assertRedirect();
 
-    $journal = Journal::firstWhere('name', 'Haftalik axborotnoma');
-    expect($journal->periodicity->value)->toBe('semiweekly');
+    $journal = Journal::firstWhere('name', 'Ikki haftada uch marta');
+    expect($journal->periodicity_unit->value)->toBe('week')
+        ->and($journal->periodicity_interval)->toBe(2)
+        ->and($journal->periodicity_count)->toBe(3);
 });
 
-it('rejects an invalid periodicity value', function () {
+it('defaults the interval and count to 1 when only a unit is chosen', function () {
+    $this->post(route('admin.journals.store'), [
+        'name' => 'Oylik nashr',
+        'kind' => 'journal',
+        'periodicity_unit' => 'month',
+    ])->assertRedirect();
+
+    $journal = Journal::firstWhere('name', 'Oylik nashr');
+    expect($journal->periodicity_interval)->toBe(1)
+        ->and($journal->periodicity_count)->toBe(1);
+});
+
+it('rejects an invalid periodicity unit value', function () {
     $this->from(route('admin.journals.create'))
         ->post(route('admin.journals.store'), [
             'name' => 'X',
             'kind' => 'journal',
-            'periodicity' => 'yearly', // not a JournalPeriodicity case
+            'periodicity_unit' => 'decade', // not a PeriodicityUnit case
         ])
-        ->assertSessionHasErrors('periodicity');
+        ->assertSessionHasErrors('periodicity_unit');
 });
 
-it('shows the periodicity label on the journal show page', function () {
+it('shows the named singular periodicity label on the journal show page', function () {
     $journal = Journal::factory()->create([
-        'periodicity' => 'biweekly',
+        'periodicity_unit' => 'week',
+        'periodicity_interval' => 1,
+        'periodicity_count' => 1,
     ]);
 
     $this->get(route('admin.journals.show', $journal))
-        ->assertSee('2 haftada bir');
+        ->assertSee('Haftalik');
+});
+
+it('shows the composed periodicity label ("N unitda M marta") on the journal show page', function () {
+    $journal = Journal::factory()->create([
+        'periodicity_unit' => 'week',
+        'periodicity_interval' => 2,
+        'periodicity_count' => 1,
+    ]);
+
+    $this->get(route('admin.journals.show', $journal))
+        ->assertSee('2 haftada 1 marta');
 });
 
 it('creates a newspaper (kind = newspaper)', function () {

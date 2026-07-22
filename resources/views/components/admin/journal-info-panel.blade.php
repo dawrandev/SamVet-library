@@ -3,14 +3,13 @@
 @php
     $isNewspaper = $journal->kind === \App\Enums\PublicationKind::Newspaper;
 
-    $periodicity = $journal->periodicity?->label();
+    $periodicity = $journal->periodicityLabel();
 
     $details = array_filter([
         ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal->name,
         ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $isNewspaper ? $journal->newspaper_type?->label() : $journal->type?->name,
         __('Indeks') => $journal->index,
         __('Nashr joyi') => $journal->publicationPlace?->name,
-        __('Nashriyoti') => $journal->publisher,
         __('Davriyligi') => $periodicity,
         __('Tili') => $journal->language?->name,
         __('ISSN') => $journal->issn,

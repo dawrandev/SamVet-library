@@ -73,7 +73,7 @@
                             <span class="text-[11px] font-semibold text-blue-700">{{ $periodical->kind->label() }}</span>
                             <h2 class="mt-0.5 line-clamp-2 font-bold text-gray-900 group-hover:text-blue-700">{{ $periodical->name }}</h2>
                             <p class="mt-1 line-clamp-1 text-xs text-gray-500">
-                                {{ $periodicalType }}@if ($periodical->periodicity) · {{ $periodical->periodicity->label() }}@endif
+                                {{ $periodicalType }}@if ($periodical->periodicity_unit) · {{ $periodical->periodicityLabel() }}@endif
                             </p>
                             <p class="mt-2 text-xs font-medium text-gray-400">{{ __(':n ta son', ['n' => $periodical->issues_count]) }}</p>
                         </div>

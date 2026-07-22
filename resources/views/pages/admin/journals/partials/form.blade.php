@@ -2,10 +2,12 @@
     $journal = $journal ?? null;
     $editing = ! is_null($journal);
 
-    $periodicityOptions = \App\Enums\JournalPeriodicity::cases();
+    $periodicityUnits = \App\Enums\PeriodicityUnit::cases();
     $newspaperTypeOptions = \App\Enums\NewspaperType::cases();
     $currentNewspaperType = old('newspaper_type', $editing ? $journal->newspaper_type?->value : null);
-    $currentPeriodicity = old('periodicity', $editing ? $journal->periodicity?->value : null);
+    $currentPeriodicityUnit = old('periodicity_unit', $editing ? $journal->periodicity_unit?->value : null);
+    $currentPeriodicityInterval = old('periodicity_interval', $editing ? ($journal->periodicity_interval ?? 1) : 1);
+    $currentPeriodicityCount = old('periodicity_count', $editing ? ($journal->periodicity_count ?? 1) : 1);
 
     $kindOptions = \App\Enums\PublicationKind::cases();
     $currentKind = old('kind', $editing ? $journal->kind?->value : ($kind ?? \App\Enums\PublicationKind::Journal->value));
@@ -128,16 +130,35 @@
                                 creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashriyot joyi')" />
                         </div>
 
-                        <div>
-                            <label for="periodicity" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Davriylik') }}</label>
-                            <select name="periodicity" id="periodicity"
-                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('periodicity') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
-                                <option value="">{{ __('Tanlang') }}</option>
-                                @foreach ($periodicityOptions as $opt)
-                                    <option value="{{ $opt->value }}" @selected($currentPeriodicity === $opt->value)>{{ $opt->label() }}</option>
-                                @endforeach
-                            </select>
-                            @error('periodicity')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                        <div x-data="{ unit: '{{ $currentPeriodicityUnit }}' }">
+                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Davriylik') }}</label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <input type="number" name="periodicity_interval" min="1" max="60"
+                                       x-show="unit !== '' && unit !== '{{ \App\Enums\PeriodicityUnit::Irregular->value }}'"
+                                       value="{{ $currentPeriodicityInterval }}"
+                                       class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-20 rounded-lg border border-gray-300 bg-transparent px-3 text-center text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+
+                                <select name="periodicity_unit" x-model="unit"
+                                        class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 {{ $errors->has('periodicity_unit') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                                    <option value="">{{ __('Tanlang') }}</option>
+                                    @foreach ($periodicityUnits as $opt)
+                                        <option value="{{ $opt->value }}" @selected($currentPeriodicityUnit === $opt->value)>{{ $opt->label() }}</option>
+                                    @endforeach
+                                </select>
+
+                                <span x-show="unit !== '' && unit !== '{{ \App\Enums\PeriodicityUnit::Irregular->value }}'" class="text-sm text-gray-500 dark:text-gray-400">{{ __('da') }}</span>
+
+                                <input type="number" name="periodicity_count" min="1" max="60"
+                                       x-show="unit !== '' && unit !== '{{ \App\Enums\PeriodicityUnit::Irregular->value }}'"
+                                       value="{{ $currentPeriodicityCount }}"
+                                       class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-20 rounded-lg border border-gray-300 bg-transparent px-3 text-center text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+
+                                <span x-show="unit !== '' && unit !== '{{ \App\Enums\PeriodicityUnit::Irregular->value }}'" class="text-sm text-gray-500 dark:text-gray-400">{{ __('marta') }}</span>
+                            </div>
+                            <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Masalan: 2, Hafta, 3 → “2 haftada 3 marta”') }}</p>
+                            @error('periodicity_unit')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            @error('periodicity_interval')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            @error('periodicity_count')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                         </div>
                     </div>
                 </x-admin.form.section>
@@ -149,9 +170,6 @@
                             <x-admin.form.input name="index" :label="__('Indeks')" :value="$journal?->index" :placeholder="__('indeks / raqam')"
                                 :help="__('Ochiq saytda ko‘rinmaydi.')" />
                         </div>
-
-                        <x-admin.form.input name="publisher" :label="__('Nashriyoti')"
-                            :value="old('publisher', $journal?->publisher)" placeholder="{{ __('masalan: Samarqand') }}" />
                     </div>
                 </x-admin.form.section>
             </div>

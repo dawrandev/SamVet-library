@@ -3,14 +3,14 @@
 use App\Enums\BookFormat;
 use App\Enums\CatalogSort;
 use App\Enums\CopyStatus;
-use App\Enums\JournalPeriodicity;
 use App\Enums\MenuItemType;
+use App\Enums\PeriodicityUnit;
 use App\Enums\PublicationKind;
 
 $labelled = [
     BookFormat::class,
     CopyStatus::class,
-    JournalPeriodicity::class,
+    PeriodicityUnit::class,
     MenuItemType::class,
     PublicationKind::class,
     CatalogSort::class,

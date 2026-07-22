@@ -58,20 +58,18 @@ it('shows a journal detail page but hides library-internal fields', function () 
         'name' => 'Ochiq jurnal',
         'index' => 'IDX-SECRET',
         'founder' => 'Maxfiy muassis',
-        'publisher' => 'Maxfiy nashriyot',
         'publication_place_id' => $place->id,
-        'periodicity' => 'weekly',
+        'periodicity_unit' => 'week',
     ]);
 
     $res = $this->get(route('journal.show', $journal->slug));
 
     $res->assertOk()->assertSee('Ochiq jurnal')
         ->assertSee('Haftalik');
-    // Indeks, muassis, nashr joyi and nashriyoti are library-internal —
-    // admin-only, never shown on the public site.
+    // Indeks, muassis and nashr joyi are library-internal — admin-only,
+    // never shown on the public site.
     $res->assertDontSee('IDX-SECRET')
         ->assertDontSee('Maxfiy muassis')
-        ->assertDontSee('Maxfiy nashriyot')
         ->assertDontSee('Maxfiy shahar');
 });
 

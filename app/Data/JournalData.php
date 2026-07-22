@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\PeriodicityUnit;
 use Illuminate\Http\Request;
 
 /**
@@ -17,15 +18,19 @@ class JournalData
         public readonly ?string $newspaper_type,
         public readonly ?string $founder,
         public readonly ?int $language_id,
-        public readonly ?string $publisher,
         public readonly ?int $publication_place_id,
         public readonly ?string $issn,
         public readonly ?string $index,
-        public readonly ?string $periodicity,
+        public readonly ?string $periodicity_unit,
+        public readonly ?int $periodicity_interval,
+        public readonly ?int $periodicity_count,
     ) {}
 
     public static function fromRequest(Request $request): self
     {
+        $unit = $request->input('periodicity_unit') ?: null;
+        $isIrregular = $unit === PeriodicityUnit::Irregular->value;
+
         return new self(
             name: $request->string('name')->toString(),
             kind: $request->string('kind')->toString(),
@@ -33,11 +38,12 @@ class JournalData
             newspaper_type: $request->input('newspaper_type') ?: null,
             founder: $request->input('founder'),
             language_id: $request->integer('language_id') ?: null,
-            publisher: $request->input('publisher') ?: null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             issn: $request->input('issn'),
             index: $request->input('index'),
-            periodicity: $request->input('periodicity') ?: null,
+            periodicity_unit: $unit,
+            periodicity_interval: ($unit && ! $isIrregular) ? ($request->integer('periodicity_interval') ?: 1) : null,
+            periodicity_count: ($unit && ! $isIrregular) ? ($request->integer('periodicity_count') ?: 1) : null,
         );
     }
 
@@ -55,11 +61,12 @@ class JournalData
             'newspaper_type' => $this->newspaper_type,
             'founder' => $this->founder,
             'language_id' => $this->language_id,
-            'publisher' => $this->publisher,
             'publication_place_id' => $this->publication_place_id,
             'issn' => $this->issn,
             'index' => $this->index,
-            'periodicity' => $this->periodicity,
+            'periodicity_unit' => $this->periodicity_unit,
+            'periodicity_interval' => $this->periodicity_interval,
+            'periodicity_count' => $this->periodicity_count,
         ];
     }
 }
