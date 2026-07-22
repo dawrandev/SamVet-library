@@ -3,8 +3,8 @@
     submits together via GET. Checkboxes / selects auto-submit for instant
     filtering; free-text fields apply on Enter or the "Filtrlash" button.
 
-    Expects: $filters (CatalogFilters), $categories, $types, $languages (facet
-    collections of {id,label,count}), $yearBounds ({min,max}).
+    Expects: $filters (CatalogFilters), $categories, $types, $languages, $formats
+    (facet collections of {id,label,count}), $yearBounds ({min,max}).
 --}}
 <div class="rounded-2xl border border-gray-200 bg-white p-5">
     {{-- Heading + clear --}}
@@ -32,6 +32,7 @@
         // Reusable facet groups: [legend, request key, facet collection, selected ids].
         $groups = [
             [__('Kategoriya'), 'categories', $categories, $filters->categories],
+            [__('Shakli'), 'formats', $formats, $filters->formats],
             [__('Turi'), 'types', $types, $filters->types],
             [__('Tili'), 'languages', $languages, $filters->languages],
         ];
@@ -43,8 +44,9 @@
                 <legend class="text-sm font-semibold text-gray-900">{{ $legend }}</legend>
                 <div class="mt-3 space-y-2.5">
                     @foreach ($facets as $facet)
-                        <label class="flex cursor-pointer items-center justify-between gap-2 text-sm">
-                            <span class="flex items-center gap-2.5 text-gray-600">
+                        @php $isChild = ($facet['parentId'] ?? null) !== null; @endphp
+                        <label class="flex cursor-pointer items-center justify-between gap-2 text-sm {{ $isChild ? 'pl-5' : '' }}">
+                            <span class="flex items-center gap-2.5 {{ $isChild ? 'text-gray-500' : 'text-gray-600' }}">
                                 <input type="checkbox" name="{{ $key }}[]" value="{{ $facet['id'] }}" onchange="this.form.submit()"
                                        @checked(in_array($facet['id'], $selected, true))
                                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500/40" />

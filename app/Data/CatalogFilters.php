@@ -11,15 +11,17 @@ use App\Enums\CatalogSort;
 final class CatalogFilters
 {
     /**
-     * @param  array<int, int>  $categories  selected category ids
+     * @param  array<int, int>  $categories  selected category ids (parent or child)
      * @param  array<int, int>  $types       selected book type ids
      * @param  array<int, int>  $languages   selected language ids
+     * @param  array<int, string>  $formats  selected BookFormat enum values
      */
     public function __construct(
         public readonly ?string $search = null,
         public readonly array $categories = [],
         public readonly array $types = [],
         public readonly array $languages = [],
+        public readonly array $formats = [],
         public readonly ?int $yearFrom = null,
         public readonly ?int $yearTo = null,
         public readonly ?string $author = null,
@@ -33,6 +35,7 @@ final class CatalogFilters
             || $this->categories !== []
             || $this->types !== []
             || $this->languages !== []
+            || $this->formats !== []
             || $this->yearFrom !== null
             || $this->yearTo !== null
             || $this->author !== null;

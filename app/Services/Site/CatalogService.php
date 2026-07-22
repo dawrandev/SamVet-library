@@ -32,6 +32,7 @@ class CatalogService
             'categories' => $this->catalog->categoryFacets(),
             'types' => $this->catalog->typeFacets(),
             'languages' => $this->catalog->languageFacets(),
+            'formats' => $this->catalog->formatFacets(),
             'yearBounds' => $this->catalog->yearBounds(),
             'sortOptions' => CatalogSort::cases(),
         ];

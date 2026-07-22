@@ -11,6 +11,7 @@ it('is active when any narrowing filter is set', function () {
     expect((new CatalogFilters(search: 'veterinariya'))->isActive())->toBeTrue();
     expect((new CatalogFilters(types: [1]))->isActive())->toBeTrue();
     expect((new CatalogFilters(languages: [2]))->isActive())->toBeTrue();
+    expect((new CatalogFilters(formats: ['print']))->isActive())->toBeTrue();
     expect((new CatalogFilters(yearFrom: 2000))->isActive())->toBeTrue();
     expect((new CatalogFilters(author: 'Aliyev'))->isActive())->toBeTrue();
 });

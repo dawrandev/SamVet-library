@@ -9,6 +9,7 @@
         'categories' => $filters->categories,
         'types' => $filters->types,
         'languages' => $filters->languages,
+        'formats' => $filters->formats,
         'year_from' => $filters->yearFrom,
         'year_to' => $filters->yearTo,
         'author' => $filters->author,
@@ -16,7 +17,7 @@
     ]);
 
     /** Link to the same listing with one filter removed. */
-    $without = function (string $key, ?int $id = null) use ($query): string {
+    $without = function (string $key, int|string|null $id = null) use ($query): string {
         if ($id !== null) {
             $query[$key] = array_values(array_diff($query[$key] ?? [], [$id]));
             if ($query[$key] === []) {
@@ -45,6 +46,9 @@
     }
     foreach ($labelsFor($languages, $filters->languages) as $facet) {
         $chips[] = ['label' => $facet['label'], 'url' => $without('languages', $facet['id'])];
+    }
+    foreach ($labelsFor($formats, $filters->formats) as $facet) {
+        $chips[] = ['label' => $facet['label'], 'url' => $without('formats', $facet['id'])];
     }
     if ($filters->search) {
         $chips[] = ['label' => '“'.$filters->search.'”', 'url' => $without('q')];

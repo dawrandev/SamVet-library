@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Site;
 
 use App\Data\CatalogFilters;
+use App\Enums\BookFormat;
 use App\Enums\CatalogSort;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,8 @@ class CatalogFilterRequest extends FormRequest
             'types.*' => ['integer'],
             'languages' => ['nullable', 'array'],
             'languages.*' => ['integer'],
+            'formats' => ['nullable', 'array'],
+            'formats.*' => ['string', Rule::enum(BookFormat::class)],
             'year_from' => ['nullable', 'integer', 'min:1000', 'max:2100'],
             'year_to' => ['nullable', 'integer', 'min:1000', 'max:2100'],
             'author' => ['nullable', 'string', 'max:255'],
@@ -48,6 +51,7 @@ class CatalogFilterRequest extends FormRequest
             categories: array_values(array_map('intval', $data['categories'] ?? [])),
             types: array_values(array_map('intval', $data['types'] ?? [])),
             languages: array_values(array_map('intval', $data['languages'] ?? [])),
+            formats: array_values(array_map('strval', $data['formats'] ?? [])),
             yearFrom: isset($data['year_from']) ? (int) $data['year_from'] : null,
             yearTo: isset($data['year_to']) ? (int) $data['year_to'] : null,
             author: $this->cleanString($data['author'] ?? null),

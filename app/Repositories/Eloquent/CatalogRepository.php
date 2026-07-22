@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Data\CatalogFilters;
+use App\Enums\BookFormat;
 use App\Enums\CopyStatus;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -32,9 +33,10 @@ class CatalogRepository implements CatalogRepositoryInterface
                 });
             })
             ->when($filters->categories, function (Builder $query, array $ids): void {
-                // Client-submitted IDs are always top-level (only those are shown as
-                // filter options) — expand to their children so books tagged only with
-                // a child category still surface under the parent filter.
+                // Selected ids can be top-level or child categories now. A parent id
+                // still expands to include its children (so it keeps surfacing books
+                // tagged only with a child); a child id has no children of its own,
+                // so this expansion is a no-op for it and it matches exactly.
                 $expandedIds = Category::query()->where(
                     fn (Builder $q) => $q->whereIn('id', $ids)->orWhereIn('parent_id', $ids)
                 )->pluck('id');
@@ -43,6 +45,9 @@ class CatalogRepository implements CatalogRepositoryInterface
             })
             ->when($filters->types, fn (Builder $query, array $ids) => $query->whereIn('book_type_id', $ids))
             ->when($filters->languages, fn (Builder $query, array $ids) => $query->whereIn('language_id', $ids))
+            ->when($filters->formats, function (Builder $query, array $formats): void {
+                $query->whereHas('copies', fn (Builder $q) => $q->whereIn('format', $formats));
+            })
             ->when($filters->yearFrom, fn (Builder $query, int $year) => $query->where('publication_year', '>=', $year))
             ->when($filters->yearTo, fn (Builder $query, int $year) => $query->where('publication_year', '<=', $year))
             ->when($filters->author, fn (Builder $query, string $author) => $query->whereHas(
@@ -56,20 +61,27 @@ class CatalogRepository implements CatalogRepositoryInterface
 
     public function categoryFacets(): Collection
     {
-        // Client site only ever browses/filters by top-level categories — children
-        // stay admin-only granularity. A parent's count rolls up books tagged with
-        // any of its children too, so the number stays meaningful.
-        return Category::query()
-            ->whereNull('parent_id')
-            ->with('children:id,parent_id')
-            ->orderBy('id')
-            ->get()
-            ->map(function (Category $category): array {
-                $ids = $category->children->pluck('id')->push($category->id);
-                $count = Book::whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $ids))->count();
+        // Every category — parent and child alike — is independently
+        // filterable. A parent's count still rolls up its children's books
+        // too (so picking a broad parent still surfaces everything under
+        // it); a child's count is just its own directly-tagged books.
+        // `parentId` lets the sidebar indent children under their parent.
+        $parents = Category::query()->whereNull('parent_id')->with('children:id,parent_id,name')->orderBy('id')->get();
 
-                return $this->facet($category, $count);
-            });
+        $facets = collect();
+
+        foreach ($parents as $parent) {
+            $childIds = $parent->children->pluck('id');
+            $parentCount = Book::whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $childIds->push($parent->id)))->count();
+            $facets->push($this->facet($parent, $parentCount) + ['parentId' => null]);
+
+            foreach ($parent->children as $child) {
+                $childCount = Book::whereHas('categories', fn (Builder $q) => $q->where('categories.id', $child->id))->count();
+                $facets->push($this->facet($child, $childCount) + ['parentId' => $parent->id]);
+            }
+        }
+
+        return $facets;
     }
 
     public function typeFacets(): Collection
@@ -88,6 +100,15 @@ class CatalogRepository implements CatalogRepositoryInterface
             ->orderBy('id')
             ->get()
             ->map(fn (Language $language): array => $this->facet($language, $language->books_count));
+    }
+
+    public function formatFacets(): Collection
+    {
+        return collect(BookFormat::cases())->map(function (BookFormat $format): array {
+            $count = Book::whereHas('copies', fn (Builder $q) => $q->where('format', $format->value))->count();
+
+            return ['id' => $format->value, 'label' => $format->label(), 'count' => $count];
+        })->values();
     }
 
     public function yearBounds(): array
