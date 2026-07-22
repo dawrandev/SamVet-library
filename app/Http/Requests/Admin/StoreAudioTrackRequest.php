@@ -18,7 +18,13 @@ class StoreAudioTrackRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'audio_file' => ['required', 'mimes:mp3,mpga,wav,m4a,aac,ogg', 'max:102400'], // 100 MB
+            // `extensions` (not `mimes`) — `mimes` re-detects the type from
+            // the file's own bytes via PHP's fileinfo/libmagic, which
+            // regularly misreads real MP3s (ID3v2 tags with embedded cover
+            // art especially) and rejects genuine audiobook files. Safe here
+            // since the upload is admin-only and the file is never executed —
+            // just stored on the protected disk and streamed back byte-for-byte.
+            'audio_file' => ['required', 'file', 'extensions:mp3,mpga,wav,m4a,aac,ogg', 'max:102400'], // 100 MB
         ];
     }
 

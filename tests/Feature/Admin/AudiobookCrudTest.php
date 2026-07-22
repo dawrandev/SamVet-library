@@ -90,6 +90,26 @@ it('accepts an m4a (MPEG-4 audio) file for a track', function () {
     Storage::disk('local')->assertExists($track->audio_file);
 });
 
+it('accepts a real mp3 even when its sniffed content type is generic (ID3v2 cover art confuses libmagic)', function () {
+    Storage::fake('local');
+    $audiobook = Audiobook::factory()->create();
+
+    // Regression: validation used to be `mimes:...`, which re-detects the
+    // type from the file's own bytes — real MP3s with ID3v2 tags (embedded
+    // cover art especially) are routinely mis-sniffed as something generic
+    // like application/octet-stream and got rejected outright. `extensions`
+    // trusts the filename instead, so a mismatched sniffed type must not
+    // block a genuinely .mp3-named upload anymore.
+    $this->post(route('admin.audiobooks.tracks.store', $audiobook), [
+        'title' => '1-qism',
+        'audio_file' => UploadedFile::fake()->create('01. Yoqolgan dunyo.mp3', 5000, 'application/octet-stream'),
+    ])->assertRedirect(route('admin.audiobooks.show', $audiobook));
+
+    $track = $audiobook->tracks()->first();
+    expect($track)->not->toBeNull();
+    Storage::disk('local')->assertExists($track->audio_file);
+});
+
 it('rejects a non-audio file for a track', function () {
     $audiobook = Audiobook::factory()->create();
 
