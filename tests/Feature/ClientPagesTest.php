@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Audiobook;
+use App\Models\AudioTrack;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Category;
@@ -14,6 +16,7 @@ it('renders the core public pages', function (string $path) {
     'catalog' => '/katalog',
     'sections' => '/bolimlar',
     'periodicals' => '/jurnallar',
+    'audiobooks' => '/audiokitoblar',
     'statistics' => '/statistika',
     'news' => '/yangiliklar',
     'login' => '/kirish',
@@ -83,6 +86,20 @@ it('shows a newspaper detail page with its fixed newspaper_type label', function
         ->assertOk()
         ->assertSee('Ochiq gazeta')
         ->assertSee('Ma’naviy-ma’rifiy gazeta');
+});
+
+it('shows an audiobook detail page with its track list, but no direct file link', function () {
+    $audiobook = Audiobook::factory()->create(['name' => 'Ochiq audiokitob', 'author' => 'Ochiq muallif']);
+    $track = AudioTrack::factory()->for($audiobook)->create(['title' => '1-qism', 'audio_file' => 'audiobooks/audio/secret.mp3']);
+
+    $res = $this->get(route('audiobook.show', $audiobook->slug));
+
+    $res->assertOk()
+        ->assertSee('Ochiq audiokitob')
+        ->assertSee('Ochiq muallif')
+        ->assertSee('1-qism');
+    // The raw protected file path must never leak into the public HTML.
+    $res->assertDontSee($track->audio_file);
 });
 
 it('shows a published news item and hides drafts', function () {

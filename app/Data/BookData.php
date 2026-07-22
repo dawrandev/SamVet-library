@@ -33,7 +33,6 @@ class BookData
         public readonly array $category_ids,
         public readonly ?UploadedFile $cover,
         public readonly ?UploadedFile $electronic_file,
-        public readonly ?UploadedFile $audio_file,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
     ) {}
@@ -60,7 +59,6 @@ class BookData
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
-            audio_file: $request->file('audio_file'),
             contributors: $request->input('contributors', []),
         );
     }

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\AudiobookController;
+use App\Http\Controllers\Admin\AudioTrackController;
 use App\Http\Controllers\Admin\AvtoreferatController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
@@ -47,6 +49,8 @@ use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
 use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Site\ArticleController as SiteArticleController;
+use App\Http\Controllers\Site\AudiobookController as SiteAudiobookController;
+use App\Http\Controllers\Site\AudioReaderController;
 use App\Http\Controllers\Site\BookController as SiteBookController;
 use App\Http\Controllers\Site\CatalogController;
 use App\Http\Controllers\Site\HomeController;
@@ -73,6 +77,8 @@ Route::get('/bolimlar', [SectionController::class, 'index'])->name('sections');
 Route::get('/jurnallar', [PeriodicalController::class, 'index'])->name('periodicals.index');
 Route::get('/jurnal/{slug}', [SiteJournalController::class, 'show'])->name('journal.show');
 Route::get('/maqola/{slug}', [SiteArticleController::class, 'show'])->name('article.show');
+Route::get('/audiokitoblar', [SiteAudiobookController::class, 'index'])->name('audiobooks.index');
+Route::get('/audiokitob/{slug}', [SiteAudiobookController::class, 'show'])->name('audiobook.show');
 Route::get('/yangiliklar', [SiteNewsController::class, 'index'])->name('news.index');
 Route::get('/yangiliklar/{slug}', [SiteNewsController::class, 'show'])->name('news.show');
 Route::get('/sahifa/{id}', [SitePageController::class, 'show'])->whereNumber('id')->name('page.show');
@@ -97,6 +103,16 @@ Route::middleware('reader.auth')->prefix('oqish')->group(function () {
     Route::get('kitob/{slug}/fayl', [OnlineReaderController::class, 'bookFile'])->name('read.book.file');
     Route::get('maqola/{slug}', [OnlineReaderController::class, 'article'])->name('read.article');
     Route::get('maqola/{slug}/fayl', [OnlineReaderController::class, 'articleFile'])->name('read.article.file');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Protected online listening — signed-in readers only, no download
+|--------------------------------------------------------------------------
+*/
+Route::middleware('reader.auth')->prefix('tinglash')->group(function () {
+    Route::get('audiokitob/{slug}', [AudioReaderController::class, 'show'])->name('listen.audiobook');
+    Route::get('audiokitob/{slug}/{track}/fayl', [AudioReaderController::class, 'trackFile'])->name('listen.audiobook.file');
 });
 
 // Language switch (for everyone — including the login page)
@@ -147,6 +163,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Avtoreferats CRUD (same shape as a dissertation)
     Route::resource('avtoreferats', AvtoreferatController::class);
+
+    // Audiobooks CRUD (title level)
+    Route::resource('audiobooks', AudiobookController::class);
+
+    // Audio tracks (modal on the audiobook show page)
+    Route::resource('audiobooks.tracks', AudioTrackController::class)->only(['store', 'update', 'destroy']);
 
     // Journal issues (modal on the journal show page + issue page)
     Route::resource('journals.issues', JournalIssueController::class)->only(['store', 'show', 'update', 'destroy']);

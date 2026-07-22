@@ -50,7 +50,6 @@ class StoreBookRequest extends FormRequest
 
             'cover' => ['nullable', 'image', 'max:2048'],                 // 2 MB
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'],  // 950 MB
-            'audio_file' => ['nullable', 'mimes:mp3,mpga,wav', 'max:102400'], // 100 MB
         ];
     }
 
@@ -77,7 +76,6 @@ class StoreBookRequest extends FormRequest
             'print_sheets' => __('Bosma taboq'),
             'cover' => __('Muqova rasmi'),
             'electronic_file' => __('Elektron fayl'),
-            'audio_file' => __('Audio fayl'),
         ];
     }
 }

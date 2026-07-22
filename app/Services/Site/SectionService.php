@@ -3,6 +3,7 @@
 namespace App\Services\Site;
 
 use App\Enums\PublicationKind;
+use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Journal;
@@ -54,6 +55,12 @@ class SectionService
                 'label' => __('Gazetalar'),
                 'count' => (int) ($periodicalCounts[PublicationKind::Newspaper->value] ?? 0),
                 'url' => route('periodicals.index', ['kind' => PublicationKind::Newspaper->value]),
+            ])
+            ->push([
+                'key' => 'audiobooks',
+                'label' => __('Audiokitoblar'),
+                'count' => Audiobook::count(),
+                'url' => route('audiobooks.index'),
             ])
             ->values();
     }

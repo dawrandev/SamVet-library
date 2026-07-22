@@ -219,7 +219,6 @@ return [
         'parent_id' => 'Asosiy (ota) yozuv',
         'translation_of' => 'Tarjima manbasi',
         'electronic_file' => 'Elektron fayl',
-        'audio_file' => 'Audio fayl',
 
         // Nusxa (copy)
         'inventory_number' => 'Inventar raqami',

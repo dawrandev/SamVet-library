@@ -69,15 +69,12 @@ class BookService
         return DB::transaction(function () use ($data, $translationOfId) {
             $attributes = $data->toAttributes();
 
-            // Files (cover — public; electronic/audio — protected)
+            // Files (cover — public; electronic — protected)
             if ($data->cover) {
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'covers');
             }
             if ($data->electronic_file) {
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file, 'books/electronic');
-            }
-            if ($data->audio_file) {
-                $attributes['audio_file'] = $this->storeProtected($data->audio_file, 'books/audio');
             }
 
             // If it is a translation edition — link it to the same work group as the source
@@ -124,10 +121,6 @@ class BookService
                 $this->deleteFile('local', $book->electronic_file);
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file, 'books/electronic');
             }
-            if ($data->audio_file) {
-                $this->deleteFile('local', $book->audio_file);
-                $attributes['audio_file'] = $this->storeProtected($data->audio_file, 'books/audio');
-            }
 
             $book = $this->books->update($book, $attributes);
 
@@ -144,7 +137,6 @@ class BookService
         DB::transaction(function () use ($book) {
             $this->deleteFile('public', $book->cover_image);
             $this->deleteFile('local', $book->electronic_file);
-            $this->deleteFile('local', $book->audio_file);
 
             $this->books->delete($book);
         });

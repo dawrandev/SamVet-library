@@ -13,7 +13,6 @@
             $hasPrint ? __('Bosma') : null,
             $hasBraille ? __('Brayl') : null,
             $book->electronic_file ? __('Elektron') : null,
-            $book->audio_file ? __('Audio') : null,
         ]);
 
         $meta = array_filter([
@@ -119,10 +118,6 @@
                     <li class="flex items-center justify-between">
                         <span class="text-gray-500 dark:text-gray-400">{{ __('Elektron kitob (PDF)') }}</span>
                         <span class="{{ $book->electronic_file ? 'text-success-600' : 'text-gray-400' }}">{{ $book->electronic_file ? __('bor') : __('yo‘q') }}</span>
-                    </li>
-                    <li class="flex items-center justify-between">
-                        <span class="text-gray-500 dark:text-gray-400">{{ __('Audio (mp3)') }}</span>
-                        <span class="{{ $book->audio_file ? 'text-success-600' : 'text-gray-400' }}">{{ $book->audio_file ? __('bor') : __('yo‘q') }}</span>
                     </li>
                 </ul>
             </div>

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\ArticleRepositoryInterface;
+use App\Repositories\Contracts\AudiobookRepositoryInterface;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use App\Repositories\Contracts\BookReadingRepositoryInterface;
 use App\Repositories\Contracts\BookRepositoryInterface;
@@ -26,6 +27,7 @@ use App\Repositories\Contracts\SubscriptionCatalogRepositoryInterface;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
 use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\ArticleRepository;
+use App\Repositories\Eloquent\AudiobookRepository;
 use App\Repositories\Eloquent\AvtoreferatRepository;
 use App\Repositories\Eloquent\BookReadingRepository;
 use App\Repositories\Eloquent\BookRepository;
@@ -60,6 +62,7 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public array $bindings = [
         ArticleRepositoryInterface::class => ArticleRepository::class,
+        AudiobookRepositoryInterface::class => AudiobookRepository::class,
         AvtoreferatRepositoryInterface::class => AvtoreferatRepository::class,
         BookReadingRepositoryInterface::class => BookReadingRepository::class,
         BookRepositoryInterface::class => BookRepository::class,
