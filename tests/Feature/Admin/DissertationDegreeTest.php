@@ -2,7 +2,6 @@
 
 use App\Models\Dissertation;
 use App\Models\DoctoralSpecialty;
-use App\Models\JournalIssue;
 use App\Models\MasterSpecialty;
 use App\Models\ScienceField;
 
@@ -12,16 +11,16 @@ beforeEach(fn () => actingAsAdmin());
 
 it('creates, updates and deletes a science field', function () {
     $this->post(route('admin.lookups.science-fields.store'), [
-        'name' => 'Veterinariya fanlari',
+        'name' => 'Iqtisodiyot fanlari',
     ])->assertRedirect(route('admin.lookups.science-fields.index'));
 
-    $field = ScienceField::firstWhere('name', 'Veterinariya fanlari');
+    $field = ScienceField::firstWhere('name', 'Iqtisodiyot fanlari');
     expect($field)->not->toBeNull();
 
     $this->put(route('admin.lookups.science-fields.update', $field), [
-        'name' => 'Biologiya fanlari',
+        'name' => 'Huquq fanlari',
     ])->assertRedirect();
-    expect($field->fresh()->name)->toBe('Biologiya fanlari');
+    expect($field->fresh()->name)->toBe('Huquq fanlari');
 
     $this->delete(route('admin.lookups.science-fields.destroy', $field))->assertRedirect();
     $this->assertDatabaseMissing('science_fields', ['id' => $field->id]);
@@ -29,16 +28,16 @@ it('creates, updates and deletes a science field', function () {
 
 it('creates, updates and deletes a doctoral specialty', function () {
     $this->post(route('admin.lookups.doctoral-specialties.store'), [
-        'name' => '03.00.06-Zoologiya',
+        'name' => '03.00.07-Mikrobiologiya',
     ])->assertRedirect(route('admin.lookups.doctoral-specialties.index'));
 
-    $specialty = DoctoralSpecialty::firstWhere('name', '03.00.06-Zoologiya');
+    $specialty = DoctoralSpecialty::firstWhere('name', '03.00.07-Mikrobiologiya');
     expect($specialty)->not->toBeNull();
 
     $this->put(route('admin.lookups.doctoral-specialties.update', $specialty), [
-        'name' => '03.00.07-Mikrobiologiya',
+        'name' => '03.00.08-Boshqa yo‘nalish',
     ])->assertRedirect();
-    expect($specialty->fresh()->name)->toBe('03.00.07-Mikrobiologiya');
+    expect($specialty->fresh()->name)->toBe('03.00.08-Boshqa yo‘nalish');
 
     $this->delete(route('admin.lookups.doctoral-specialties.destroy', $specialty))->assertRedirect();
     $this->assertDatabaseMissing('doctoral_specialties', ['id' => $specialty->id]);
@@ -46,16 +45,16 @@ it('creates, updates and deletes a doctoral specialty', function () {
 
 it('creates, updates and deletes a master specialty', function () {
     $this->post(route('admin.lookups.master-specialties.store'), [
-        'name' => '70710201 - Biotexnologiya',
+        'name' => '70710202 - Genetika',
     ])->assertRedirect(route('admin.lookups.master-specialties.index'));
 
-    $specialty = MasterSpecialty::firstWhere('name', '70710201 - Biotexnologiya');
+    $specialty = MasterSpecialty::firstWhere('name', '70710202 - Genetika');
     expect($specialty)->not->toBeNull();
 
     $this->put(route('admin.lookups.master-specialties.update', $specialty), [
-        'name' => '70710202 - Genetika',
+        'name' => '70710203 - Seleksiya',
     ])->assertRedirect();
-    expect($specialty->fresh()->name)->toBe('70710202 - Genetika');
+    expect($specialty->fresh()->name)->toBe('70710203 - Seleksiya');
 
     $this->delete(route('admin.lookups.master-specialties.destroy', $specialty))->assertRedirect();
     $this->assertDatabaseMissing('master_specialties', ['id' => $specialty->id]);
@@ -70,14 +69,11 @@ it('lets the inline lookup-create endpoint add a new science field', function ()
     expect(ScienceField::where('name', 'Agrar fanlar')->exists())->toBeTrue();
 });
 
-// --- Degree-conditional validation ---
+// --- Degree-conditional validation (no journal/issue involved at all) ---
 
 it('requires science field and doctoral specialty when degree is phd', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [
-            'journal_issue_id' => $issue->id,
             'title' => 'PhD dissertatsiya',
             'degree' => 'phd',
         ])
@@ -85,11 +81,8 @@ it('requires science field and doctoral specialty when degree is phd', function 
 });
 
 it('requires science field and doctoral specialty when degree is dsc', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [
-            'journal_issue_id' => $issue->id,
             'title' => 'DSc dissertatsiya',
             'degree' => 'dsc',
         ])
@@ -97,11 +90,8 @@ it('requires science field and doctoral specialty when degree is dsc', function 
 });
 
 it('requires master specialty when degree is master', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [
-            'journal_issue_id' => $issue->id,
             'title' => 'Magistrlik dissertatsiya',
             'degree' => 'master',
         ])
@@ -109,10 +99,7 @@ it('requires master specialty when degree is master', function () {
 });
 
 it('does not require any specialty when degree is left blank', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->post(route('admin.dissertations.store'), [
-        'journal_issue_id' => $issue->id,
         'title' => 'Turi ko‘rsatilmagan dissertatsiya',
     ])->assertSessionDoesntHaveErrors(['science_field_id', 'doctoral_specialty_id', 'master_specialty_id']);
 });
@@ -120,12 +107,10 @@ it('does not require any specialty when degree is left blank', function () {
 // --- Saving with the correct field set ---
 
 it('saves a phd dissertation with its science field and doctoral specialty', function () {
-    $issue = JournalIssue::factory()->create();
     $scienceField = ScienceField::factory()->create();
     $specialty = DoctoralSpecialty::factory()->create();
 
     $this->post(route('admin.dissertations.store'), [
-        'journal_issue_id' => $issue->id,
         'title' => 'PhD ishi',
         'degree' => 'phd',
         'science_field_id' => $scienceField->id,
@@ -141,13 +126,11 @@ it('saves a phd dissertation with its science field and doctoral specialty', fun
 });
 
 it('saves a master dissertation with its master specialty, ignoring any doctoral fields sent alongside', function () {
-    $issue = JournalIssue::factory()->create();
     $scienceField = ScienceField::factory()->create();
     $doctoralSpecialty = DoctoralSpecialty::factory()->create();
     $masterSpecialty = MasterSpecialty::factory()->create();
 
     $this->post(route('admin.dissertations.store'), [
-        'journal_issue_id' => $issue->id,
         'title' => 'Magistrlik ishi',
         'degree' => 'master',
         // Stray doctoral-side values (e.g. leftover from a prior degree toggle) must not be saved.
@@ -165,10 +148,7 @@ it('saves a master dissertation with its master specialty, ignoring any doctoral
 });
 
 it('saves admin-only inventory and condition fields', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->post(route('admin.dissertations.store'), [
-        'journal_issue_id' => $issue->id,
         'title' => 'Inventarli dissertatsiya',
         'inventory_number' => 'INV-D-0001',
         'condition' => 'new',
@@ -188,4 +168,12 @@ it('shows the degree-conditional fields on the create form', function () {
         ->assertSee('Mutaxassislik shifri va nomi')
         ->assertSee('Inventari')
         ->assertSee('Holati');
+});
+
+// --- Seeded specialty codes (from the librarian's own reference list) ---
+
+it('seeds the science field, doctoral and master specialty codes on migration', function () {
+    expect(ScienceField::where('name', 'Veterinariya fanlari')->exists())->toBeTrue()
+        ->and(DoctoralSpecialty::where('name', '03.00.06-Zoologiya')->exists())->toBeTrue()
+        ->and(MasterSpecialty::where('name', '70710201 - Biotexnologiya')->exists())->toBeTrue();
 });

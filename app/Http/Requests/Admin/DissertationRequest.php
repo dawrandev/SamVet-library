@@ -27,7 +27,6 @@ class DissertationRequest extends FormRequest
         $maxYear = (int) date('Y') + 1;
 
         return [
-            'journal_issue_id' => ['required', 'integer', 'exists:journal_issues,id'],
             'title' => ['required', 'string', 'max:500'],
             'author' => ['nullable', 'string', 'max:500'],
             'degree' => ['nullable', new Enum(DissertationType::class)],
@@ -81,7 +80,6 @@ class DissertationRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'journal_issue_id' => __('Jurnal soni'),
             'title' => __('Dissertatsiya nomi'),
             'author' => __('Muallifi'),
             'degree' => __('Turi'),
@@ -100,17 +98,6 @@ class DissertationRequest extends FormRequest
             'condition' => __('Holati'),
             'annotation' => __('Annotatsiya'),
             'electronic_file' => __('Elektron fayl'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'journal_issue_id.required' => __('Jurnal sonini tanlang.'),
-            'journal_issue_id.exists' => __('Tanlangan jurnal soni topilmadi.'),
         ];
     }
 }

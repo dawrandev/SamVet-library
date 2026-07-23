@@ -22,7 +22,7 @@ class DissertationController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'journal_id', 'resource_field_id']);
+        $filters = $request->only(['search', 'resource_field_id']);
 
         return view('pages.admin.dissertations.index', [
             'dissertations' => $this->dissertationService->paginate($filters),
@@ -33,23 +33,14 @@ class DissertationController extends Controller
 
     public function export(Request $request): BinaryFileResponse
     {
-        $filters = array_filter($request->only(['search', 'journal_id', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($request->only(['search', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
 
         return Excel::download(new DissertationsExport($filters), 'dissertatsiyalar-'.now()->format('Y-m-d').'.xlsx');
     }
 
-    public function create(Request $request): View
+    public function create(): View
     {
-        // After a validation error, re-select the journal/issue the user had chosen.
-        $selection = $this->dissertationService->formSelection(
-            $this->intOldInput($request, 'journal_id'),
-            $this->intOldInput($request, 'journal_issue_id'),
-        );
-
-        return view('pages.admin.dissertations.create', [
-            ...$this->dissertationService->formOptions(),
-            ...$selection,
-        ]);
+        return view('pages.admin.dissertations.create', $this->dissertationService->formOptions());
     }
 
     public function store(DissertationRequest $request): RedirectResponse
@@ -63,29 +54,16 @@ class DissertationController extends Controller
 
     public function show(Dissertation $dissertation): View
     {
-        $dissertation->load([
-            'journalIssue.journal.type',
-            'journalIssue.journal.publicationPlace',
-            'resourceField',
-        ]);
+        $dissertation->load('resourceField');
 
         return view('pages.admin.dissertations.show', ['dissertation' => $dissertation]);
     }
 
-    public function edit(Request $request, Dissertation $dissertation): View
+    public function edit(Dissertation $dissertation): View
     {
-        $dissertation->load('journalIssue.journal.type');
-
-        // Old input (after a validation error) wins over the stored value.
-        $selection = $this->dissertationService->formSelection(
-            $this->intOldInput($request, 'journal_id') ?? $dissertation->journalIssue?->journal_id,
-            $this->intOldInput($request, 'journal_issue_id') ?? $dissertation->journal_issue_id,
-        );
-
         return view('pages.admin.dissertations.edit', [
             'dissertation' => $dissertation,
             ...$this->dissertationService->formOptions(),
-            ...$selection,
         ]);
     }
 
@@ -105,15 +83,5 @@ class DissertationController extends Controller
         return redirect()
             ->route('admin.dissertations.index')
             ->with('success', __('Dissertatsiya o‘chirildi.'));
-    }
-
-    /**
-     * Read a flashed old-input value as a positive int, or null when absent.
-     */
-    private function intOldInput(Request $request, string $key): ?int
-    {
-        $value = $request->old($key);
-
-        return ($value === null || $value === '') ? null : (int) $value;
     }
 }

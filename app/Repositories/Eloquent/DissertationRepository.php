@@ -10,15 +10,11 @@ use Illuminate\Database\Eloquent\Builder;
 class DissertationRepository implements DissertationRepositoryInterface
 {
     /**
-     * Eager loads to avoid N+1 (issue → journal → type/place, plus lookups).
+     * Eager loads to avoid N+1.
      *
      * @var array<int, string>
      */
-    private const RELATIONS = [
-        'journalIssue.journal.type',
-        'journalIssue.journal.publicationPlace',
-        'resourceField',
-    ];
+    private const RELATIONS = ['resourceField'];
 
     public function filtered(array $filters = []): Builder
     {
@@ -28,12 +24,6 @@ class DissertationRepository implements DissertationRepositoryInterface
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('author', 'like', "%{$search}%");
-                });
-            })
-            // Filter by journal (through the parent issue)
-            ->when($filters['journal_id'] ?? null, function ($query, int $journalId) {
-                $query->whereHas('journalIssue', function ($q) use ($journalId) {
-                    $q->where('journal_id', $journalId);
                 });
             })
             ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {

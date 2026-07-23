@@ -12,7 +12,6 @@ use Illuminate\Http\UploadedFile;
 class DissertationData
 {
     public function __construct(
-        public readonly int $journal_issue_id,
         public readonly string $title,
         public readonly ?string $author,
         public readonly ?string $degree,
@@ -38,7 +37,6 @@ class DissertationData
     public static function fromRequest(Request $request): self
     {
         return new self(
-            journal_issue_id: $request->integer('journal_issue_id'),
             title: $request->string('title')->toString(),
             author: $request->input('author') ?: null,
             degree: $request->input('degree') ?: null,
@@ -74,7 +72,6 @@ class DissertationData
         $isMaster = $this->degree === 'master';
 
         return [
-            'journal_issue_id' => $this->journal_issue_id,
             'title' => $this->title,
             'author' => $this->author,
             'degree' => $this->degree,

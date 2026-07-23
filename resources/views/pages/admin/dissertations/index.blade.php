@@ -36,16 +36,6 @@
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
         </div>
         <div class="sm:w-48">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Jurnal') }}</label>
-            <select name="journal_id"
-                    class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
-                <option value="">{{ __('Barchasi') }}</option>
-                @foreach ($journals as $journal)
-                    <option value="{{ $journal->id }}" @selected(($filters['journal_id'] ?? null) == $journal->id)>{{ $journal->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="sm:w-48">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Resurs sohasi') }}</label>
             <select name="resource_field_id"
                     class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
@@ -70,7 +60,7 @@
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Dissertatsiya') }}</th>
-                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Jurnal / Son') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Resurs sohasi') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('PDF') }}</th>
                         <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
@@ -85,12 +75,7 @@
                                     <p class="text-theme-xs truncate text-gray-500 dark:text-gray-400">{{ $dissertation->author }}</p>
                                 </div>
                             </td>
-                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">
-                                {{ $dissertation->journalIssue?->journal?->name ?? '—' }}
-                                @if ($dissertation->journalIssue)
-                                    <span class="text-theme-xs text-gray-400">({{ $dissertation->journalIssue->issue_number }}, {{ $dissertation->journalIssue->year }})</span>
-                                @endif
-                            </td>
+                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $dissertation->degree?->label() ?? '—' }}</td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $dissertation->resourceField?->name ?? '—' }}</td>
                             <td class="px-5 py-4 text-theme-xs">
                                 <span class="{{ $dissertation->electronic_file ? 'text-success-600' : 'text-gray-400' }}">{{ $dissertation->electronic_file ? '📎' : '—' }}</span>

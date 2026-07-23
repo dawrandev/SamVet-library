@@ -11,14 +11,14 @@ interface DissertationRepositoryInterface
     /**
      * Filtered (unpaginated) query builder — shared by the paginated list and exports.
      *
-     * @param  array{search?: string, journal_id?: int, resource_field_id?: int}  $filters
+     * @param  array{search?: string, resource_field_id?: int}  $filters
      */
     public function filtered(array $filters = []): Builder;
 
     /**
      * Filtered, paginated list of dissertations.
      *
-     * @param  array{search?: string, journal_id?: int, resource_field_id?: int}  $filters
+     * @param  array{search?: string, resource_field_id?: int}  $filters
      */
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator;
 

@@ -17,7 +17,7 @@ class DissertationsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wi
     use WithBoldHeaderRow;
 
     /**
-     * @param  array{search?: string, journal_id?: int, resource_field_id?: int}  $filters
+     * @param  array{search?: string, resource_field_id?: int}  $filters
      */
     public function __construct(private readonly array $filters) {}
 
@@ -25,8 +25,6 @@ class DissertationsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wi
     {
         return app(DissertationRepositoryInterface::class)->filtered($this->filters)
             ->with([
-                'journalIssue.journal.type',
-                'journalIssue.journal.publicationPlace',
                 'resourceField', 'scienceField', 'doctoralSpecialty', 'masterSpecialty',
                 'language', 'publicationPlace', 'contributors.contributorRole',
             ])

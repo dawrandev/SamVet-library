@@ -1,39 +1,44 @@
 <?php
 
 use App\Models\Dissertation;
-use App\Models\JournalIssue;
 use Illuminate\Http\UploadedFile;
 
 beforeEach(fn () => actingAsAdmin());
 
-it('creates a dissertation linked to a journal issue', function () {
-    $issue = JournalIssue::factory()->create();
-
+it('creates a standalone dissertation, with no journal/issue involved', function () {
     $this->post(route('admin.dissertations.store'), [
-        'journal_issue_id' => $issue->id,
         'title' => 'Test dissertatsiya',
         'author' => 'N. Testov',
     ])->assertRedirect();
 
     $dissertation = Dissertation::firstWhere('title', 'Test dissertatsiya');
     expect($dissertation)->not->toBeNull()
-        ->and($dissertation->journal_issue_id)->toBe($issue->id)
         ->and($dissertation->slug)->not->toBeEmpty();
 });
 
-it('requires a journal issue and title, but not an author', function () {
+it('requires only a title — not a journal, not even an author', function () {
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [])
-        ->assertSessionHasErrors(['journal_issue_id', 'title'])
-        ->assertSessionDoesntHaveErrors('author');
+        ->assertSessionHasErrors(['title'])
+        ->assertSessionDoesntHaveErrors(['author', 'journal_issue_id']);
+});
+
+it('does not show a journal/issue field on the create form', function () {
+    $this->get(route('admin.dissertations.create'))
+        ->assertDontSee('journal_issue_id', false)
+        ->assertDontSee(__('Jurnal va son'));
+});
+
+it('does not show journal information on the dissertation show page', function () {
+    $dissertation = Dissertation::factory()->create();
+
+    $this->get(route('admin.dissertations.show', $dissertation))
+        ->assertDontSee(__('Jurnal ma’lumotlari'));
 });
 
 it('rejects a non-pdf file', function () {
-    $issue = JournalIssue::factory()->create();
-
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [
-            'journal_issue_id' => $issue->id,
             'title' => 'X',
             'author' => 'Y',
             'electronic_file' => UploadedFile::fake()->create('note.txt', 10, 'text/plain'),

@@ -4,8 +4,6 @@
 
 @section('content')
     @php
-        $journal = $dissertation->journalIssue?->journal;
-
         // Dissertation's own fields
         $details = array_filter([
             __('Muallifi') => $dissertation->author,
@@ -27,16 +25,6 @@
         $adminDetails = array_filter([
             __('Inventari') => $dissertation->inventory_number,
             __('Holati') => $dissertation->condition?->label(),
-        ], fn ($v) => filled($v));
-
-        // Inherited meta (from the parent issue → journal — displayed, not stored)
-        $inherited = array_filter([
-            __('Jurnal nomi') => $journal?->name,
-            __('Jurnal turi') => $journal?->type?->name,
-            __('Nashriyoti') => $journal?->publisher,
-            __('Nashriyot joyi') => $journal?->publicationPlace?->name,
-            __('Yili') => $dissertation->journalIssue?->year,
-            __('Soni') => $dissertation->journalIssue?->issue_number,
         ], fn ($v) => filled($v));
     @endphp
 
@@ -108,28 +96,8 @@
             </div>
         </div>
 
-        {{-- Right: inherited journal meta + location --}}
+        {{-- Right: location --}}
         <div class="col-span-12 space-y-6 xl:col-span-5">
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jurnal ma’lumotlari') }}</h3>
-                <dl class="space-y-3">
-                    @forelse ($inherited as $label => $value)
-                        <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                            <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                            <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">
-                                @if ($label === __('Jurnal nomi') && $journal)
-                                    <a href="{{ route('admin.journals.show', $journal) }}" class="text-brand-600 hover:underline dark:text-brand-400">{{ $value }}</a>
-                                @else
-                                    {{ $value }}
-                                @endif
-                            </dd>
-                        </div>
-                    @empty
-                        <p class="text-theme-sm text-gray-400">{{ __('Ma’lumot yo‘q') }}</p>
-                    @endforelse
-                </dl>
-            </div>
-
             {{-- Location note --}}
             <div class="rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-500/30 dark:bg-brand-500/10 sm:p-6">
                 <h3 class="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-300">{{ __('Joylashuvi') }}</h3>

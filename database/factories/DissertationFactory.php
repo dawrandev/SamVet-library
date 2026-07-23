@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Dissertation;
-use App\Models\JournalIssue;
 use App\Models\ResourceField;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +16,6 @@ class DissertationFactory extends Factory
     public function definition(): array
     {
         return [
-            'journal_issue_id' => JournalIssue::factory(),
             'title' => $this->faker->unique()->sentence(5),
             'author' => $this->faker->name(),
             'resource_field_id' => ResourceField::factory(),
