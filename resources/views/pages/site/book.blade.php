@@ -38,7 +38,7 @@
             {{-- ===== Left: cover + actions ===== --}}
             <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
                 {{-- Cover --}}
-                <div class="relative flex h-96 items-end justify-center overflow-hidden rounded-2xl border-t-2 border-blue-600 bg-blue-50">
+                <div class="relative flex aspect-[2/3] w-full items-end justify-center overflow-hidden rounded-2xl border-t-2 border-blue-600 bg-blue-50">
                     @if ($book->cover_image)
                         <img src="{{ asset('storage/'.$book->cover_image) }}" alt="{{ $book->title }}" class="absolute inset-0 h-full w-full object-cover" />
                     @else

@@ -10,7 +10,7 @@
 
 <a href="{{ route('book.show', $book->slug) }}" {{ $attributes->merge(['class' => 'group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg']) }}>
     {{-- Cover --}}
-    <div class="relative flex h-52 items-end justify-center overflow-hidden border-b-2 border-blue-600 bg-blue-50">
+    <div class="relative flex aspect-[2/3] w-full items-end justify-center overflow-hidden border-b-2 border-blue-600 bg-blue-50">
         @if ($book->cover_image)
             <img src="{{ asset('storage/'.$book->cover_image) }}" alt="{{ $book->title }}" class="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         @else
