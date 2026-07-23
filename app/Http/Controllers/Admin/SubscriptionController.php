@@ -36,6 +36,14 @@ class SubscriptionController extends Controller
         ]);
     }
 
+    public function create(): View
+    {
+        return view('pages.admin.subscriptions.create', [
+            'months' => Month::cases(),
+            ...$this->subscriptionService->formOptions(),
+        ]);
+    }
+
     public function store(StoreSubscriptionRequest $request): RedirectResponse
     {
         $this->subscriptionService->create(SubscriptionData::fromRequest($request));
@@ -43,6 +51,15 @@ class SubscriptionController extends Controller
         return redirect()
             ->route('admin.subscriptions.index')
             ->with('success', __('Obuna qo‘shildi.'));
+    }
+
+    public function edit(Subscription $subscription): View
+    {
+        return view('pages.admin.subscriptions.edit', [
+            'subscription' => $subscription,
+            'months' => Month::cases(),
+            ...$this->subscriptionService->formOptions(),
+        ]);
     }
 
     public function update(UpdateSubscriptionRequest $request, Subscription $subscription): RedirectResponse

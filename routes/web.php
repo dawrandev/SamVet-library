@@ -272,7 +272,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Periodical subscriptions — attached to a reader (Foydalanuvchi)
     Route::get('subscriptions/{subscription}/receipt', [SubscriptionController::class, 'receipt'])->name('subscriptions.receipt');
-    Route::resource('subscriptions', SubscriptionController::class)->except(['show', 'create', 'edit']);
+    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
 
     // Computers (electronic reading room inventory)
     Route::resource('computers', ComputerController::class);
