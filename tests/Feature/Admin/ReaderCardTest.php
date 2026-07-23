@@ -53,6 +53,23 @@ it('shows student labels (O‘qish joyi/Mutaxassisligi/Guruhi) for a student rea
         ->not->toContain('Lavozimi');
 });
 
+it('colors the badge by reader type', function () {
+    $cases = [
+        ReaderType::Bachelor->value => '#2563eb',
+        ReaderType::Master->value => '#7c3aed',
+        ReaderType::Doctoral->value => '#dc2626',
+        ReaderType::Professor->value => '#d97706',
+    ];
+
+    foreach ($cases as $type => $color) {
+        $reader = Reader::factory()->create(['type' => $type]);
+
+        $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
+
+        expect($html)->toContain("background: {$color};");
+    }
+});
+
 it('shows 5 registration-year rows', function () {
     $reader = Reader::factory()->create();
 

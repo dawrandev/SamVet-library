@@ -30,7 +30,7 @@
         td.left-col { width: 52%; padding-right: 14px; border-right: 1px solid #e5e7eb; }
         td.right-col { width: 48%; padding-left: 14px; }
 
-        .badge { display: inline-block; background: #12b76a; color: #fff; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; padding: 5px 12px; border-radius: 4px; margin-bottom: 10px; }
+        .badge { display: inline-block; color: #fff; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; padding: 5px 12px; border-radius: 4px; margin-bottom: 10px; }
 
         table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
         table.id-row td { vertical-align: top; }
@@ -66,7 +66,7 @@
     <table class="card">
         <tr>
             <td class="left-col">
-                <div class="badge">{{ __('KITOBXON GUVOHNOMASI') }}</div>
+                <div class="badge" style="background: {{ $reader->type->certificateColor() }};">{{ __('KITOBXON GUVOHNOMASI') }}</div>
 
                 <table class="id-row">
                     <tr>
