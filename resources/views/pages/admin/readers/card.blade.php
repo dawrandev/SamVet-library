@@ -39,7 +39,7 @@
         .photo-empty { width: 70px; height: 88px; border: 1px solid #d1d5db; border-radius: 4px; background: #f3f4f6; text-align: center; }
         .photo-empty span { display: block; padding-top: 36px; font-size: 8px; color: #9ca3af; }
         .id-number { font-size: 10px; color: #374151; }
-        .id-number b { display: block; font-size: 13px; color: #111827; margin-top: 2px; }
+        .id-number b { font-size: 13px; color: #111827; margin-left: 4px; }
 
         .name-block p { margin: 0 0 6px; font-size: 10px; color: #6b7280; }
         .name-block p b { display: block; font-size: 12px; color: #111827; font-weight: bold; margin-top: 1px; }
