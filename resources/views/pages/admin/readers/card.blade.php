@@ -38,7 +38,7 @@
         .photo { width: 70px; height: 88px; border: 1px solid #d1d5db; border-radius: 4px; object-fit: cover; }
         .photo-empty { width: 70px; height: 88px; border: 1px solid #d1d5db; border-radius: 4px; background: #f3f4f6; text-align: center; }
         .photo-empty span { display: block; padding-top: 36px; font-size: 8px; color: #9ca3af; }
-        .id-number { font-size: 10px; color: #374151; }
+        .id-number { margin: 0 0 8px; font-size: 10px; color: #374151; }
         .id-number b { font-size: 13px; color: #111827; margin-left: 4px; }
 
         .name-block p { margin: 0 0 6px; font-size: 10px; color: #6b7280; }
@@ -53,7 +53,7 @@
 
         table.footer-row { width: 100%; border-collapse: collapse; margin-top: 14px; }
         table.footer-row td { font-size: 9.5px; color: #374151; vertical-align: bottom; }
-        .sign-line { display: inline-block; border-top: 1px solid #9ca3af; padding-top: 3px; width: 110px; }
+        .sign-line { border-bottom: 1px solid #9ca3af; height: 20px; margin-bottom: 4px; }
 
         .right-title { font-size: 10px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 8px; }
         .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 10px; }
@@ -77,18 +77,20 @@
                                 <div class="photo-empty"><span>{{ __('Rasm yo‘q') }}</span></div>
                             @endif
                         </td>
-                        <td class="id-number">
-                            {{ __('ID raqam') }}:
-                            <b>{{ $reader->id_number ?: '—' }}</b>
+                        <td>
+                            <p class="id-number">
+                                {{ __('ID raqam') }}:
+                                <b>{{ $reader->id_number ?: '—' }}</b>
+                            </p>
+
+                            <div class="name-block">
+                                <p>{{ __('Familyasi') }}: <b>{{ $surname ?: '—' }}</b></p>
+                                <p>{{ __('Ismi') }}: <b>{{ $firstName ?: '—' }}</b></p>
+                                <p>{{ __('Sharifi') }}: <b>{{ $patronymic ?: '—' }}</b></p>
+                            </div>
                         </td>
                     </tr>
                 </table>
-
-                <div class="name-block">
-                    <p>{{ __('Familyasi') }}: <b>{{ $surname ?: '—' }}</b></p>
-                    <p>{{ __('Ismi') }}: <b>{{ $firstName ?: '—' }}</b></p>
-                    <p>{{ __('Sharifi') }}: <b>{{ $patronymic ?: '—' }}</b></p>
-                </div>
 
                 <div class="affiliation-box">
                     <p>{{ $placeLabel }}: <b>{{ $reader->affiliationPlace?->name ?: '—' }}</b></p>
@@ -102,12 +104,13 @@
 
                 <table class="footer-row">
                     <tr>
-                        <td width="55%">
+                        <td width="50%">
+                            <div class="sign-line"></div>
                             {{ __('Kitobxon imzosi') }}:
-                            <span class="sign-line">&nbsp;</span>
                         </td>
-                        <td width="45%">
-                            {{ __('Berilgan sana') }}: {{ $reader->issued_date?->format('d.m.Y') ?: '—' }}
+                        <td width="50%">
+                            <div class="sign-line"></div>
+                            {{ __('Berilgan sana') }}: {{ $reader->issued_date?->format('d.m.Y') }}
                         </td>
                     </tr>
                 </table>
