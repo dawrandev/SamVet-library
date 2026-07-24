@@ -14,12 +14,12 @@
         [__('Sarlavhasi'), $book->title],
         [__('Muallifi'), $authors],
         [__('Turi'), $book->type?->name],
-        [__('Nashr joyi'), $book->publicationPlace?->name],
-        ['ISBN', $book->isbn],
         [__('Tili'), $book->languages->isNotEmpty() ? $book->languages->pluck('name')->join(', ') : $book->language?->name],
+        [__('Nashr joyi'), $book->publicationPlace?->name],
         [__('Nashriyoti'), $book->publisher],
-        [__('Beti'), $book->pages ? __(':n b.', ['n' => $book->pages]) : null],
         [__('Yili'), $book->publication_year],
+        [__('Beti'), $book->pages ? __(':n b.', ['n' => $book->pages]) : null],
+        ['ISBN', $book->isbn],
     ], fn ($row) => filled($row[1]));
 @endphp
 
@@ -74,14 +74,16 @@
                     @endif
 
                     {{-- Availability --}}
-                    <div class="mt-3 rounded-lg px-3 py-2.5 text-center text-sm font-medium {{ $available > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500' }}">
-                        @if ($available > 0)
-                            <span class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                            {{ __('ARMda :n nusxa mavjud', ['n' => $available]) }}
-                        @else
-                            {{ __('Hozircha ARMda mavjud emas') }}
-                        @endif
-                    </div>
+                    @auth('reader')
+                        <div class="mt-3 rounded-lg px-3 py-2.5 text-center text-sm font-medium {{ $available > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500' }}">
+                            @if ($available > 0)
+                                <span class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                                {{ __('ARMda :n nusxa mavjud', ['n' => $available]) }}
+                            @else
+                                {{ __('Hozircha ARMda mavjud emas') }}
+                            @endif
+                        </div>
+                    @endauth
                 </div>
 
                 {{-- Location note --}}

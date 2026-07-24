@@ -65,7 +65,7 @@ class HomeService
     private function mostRead(): Collection
     {
         return Book::query()
-            ->with(['type'])
+            ->with(['type', 'copies:id,book_id,format'])
             ->withCount(['copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value)])
             ->where('views_count', '>', 0)
             ->orderByDesc('views_count')
@@ -81,7 +81,7 @@ class HomeService
     private function newArrivals(): Collection
     {
         return Book::query()
-            ->with(['type'])
+            ->with(['type', 'copies:id,book_id,format'])
             ->withCount(['copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value)])
             ->latest('id')
             ->limit(self::FEATURED_LIMIT)
