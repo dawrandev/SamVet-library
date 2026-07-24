@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Language;
+use App\Models\Video;
 
 beforeEach(fn () => actingAsAdmin());
 
@@ -15,6 +17,33 @@ it('no longer shows the loan/overdue KPI cards — those live on the Berilgan ki
         ->assertOk()
         ->assertDontSee('Hozir berilgan')
         ->assertDontSee('ko‘rish uchun bosing');
+});
+
+it('replaces the "Kitob nomi"/"Foydalanuvchi" KPI cards with a single nomda/nusxada donut', function () {
+    $books = Book::factory()->count(2)->create();
+    BookCopy::factory()->count(3)->create(['book_id' => $books->first()->id]);
+
+    $res = $this->get(route('admin.dashboard'));
+
+    $res->assertOk()
+        ->assertSee('Kitob nomi')
+        ->assertSee('Nomda')
+        ->assertSee('Nusxada');
+
+    expect($res->viewData('booksTotal'))->toBe(2)
+        ->and($res->viewData('copiesTotal'))->toBe(3);
+});
+
+it('adds audio and video counts to the "Nusxalar shakli" donut', function () {
+    Audiobook::factory()->count(2)->create();
+    Video::factory()->create();
+
+    $res = $this->get(route('admin.dashboard'));
+
+    $res->assertOk()->assertSee('Audio')->assertSee('Video');
+
+    expect($res->viewData('audiobooksTotal'))->toBe(2)
+        ->and($res->viewData('videosTotal'))->toBe(1);
 });
 
 it('replaces the computer-status donut with a language-by-book donut', function () {

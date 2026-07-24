@@ -25,7 +25,7 @@
             }
         }
 
-        // --- Donut: copies by format (bosma/elektron/brayl) ---
+        // --- Donut: copies by format (bosma/elektron/brayl) + audio/video totals ---
         $formatClr = ['print' => '#465fff', 'electronic' => '#12b76a', 'braille' => '#f79009'];
         $fmtSeries = $fmtLabels = $fmtColors = [];
         foreach (\App\Enums\BookFormat::cases() as $fmt) {
@@ -33,6 +33,17 @@
             $fmtLabels[] = $fmt->label();
             $fmtColors[] = $formatClr[$fmt->value] ?? '#98a2b3';
         }
+        $fmtLabels[] = __('Audio');
+        $fmtSeries[] = $audiobooksTotal;
+        $fmtColors[] = '#06aed4';
+        $fmtLabels[] = __('Video');
+        $fmtSeries[] = $videosTotal;
+        $fmtColors[] = '#7a5af8';
+
+        // --- Donut: book count by title vs by copy ---
+        $bookCountLabels = [__('Nomda'), __('Nusxada')];
+        $bookCountSeries = [$booksTotal, $copiesTotal];
+        $bookCountColors = ['#465fff', '#12b76a'];
 
         // --- Bar: books by language, toggled between nusxa (copy) and nomi (title) counts ---
         // Same label set for both modes, so toggling never reshuffles categories.
@@ -97,35 +108,10 @@
     @endphp
 
     <div data-dashboard>
-        {{-- ===== KPI cards =====
+        {{-- ===== Daily usage line chart =====
              Loan/overdue counts live on the "Berilgan kitoblar" page itself
              (and the always-visible header/sidebar badge) — not duplicated here. --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
-            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5">
-                <div class="flex items-center gap-4">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"><x-admin.icon name="book" class="h-5 w-5" /></span>
-                    <div class="min-w-0">
-                        <h4 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ number_format($booksTotal, 0, '.', ' ') }}</h4>
-                        <span class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Kitob nomi') }}</span>
-                    </div>
-                </div>
-                <p class="text-theme-xs mt-3 text-gray-400">{{ number_format($copiesTotal, 0, '.', ' ') }} {{ __('nusxa') }} · {{ number_format($copiesAvailable, 0, '.', ' ') }} {{ __('mavjud') }}</p>
-            </div>
-
-            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] sm:p-5">
-                <div class="flex items-center gap-4">
-                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"><x-admin.icon name="users" class="h-5 w-5" /></span>
-                    <div class="min-w-0">
-                        <h4 class="text-xl font-bold text-gray-800 dark:text-white/90">{{ number_format($readersTotal, 0, '.', ' ') }}</h4>
-                        <span class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Foydalanuvchi') }}</span>
-                    </div>
-                </div>
-                <p class="text-theme-xs mt-3 text-success-600 dark:text-success-500">{{ number_format($readersActive, 0, '.', ' ') }} {{ __('faol') }}</p>
-            </div>
-        </div>
-
-        {{-- ===== Daily usage line chart ===== --}}
-        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kunlik statistika') }}</h3>
@@ -149,8 +135,16 @@
                  data-dates="{{ json_encode($dailyUsage['dates']) }}" data-series="{{ json_encode($dailySeries) }}"></div>
         </div>
 
-        {{-- ===== Donut + bar charts (2x2) ===== --}}
+        {{-- ===== Donut + bar charts ===== --}}
         <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kitob nomi') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nomda va nusxada') }}</p>
+                <div id="chart-book-count" data-donut class="mt-1"
+                     data-series="{{ json_encode($bookCountSeries) }}" data-labels="{{ json_encode($bookCountLabels) }}"
+                     data-colors="{{ json_encode($bookCountColors) }}" data-center="{{ __('Kitob') }}"></div>
+            </div>
+
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
@@ -161,7 +155,7 @@
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Nusxalar shakli') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Bosma, elektron, brayl') }}</p>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Bosma, elektron, brayl, audio, video') }}</p>
                 <div id="chart-format" data-donut class="mt-1"
                      data-series="{{ json_encode($fmtSeries) }}" data-labels="{{ json_encode($fmtLabels) }}"
                      data-colors="{{ json_encode($fmtColors) }}" data-center="{{ __('Nusxa') }}"></div>

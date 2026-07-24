@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\Enums\CopyStatus;
 use App\Enums\Gender;
-use App\Enums\ReaderStatus;
 use App\Enums\SubscriptionSource;
 use App\Models\Article;
+use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\BookReading;
@@ -20,6 +19,7 @@ use App\Models\Loan;
 use App\Models\News;
 use App\Models\Reader;
 use App\Models\Subscription;
+use App\Models\Video;
 use Illuminate\Support\Carbon;
 
 /**
@@ -93,18 +93,17 @@ class DashboardService
             'onlineReadingsFrom' => $rangeFrom,
             'onlineReadingsTo' => $rangeTo,
             'onlineReadings' => $onlineReadings,
-            // KPI
+            // KPI — book totals feed the "Kitob nomi" donut (nomda vs nusxada).
             'booksTotal' => Book::count(),
             'copiesTotal' => BookCopy::count(),
-            'copiesAvailable' => (int) ($copiesByStatus[CopyStatus::Available->value] ?? 0),
-            'readersTotal' => Reader::count(),
-            'readersActive' => Reader::where('status', ReaderStatus::Active->value)->count(),
 
             // Breakdowns (value => count) — loan/overdue counts live on the
             // "Berilgan kitoblar" page itself (and the header/sidebar badge),
             // not duplicated here.
             'copiesByStatus' => $copiesByStatus,
             'copiesByFormat' => $copiesByFormat,
+            'audiobooksTotal' => Audiobook::count(),
+            'videosTotal' => Video::count(),
             'readersByType' => $readersByType,
             'booksByLanguage' => $booksByLanguage,
             'copiesByLanguage' => $copiesByLanguage,
