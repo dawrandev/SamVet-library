@@ -215,3 +215,19 @@ it('restricts the journal-picker search to newspapers when creating via ?kind=ne
     expect($names)->toContain('Kunlik gazeta')
         ->and($names)->not->toContain('Ilmiy jurnal');
 });
+
+it('always shows both "Yangi maqola" and "Yangi gazeta maqolasi" buttons on the articles index, regardless of the current filter', function () {
+    // Without this, a librarian landing on the unfiltered list only ever sees
+    // "Yangi maqola" (which opens a journal-flavored form with no in-form way
+    // to switch to newspaper mode) — she'd have no visible path to add a
+    // gazeta article at all.
+    $this->get(route('admin.articles.index'))
+        ->assertSee(__('Yangi maqola'))
+        ->assertSee(__('Yangi gazeta maqolasi'))
+        ->assertSee(route('admin.articles.create', ['kind' => 'journal']), false)
+        ->assertSee(route('admin.articles.create', ['kind' => 'newspaper']), false);
+
+    $this->get(route('admin.articles.index', ['kind' => 'newspaper']))
+        ->assertSee(__('Yangi maqola'))
+        ->assertSee(__('Yangi gazeta maqolasi'));
+});

@@ -18,9 +18,16 @@
             <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $articles->total() }}</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.articles.create', array_filter(['kind' => $filters['kind'] ?? null])) }}"
+            {{-- Both buttons always shown — the create form's Jurnal/Gazeta mode is
+                 fixed by this "kind" param at load time, with no way to switch once
+                 there, so the librarian must pick the right one before clicking in. --}}
+            <a href="{{ route('admin.articles.create', ['kind' => \App\Enums\PublicationKind::Journal->value]) }}"
+               class="shadow-theme-xs inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.06]">
+                <span class="text-lg leading-none">+</span> {{ __('Yangi maqola') }}
+            </a>
+            <a href="{{ route('admin.articles.create', ['kind' => \App\Enums\PublicationKind::Newspaper->value]) }}"
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
-                <span class="text-lg leading-none">+</span> {{ $isNewspaper ? __('Yangi gazeta maqolasi') : __('Yangi maqola') }}
+                <span class="text-lg leading-none">+</span> {{ __('Yangi gazeta maqolasi') }}
             </a>
         </div>
     </div>
