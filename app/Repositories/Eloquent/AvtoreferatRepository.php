@@ -15,7 +15,6 @@ class AvtoreferatRepository implements AvtoreferatRepositoryInterface
      * @var array<int, string>
      */
     private const RELATIONS = [
-        'resourceField',
         'publicationPlace',
     ];
 
@@ -28,9 +27,6 @@ class AvtoreferatRepository implements AvtoreferatRepositoryInterface
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('author', 'like', "%{$search}%");
                 });
-            })
-            ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {
-                $query->where('resource_field_id', $fieldId);
             });
     }
 

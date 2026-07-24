@@ -11,7 +11,6 @@
             __('Fan nomi') => $avtoreferat->scienceField?->name,
             __('Turi') => $avtoreferat->degree?->label(),
             __('Ilmiy rahbar') => $avtoreferat->advisor,
-            __('Resurs sohasi') => $avtoreferat->resourceField?->name,
         ], fn ($v) => filled($v));
 
         // Dissertation defense details
@@ -64,12 +63,6 @@
                     @endforeach
                 </dl>
 
-                @if ($avtoreferat->annotation)
-                    <div class="mt-5">
-                        <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Annotatsiya') }}</h4>
-                        <p class="text-theme-sm whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $avtoreferat->annotation }}</p>
-                    </div>
-                @endif
             </div>
 
             {{-- Electronic file indicator --}}

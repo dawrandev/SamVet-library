@@ -41,8 +41,6 @@ class AvtoreferatRequest extends FormRequest
             'publication_place_id' => ['nullable', 'integer', 'exists:publication_places,id'],
             'defense_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
             'inventory_number' => ['nullable', 'string', 'max:100'],
-            'resource_field_id' => ['nullable', 'integer', 'exists:resource_fields,id'],
-            'annotation' => ['nullable', 'string'],
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
 
             // Other participants (muharrir, tarjimon, ...) — a row is only kept when both fields are given.
@@ -73,8 +71,6 @@ class AvtoreferatRequest extends FormRequest
             'publication_place_id' => __('Nashr joyi'),
             'defense_year' => __('Himoya yili'),
             'inventory_number' => __('Inventari'),
-            'resource_field_id' => __('Resurs sohasi'),
-            'annotation' => __('Annotatsiya'),
             'electronic_file' => __('Elektron fayl'),
         ];
     }

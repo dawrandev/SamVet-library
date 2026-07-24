@@ -35,16 +35,6 @@
                    placeholder="{{ __('Nomi yoki muallifi...') }}"
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
         </div>
-        <div class="sm:w-48">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Resurs sohasi') }}</label>
-            <select name="resource_field_id"
-                    class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
-                <option value="">{{ __('Barchasi') }}</option>
-                @foreach ($resourceFields as $field)
-                    <option value="{{ $field->id }}" @selected(($filters['resource_field_id'] ?? null) == $field->id)>{{ $field->name }}</option>
-                @endforeach
-            </select>
-        </div>
         <div class="flex gap-2">
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
             @if (array_filter($filters))
@@ -61,7 +51,6 @@
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Avtoreferat') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
-                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Resurs sohasi') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('PDF') }}</th>
                         <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                     </tr>
@@ -76,7 +65,6 @@
                                 </div>
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $avtoreferat->degree?->label() ?? '—' }}</td>
-                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $avtoreferat->resourceField?->name ?? '—' }}</td>
                             <td class="px-5 py-4 text-theme-xs">
                                 <span class="{{ $avtoreferat->electronic_file ? 'text-success-600' : 'text-gray-400' }}">{{ $avtoreferat->electronic_file ? '📎' : '—' }}</span>
                             </td>
@@ -94,7 +82,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-12 text-center">
+                            <td colspan="4" class="px-5 py-12 text-center">
                                 <x-admin.icon name="document-text" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Avtoreferatlar topilmadi.') }}</p>
                             </td>

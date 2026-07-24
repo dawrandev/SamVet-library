@@ -6,7 +6,6 @@ use App\Data\AvtoreferatData;
 use App\Models\Avtoreferat;
 use App\Models\ContributorRole;
 use App\Models\PublicationPlace;
-use App\Models\ResourceField;
 use App\Models\ScienceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -35,18 +34,6 @@ class AvtoreferatService
     }
 
     /**
-     * For the filter dropdowns on the list page.
-     *
-     * @return array<string, mixed>
-     */
-    public function filterOptions(): array
-    {
-        return [
-            'resourceFields' => ResourceField::orderBy('id')->get(),
-        ];
-    }
-
-    /**
      * Lookups for the create/edit form selects.
      *
      * @return array<string, mixed>
@@ -54,7 +41,6 @@ class AvtoreferatService
     public function formOptions(): array
     {
         return [
-            'resourceFields' => ResourceField::orderBy('id')->get(),
             'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
             'scienceFields' => ScienceField::orderBy('name')->get(),

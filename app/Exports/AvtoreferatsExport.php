@@ -17,14 +17,14 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
     use WithBoldHeaderRow;
 
     /**
-     * @param  array{search?: string, resource_field_id?: int}  $filters
+     * @param  array{search?: string}  $filters
      */
     public function __construct(private readonly array $filters) {}
 
     public function query(): Builder
     {
         return app(AvtoreferatRepositoryInterface::class)->filtered($this->filters)
-            ->with(['resourceField', 'scienceField', 'publicationPlace', 'contributors.contributorRole'])
+            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole'])
             ->latest('id');
     }
 
@@ -37,7 +37,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             'ID', 'Sarlavha', 'Muallif', 'Boshqa ishtirokchilar', 'Ixtisosligi', 'Fan nomi', 'Darajasi',
             'Kengash raqami', 'Himoya muassasasi', 'Bajarilgan muassasa', 'Ilmiy rahbar',
             'UDC', "Ro'yxatga olish raqami", 'Holati', 'Nashr joyi', 'Himoya yili', 'Inventar raqami',
-            'Annotatsiya', 'Elektron nusxa', "Ko'rishlar soni",
+            'Elektron nusxa', "Ko'rishlar soni",
         ];
     }
 
@@ -65,7 +65,6 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $avtoreferat->publicationPlace?->name,
             $avtoreferat->defense_year,
             $avtoreferat->inventory_number,
-            $avtoreferat->annotation,
             $avtoreferat->electronic_file ? 'Ha' : "Yo'q",
             $avtoreferat->views_count,
         ];

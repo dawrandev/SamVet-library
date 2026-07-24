@@ -4,7 +4,6 @@ use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
 use App\Models\PublicationPlace;
-use App\Models\ResourceField;
 use App\Models\ScienceField;
 use Illuminate\Http\UploadedFile;
 
@@ -12,7 +11,6 @@ beforeEach(fn () => actingAsAdmin());
 
 it('creates an avtoreferat with the dissertation-defense fields', function () {
     $place = PublicationPlace::factory()->create();
-    $field = ResourceField::factory()->create();
     $scienceField = ScienceField::factory()->create();
 
     $this->post(route('admin.avtoreferats.store'), [
@@ -31,7 +29,6 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         'publication_place_id' => $place->id,
         'defense_year' => 2024,
         'inventory_number' => 'AR-00123',
-        'resource_field_id' => $field->id,
     ])->assertRedirect();
 
     $avtoreferat = Avtoreferat::firstWhere('title', 'Veterinariya sohasida yangi usullar');
@@ -108,6 +105,19 @@ it('shows the science field and defense year on the show page', function () {
         ->assertSee('Veterinariya fanlari')
         ->assertSee('Himoya yili')
         ->assertSee('2025');
+});
+
+it('does not show a resurs sohasi or annotatsiya field on the create form or show page', function () {
+    $avtoreferat = Avtoreferat::factory()->create();
+
+    $this->get(route('admin.avtoreferats.create'))
+        ->assertDontSee('resource_field_id', false)
+        ->assertDontSee(__('Resurs sohasi'))
+        ->assertDontSee(__('Annotatsiya'));
+
+    $this->get(route('admin.avtoreferats.show', $avtoreferat))
+        ->assertDontSee(__('Resurs sohasi'))
+        ->assertDontSee(__('Annotatsiya'));
 });
 
 it('lets the inline lookup-create endpoint add a new science field from the avtoreferat form', function () {

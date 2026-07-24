@@ -23,7 +23,7 @@ class Avtoreferat extends Model
         'defense_institution', 'performed_institution', 'advisor',
         'udc', 'registration_number', 'condition',
         'publication_place_id', 'defense_year', 'inventory_number',
-        'resource_field_id', 'annotation', 'electronic_file',
+        'electronic_file',
     ];
 
     protected function casts(): array
@@ -37,11 +37,6 @@ class Avtoreferat extends Model
     }
 
     // --- Relationships ---
-
-    public function resourceField(): BelongsTo
-    {
-        return $this->belongsTo(ResourceField::class);
-    }
 
     /** "Fan nomi" — same lookup Dissertation uses. */
     public function scienceField(): BelongsTo

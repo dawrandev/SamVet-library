@@ -22,18 +22,17 @@ class AvtoreferatController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'resource_field_id']);
+        $filters = $request->only(['search']);
 
         return view('pages.admin.avtoreferats.index', [
             'avtoreferats' => $this->avtoreferatService->paginate($filters),
             'filters' => $filters,
-            ...$this->avtoreferatService->filterOptions(),
         ]);
     }
 
     public function export(Request $request): BinaryFileResponse
     {
-        $filters = array_filter($request->only(['search', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($request->only(['search']), fn ($v) => $v !== null && $v !== '');
 
         return Excel::download(new AvtoreferatsExport($filters), 'avtoreferatlar-'.now()->format('Y-m-d').'.xlsx');
     }
@@ -56,7 +55,7 @@ class AvtoreferatController extends Controller
 
     public function show(Avtoreferat $avtoreferat): View
     {
-        $avtoreferat->load(['resourceField', 'publicationPlace']);
+        $avtoreferat->load('publicationPlace');
 
         return view('pages.admin.avtoreferats.show', ['avtoreferat' => $avtoreferat]);
     }

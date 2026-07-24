@@ -116,11 +116,6 @@
 
             <x-admin.form.section :title="__('Qo’shimcha')">
                 <div class="space-y-5">
-                    <x-admin.form.select name="resource_field_id" :label="__('Resurs sohasi')" :options="$resourceFields" :selected="$avtoreferat?->resource_field_id" :placeholder="__('Tanlang')"
-                        creatable create-translatable create-type="resource_field" :create-label="__('Yangi soha')" />
-
-                    <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$avtoreferat?->annotation" :rows="4" :placeholder="__('Avtoreferat annotatsiyasi')" />
-
                     <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress
                         :currentName="$avtoreferat?->electronic_file ? __('Fayl mavjud') : null"
                         :help="$avtoreferat?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
