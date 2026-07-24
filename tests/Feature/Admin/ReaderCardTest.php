@@ -70,6 +70,23 @@ it('colors the badge by reader type', function () {
     }
 });
 
+it('shows a blank signature line for Kitobxon imzosi and Berilgan sana when issued_date is unknown', function () {
+    $reader = Reader::factory()->create(['issued_date' => null]);
+
+    $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
+
+    expect(substr_count($html, 'class="sign-line"'))->toBe(2);
+});
+
+it('shows the actual issued_date instead of a blank line once it is known', function () {
+    $reader = Reader::factory()->create(['issued_date' => '2026-03-05']);
+
+    $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
+
+    expect($html)->toContain('05.03.2026')
+        ->and(substr_count($html, 'class="sign-line"'))->toBe(1);
+});
+
 it('shows 5 registration-year rows', function () {
     $reader = Reader::factory()->create();
 

@@ -53,7 +53,7 @@
 
         table.footer-row { width: 100%; border-collapse: collapse; margin-top: 14px; }
         table.footer-row td { font-size: 9.5px; color: #374151; vertical-align: bottom; }
-        .sign-line { border-bottom: 1px solid #9ca3af; height: 20px; margin-bottom: 4px; }
+        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 130px; height: 12px; margin-left: 4px; }
 
         .right-title { font-size: 10px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 8px; }
         .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 10px; }
@@ -105,12 +105,14 @@
                 <table class="footer-row">
                     <tr>
                         <td width="50%">
-                            <div class="sign-line"></div>
-                            {{ __('Kitobxon imzosi') }}:
+                            {{ __('Kitobxon imzosi') }}: <span class="sign-line"></span>
                         </td>
                         <td width="50%">
-                            <div class="sign-line"></div>
-                            {{ __('Berilgan sana') }}: {{ $reader->issued_date?->format('d.m.Y') }}
+                            @if ($reader->issued_date)
+                                {{ __('Berilgan sana') }}: {{ $reader->issued_date->format('d.m.Y') }}
+                            @else
+                                {{ __('Berilgan sana') }}: <span class="sign-line"></span>
+                            @endif
                         </td>
                     </tr>
                 </table>
