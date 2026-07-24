@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 
 /**
@@ -26,6 +27,7 @@ final class CatalogFilters
         public readonly ?int $yearTo = null,
         public readonly ?string $author = null,
         public readonly CatalogSort $sort = CatalogSort::Newest,
+        public readonly CatalogSearchScope $scope = CatalogSearchScope::All,
     ) {}
 
     /** True when at least one narrowing filter is applied (sort excluded). */

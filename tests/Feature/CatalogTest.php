@@ -42,6 +42,42 @@ it('searches by title', function () {
     expect($res->viewData('total'))->toBe(1);
 });
 
+it('scopes the "q" search to the title only when scope=title', function () {
+    Book::factory()->create(['title' => 'Veterinariya asoslari', 'isbn' => '9780000000001']);
+    Book::factory()->create(['title' => 'Boshqa kitob', 'isbn' => 'ISBN-veterinariya']);
+
+    $res = $this->get(route('catalog', ['q' => 'veterinariya', 'scope' => 'title']));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
+it('scopes the "q" search to ISBN only when scope=isbn', function () {
+    Book::factory()->create(['title' => 'Kod bilan mos kitob', 'isbn' => '9781112223334']);
+    Book::factory()->create(['title' => '9781112223334 nomli kitob', 'isbn' => '9789998887776']);
+
+    $res = $this->get(route('catalog', ['q' => '9781112223334', 'scope' => 'isbn']));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
+it('scopes the "q" search to the annotation only when scope=topic', function () {
+    Book::factory()->create(['title' => 'Birinchi kitob', 'annotation' => 'Chorvachilik mavzusida yozilgan.']);
+    Book::factory()->create(['title' => 'Chorvachilik', 'annotation' => 'Boshqa mavzu haqida.']);
+
+    $res = $this->get(route('catalog', ['q' => 'chorvachilik', 'scope' => 'topic']));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
+it('routes the "q" search into the author filter when scope=author', function () {
+    Book::factory()->create(['title' => 'Iqtisodiyot nazariyasi', 'authors' => 'A. O‘lmasov, A. Vahobov']);
+    Book::factory()->create(['title' => 'O‘lmasov nomli kitob', 'authors' => 'B. Xodiyev']);
+
+    $res = $this->get(route('catalog', ['q' => 'O‘lmasov', 'scope' => 'author']));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
 it('filters by author (plain-text field, not a lookup)', function () {
     Book::factory()->create(['title' => 'Iqtisodiyot nazariyasi', 'authors' => 'A. O‘lmasov, A. Vahobov']);
     Book::factory()->create(['title' => 'Boshqa kitob', 'authors' => 'B. Xodiyev']);

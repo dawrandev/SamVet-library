@@ -4,6 +4,7 @@ namespace App\Http\Requests\Site;
 
 use App\Data\CatalogFilters;
 use App\Enums\BookFormat;
+use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -38,6 +39,7 @@ class CatalogFilterRequest extends FormRequest
             'year_to' => ['nullable', 'integer', 'min:1000', 'max:2100'],
             'author' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', Rule::enum(CatalogSort::class)],
+            'scope' => ['nullable', Rule::enum(CatalogSearchScope::class)],
         ];
     }
 
@@ -46,16 +48,26 @@ class CatalogFilterRequest extends FormRequest
     {
         $data = $this->validated();
 
+        $scope = isset($data['scope']) ? CatalogSearchScope::from($data['scope']) : CatalogSearchScope::All;
+        $q = $this->cleanString($data['q'] ?? null);
+
+        // The "Muallif" scope chip reuses the existing dedicated author filter
+        // rather than a new search branch — the sidebar's own author box
+        // already writes to `author`, so this just shares that behavior.
+        $author = $scope === CatalogSearchScope::Author ? $q : $this->cleanString($data['author'] ?? null);
+        $search = $scope === CatalogSearchScope::Author ? null : $q;
+
         return new CatalogFilters(
-            search: $this->cleanString($data['q'] ?? null),
+            search: $search,
             categories: array_values(array_map('intval', $data['categories'] ?? [])),
             types: array_values(array_map('intval', $data['types'] ?? [])),
             languages: array_values(array_map('intval', $data['languages'] ?? [])),
             formats: array_values(array_map('strval', $data['formats'] ?? [])),
             yearFrom: isset($data['year_from']) ? (int) $data['year_from'] : null,
             yearTo: isset($data['year_to']) ? (int) $data['year_to'] : null,
-            author: $this->cleanString($data['author'] ?? null),
+            author: $author,
             sort: isset($data['sort']) ? CatalogSort::from($data['sort']) : CatalogSort::Newest,
+            scope: $scope,
         );
     }
 

@@ -19,29 +19,29 @@
                     {{ __('Samarqand davlat veterinariya meditsinasi, chorvachilik va biotexnologiyalar universiteti Nukus filiali — o‘qing va izlang.') }}
                 </p>
 
-                {{-- Search --}}
-                <form action="{{ route('catalog') }}" method="GET" class="mt-8 flex max-w-2xl overflow-hidden rounded-xl bg-white p-1.5 shadow-lg">
-                    <div class="flex flex-1 items-center gap-2 pl-3">
-                        <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
-                        <input type="text" name="q" placeholder="{{ __('Kitob, muallif, ISBN yoki kalit so‘z...') }}"
-                               class="w-full bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none" />
-                    </div>
-                    <button type="submit" class="flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
-                        {{ __('Qidirish') }}
-                    </button>
-                </form>
+                {{-- Search — the scope chips below choose which field "q" is matched against --}}
+                <div x-data="{ scope: 'all' }">
+                    <form action="{{ route('catalog') }}" method="GET" class="mt-8 flex max-w-2xl overflow-hidden rounded-xl bg-white p-1.5 shadow-lg">
+                        <input type="hidden" name="scope" x-model="scope" />
+                        <div class="flex flex-1 items-center gap-2 pl-3">
+                            <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
+                            <input type="text" name="q" placeholder="{{ __('Kitob, muallif, ISBN yoki kalit so‘z...') }}"
+                                   class="w-full bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none" />
+                        </div>
+                        <button type="submit" class="flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
+                            {{ __('Qidirish') }}
+                        </button>
+                    </form>
 
-                {{-- Quick type chips --}}
-                <div class="mt-4 flex flex-wrap gap-2">
-                    @foreach ([__('Barchasi'), __('Kitob nomi'), __('Muallif'), 'ISBN', __('Mavzu')] as $i => $chip)
-                        <button type="button"
-                                @class([
-                                    'rounded-full px-3.5 py-1.5 text-xs font-medium transition',
-                                    'bg-white text-blue-900' => $i === 0,
-                                    'bg-white/10 text-blue-100 hover:bg-white/20' => $i !== 0,
-                                ])>{{ $chip }}</button>
-                    @endforeach
+                    {{-- Quick type chips — pick which field the search text above matches --}}
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach (\App\Enums\CatalogSearchScope::cases() as $chipScope)
+                            <button type="button" @click="scope = '{{ $chipScope->value }}'"
+                                    :class="scope === '{{ $chipScope->value }}' ? 'bg-white text-blue-900' : 'bg-white/10 text-blue-100 hover:bg-white/20'"
+                                    class="rounded-full px-3.5 py-1.5 text-xs font-medium transition">{{ $chipScope->label() }}</button>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 

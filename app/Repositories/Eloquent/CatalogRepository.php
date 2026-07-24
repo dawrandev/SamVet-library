@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Data\CatalogFilters;
 use App\Enums\BookFormat;
+use App\Enums\CatalogSearchScope;
 use App\Enums\CopyStatus;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -21,15 +22,22 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function paginate(CatalogFilters $filters, int $perPage): LengthAwarePaginator
     {
         $query = Book::query()
-            ->with(['type'])
+            ->with(['type', 'copies:id,book_id,format'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])
-            ->when($filters->search, function (Builder $query, string $search): void {
-                $query->where(function (Builder $q) use ($search): void {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('isbn', 'like', "%{$search}%")
-                        ->orWhere('udc', 'like', "%{$search}%");
+            ->when($filters->search, function (Builder $query, string $search) use ($filters): void {
+                $query->where(function (Builder $q) use ($search, $filters): void {
+                    match ($filters->scope) {
+                        CatalogSearchScope::Title => $q->where('title', 'like', "%{$search}%"),
+                        CatalogSearchScope::Isbn => $q->where('isbn', 'like', "%{$search}%"),
+                        // "Mavzu" (topic) — the annotation is the only free-text field that
+                        // actually describes subject matter, so it's what this scope searches.
+                        CatalogSearchScope::Topic => $q->where('annotation', 'like', "%{$search}%"),
+                        default => $q->where('title', 'like', "%{$search}%")
+                            ->orWhere('isbn', 'like', "%{$search}%")
+                            ->orWhere('udc', 'like', "%{$search}%"),
+                    };
                 });
             })
             ->when($filters->categories, function (Builder $query, array $ids): void {
@@ -124,7 +132,7 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function findPublicBySlug(string $slug): ?Book
     {
         return Book::query()
-            ->with(['type', 'language', 'languages', 'publicationPlace', 'categories.parent'])
+            ->with(['type', 'language', 'languages', 'publicationPlace', 'categories.parent', 'copies:id,book_id,format'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])
@@ -141,7 +149,7 @@ class CatalogRepository implements CatalogRepositoryInterface
         }
 
         return Book::query()
-            ->with(['type'])
+            ->with(['type', 'copies:id,book_id,format'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])
