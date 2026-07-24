@@ -43,6 +43,8 @@ class AvtoreferatRequest extends FormRequest
             'inventory_number' => ['nullable', 'string', 'max:100'],
             'language_ids' => ['nullable', 'array'],
             'language_ids.*' => ['integer', 'exists:languages,id'],
+            'annotation' => ['nullable', 'string'],
+            'keywords' => ['nullable', 'string', 'max:500'],
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
 
             // Other participants (muharrir, tarjimon, ...) — a row is only kept when both fields are given.
@@ -74,6 +76,8 @@ class AvtoreferatRequest extends FormRequest
             'defense_year' => __('Himoya yili'),
             'inventory_number' => __('Inventari'),
             'language_ids' => __('Tillari'),
+            'annotation' => __('Annotatsiya'),
+            'keywords' => __('Tayanch so‘zlar'),
             'electronic_file' => __('Elektron fayl'),
         ];
     }

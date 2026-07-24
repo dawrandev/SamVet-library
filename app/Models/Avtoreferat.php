@@ -24,7 +24,7 @@ class Avtoreferat extends Model
         'defense_institution', 'performed_institution', 'advisor',
         'udc', 'registration_number', 'condition',
         'publication_place_id', 'defense_year', 'inventory_number',
-        'electronic_file',
+        'annotation', 'keywords', 'electronic_file',
     ];
 
     protected function casts(): array

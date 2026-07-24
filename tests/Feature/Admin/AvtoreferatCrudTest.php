@@ -159,17 +159,34 @@ it('does not show an "ishtirokchi qo‘shish" (contributors) block on the create
         ->assertDontSee(__('Boshqa ishtirokchilar'));
 });
 
-it('does not show a resurs sohasi or annotatsiya field on the create form or show page', function () {
+it('does not show a resurs sohasi field on the create form or show page', function () {
     $avtoreferat = Avtoreferat::factory()->create();
 
     $this->get(route('admin.avtoreferats.create'))
         ->assertDontSee('resource_field_id', false)
-        ->assertDontSee(__('Resurs sohasi'))
-        ->assertDontSee(__('Annotatsiya'));
+        ->assertDontSee(__('Resurs sohasi'));
 
     $this->get(route('admin.avtoreferats.show', $avtoreferat))
-        ->assertDontSee(__('Resurs sohasi'))
-        ->assertDontSee(__('Annotatsiya'));
+        ->assertDontSee(__('Resurs sohasi'));
+});
+
+it('saves the annotatsiya and tayanch so‘zlar fields, and shows them on the show page', function () {
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Annotatsiyali avtoreferat',
+        'advisor' => 'Aliyev A.',
+        'annotation' => 'Bu ish veterinariya sohasiga bag‘ishlangan.',
+        'keywords' => 'veterinariya, mikrobiologiya, immunitet',
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Annotatsiyali avtoreferat');
+    expect($avtoreferat->annotation)->toBe('Bu ish veterinariya sohasiga bag‘ishlangan.')
+        ->and($avtoreferat->keywords)->toBe('veterinariya, mikrobiologiya, immunitet');
+
+    $this->get(route('admin.avtoreferats.show', $avtoreferat))
+        ->assertSee(__('Annotatsiya'))
+        ->assertSee('Bu ish veterinariya sohasiga bag‘ishlangan.')
+        ->assertSee(__('Tayanch so‘zlar'))
+        ->assertSee('veterinariya, mikrobiologiya, immunitet');
 });
 
 it('lets the inline lookup-create endpoint add a new science field from the avtoreferat form', function () {

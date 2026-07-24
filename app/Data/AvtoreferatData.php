@@ -29,6 +29,8 @@ class AvtoreferatData
         public readonly ?int $publication_place_id,
         public readonly ?int $defense_year,
         public readonly ?string $inventory_number,
+        public readonly ?string $annotation,
+        public readonly ?string $keywords,
         public readonly ?UploadedFile $electronic_file,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
@@ -54,6 +56,8 @@ class AvtoreferatData
             publication_place_id: $request->integer('publication_place_id') ?: null,
             defense_year: $request->integer('defense_year') ?: null,
             inventory_number: $request->input('inventory_number') ?: null,
+            annotation: $request->input('annotation') ?: null,
+            keywords: $request->input('keywords') ?: null,
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
             language_ids: $request->input('language_ids', []),
@@ -83,6 +87,8 @@ class AvtoreferatData
             'publication_place_id' => $this->publication_place_id,
             'defense_year' => $this->defense_year,
             'inventory_number' => $this->inventory_number,
+            'annotation' => $this->annotation,
+            'keywords' => $this->keywords,
         ];
     }
 }

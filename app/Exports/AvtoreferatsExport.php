@@ -37,7 +37,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             'ID', 'Sarlavha', 'Muallif', 'Boshqa ishtirokchilar', 'Ixtisosligi', 'Fan nomi', 'Darajasi',
             'Kengash raqami', 'Himoya muassasasi', 'Bajarilgan muassasa', 'Ilmiy rahbar',
             'UDC', "Ro'yxatga olish raqami", 'Holati', 'Nashr joyi', 'Himoya yili', 'Inventar raqami',
-            'Tillari', 'Elektron nusxa', "Ko'rishlar soni",
+            'Tillari', 'Tayanch so\'zlar', 'Annotatsiya', 'Elektron nusxa', "Ko'rishlar soni",
         ];
     }
 
@@ -66,6 +66,8 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $avtoreferat->defense_year,
             $avtoreferat->inventory_number,
             $avtoreferat->languages->pluck('name')->implode(', '),
+            $avtoreferat->keywords,
+            $avtoreferat->annotation,
             $avtoreferat->electronic_file ? 'Ha' : "Yo'q",
             $avtoreferat->views_count,
         ];

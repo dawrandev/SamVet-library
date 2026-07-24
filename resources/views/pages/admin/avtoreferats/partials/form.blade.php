@@ -117,6 +117,10 @@
 
             <x-admin.form.section :title="__('Qo’shimcha')">
                 <div class="space-y-5">
+                    <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$avtoreferat?->annotation" :rows="4" :placeholder="__('Avtoreferat annotatsiyasi')" />
+
+                    <x-admin.form.input name="keywords" :label="__('Tayanch so‘zlar')" :value="$avtoreferat?->keywords" :placeholder="__('vergul bilan ajratib yozing')" />
+
                     <x-admin.form.file name="electronic_file" :label="__('Elektron fayl (PDF)')" accept="application/pdf" with-progress
                         :currentName="$avtoreferat?->electronic_file ? __('Fayl mavjud') : null"
                         :help="$avtoreferat?->electronic_file ? __('Yangi fayl yuklasangiz eskisi almashtiriladi') : __('PDF, 950 MB gacha')" />
