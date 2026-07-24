@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Enums\CopyStatus;
+use App\Enums\Gender;
 use App\Enums\ReaderStatus;
+use App\Enums\SubscriptionSource;
 use App\Models\Article;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -74,6 +76,13 @@ class DashboardService
         [$statsRangeFrom, $statsRangeTo] = $this->resolveStatsRange($statsFrom, $statsTo);
         $daily = $this->dailyUsage($statsRangeFrom, $statsRangeTo);
 
+        $subscriptionYear = (int) Carbon::now()->year;
+        $subscribersThisYear = Subscription::query()
+            ->where('year', $subscriptionYear)
+            ->where('source', SubscriptionSource::Reader->value)
+            ->distinct('reader_id')
+            ->count('reader_id');
+
         $onlineReadings = BookReading::with(['reader', 'book'])
             ->whereBetween('read_at', [$rangeFrom, $rangeTo])
             ->latest('read_at')
@@ -111,9 +120,14 @@ class DashboardService
             'articlesTotal' => Article::count(),
             'newsTotal' => News::count(),
             'computersTotal' => Computer::count(),
-            'subscriptionsTotal' => Subscription::count(),
-            'subscriptionsAmount' => (float) Subscription::sum('amount'),
+            'subscriptionYear' => $subscriptionYear,
+            'subscribersThisYear' => $subscribersThisYear,
             'categoriesTotal' => Category::count(),
+
+            // Reader demographics (bar charts, not donuts — see dashboard view)
+            'readersByGender' => $this->readersByGender(),
+            'readersByNationality' => $this->readersByNationality(),
+            'readersByAgeGroup' => $this->readersByAgeGroup(),
         ];
     }
 
@@ -221,5 +235,102 @@ class DashboardService
         }
 
         return ['dates' => $dates, ...$series];
+    }
+
+    /**
+     * Reader count per gender, label => count. Missing gender is bucketed
+     * under "Noma'lum" rather than dropped, so the chart total still matches
+     * the reader total.
+     *
+     * @return array<string, int>
+     */
+    private function readersByGender(): array
+    {
+        $counts = Reader::query()->selectRaw('gender, COUNT(*) as c')->groupBy('gender')->pluck('c', 'gender');
+
+        $result = [];
+        foreach (Gender::cases() as $gender) {
+            $c = (int) ($counts[$gender->value] ?? 0);
+            if ($c > 0) {
+                $result[$gender->label()] = $c;
+            }
+        }
+
+        // Anything not matching a known Gender case (including NULL) falls here too.
+        $unknown = (int) $counts->sum() - array_sum($result);
+        if ($unknown > 0) {
+            $result[__('Noma’lum')] = $unknown;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Reader count per nationality, label => count, sorted by size. Only the
+     * top 7 are kept distinct — the rest are folded into "Boshqa" so the
+     * chart stays readable regardless of how many distinct nationalities
+     * are on file. Missing nationality is its own "Noma'lum" bucket.
+     *
+     * @return array<string, int>
+     */
+    private function readersByNationality(): array
+    {
+        $counts = Reader::query()->selectRaw('nationality, COUNT(*) as c')->groupBy('nationality')->pluck('c', 'nationality');
+
+        $named = [];
+        foreach ($counts as $nationality => $c) {
+            $label = filled($nationality) ? $nationality : __('Noma’lum');
+            $named[$label] = ($named[$label] ?? 0) + (int) $c;
+        }
+
+        arsort($named);
+
+        $top = array_slice($named, 0, 7, true);
+        $rest = array_sum(array_slice($named, 7, null, true));
+        if ($rest > 0) {
+            $top[__('Boshqa')] = $rest;
+        }
+
+        return $top;
+    }
+
+    /** Age buckets in display order — internal to this chart, not a shared domain concept. */
+    private const AGE_BUCKETS = [
+        ['max' => 17, 'label' => '<18'],
+        ['max' => 25, 'label' => '18-25'],
+        ['max' => 35, 'label' => '26-35'],
+        ['max' => 45, 'label' => '36-45'],
+        ['max' => 60, 'label' => '46-60'],
+        ['max' => null, 'label' => '60+'],
+    ];
+
+    /**
+     * Reader count per age bucket, label => count, in bucket order. Readers
+     * without a birth date are bucketed under "Noma'lum" at the end.
+     *
+     * @return array<string, int>
+     */
+    private function readersByAgeGroup(): array
+    {
+        $result = array_fill_keys(array_column(self::AGE_BUCKETS, 'label'), 0);
+
+        Reader::query()->whereNotNull('birth_date')->pluck('birth_date')->each(function ($birthDate) use (&$result): void {
+            $age = Carbon::parse($birthDate)->age;
+            foreach (self::AGE_BUCKETS as $bucket) {
+                if ($bucket['max'] === null || $age <= $bucket['max']) {
+                    $result[$bucket['label']]++;
+                    break;
+                }
+            }
+        });
+
+        $result = array_filter($result);
+
+        $unknown = Reader::query()->whereNull('birth_date')->count();
+        if ($unknown > 0) {
+            $result[__('Noma’lum')] = $unknown;
+        }
+
+        return $result;
     }
 }

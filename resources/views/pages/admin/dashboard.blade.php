@@ -69,6 +69,31 @@
             ['name' => __('Tadbirlarda qatnashish'), 'data' => $dailyUsage['eventParticipations'], 'color' => '#f04438'],
             ['name' => __('Umumiy foydalanish'), 'data' => $dailyUsage['total'], 'color' => '#1d2939', 'dashed' => true],
         ];
+
+        // --- Bar: reader demographics (gender / age / nationality) — bars, not donuts ---
+        $otherLabels = [__('Boshqa'), __('Noma’lum')];
+        $genderClr = ['Erkak' => '#465fff', 'Ayol' => '#f79009'];
+
+        $genderLabels = $genderSeries = $genderColors = [];
+        foreach ($readersByGender as $label => $count) {
+            $genderLabels[] = $label;
+            $genderSeries[] = $count;
+            $genderColors[] = $genderClr[$label] ?? '#98a2b3';
+        }
+
+        $ageLabels = $ageSeries = $ageColors = [];
+        foreach ($readersByAgeGroup as $label => $count) {
+            $ageLabels[] = $label;
+            $ageSeries[] = $count;
+            $ageColors[] = in_array($label, $otherLabels, true) ? '#98a2b3' : $palette[count($ageColors) % count($palette)];
+        }
+
+        $natLabels = $natSeries = $natColors = [];
+        foreach ($readersByNationality as $label => $count) {
+            $natLabels[] = $label;
+            $natSeries[] = $count;
+            $natColors[] = in_array($label, $otherLabels, true) ? '#98a2b3' : $palette[count($natColors) % count($palette)];
+        }
     @endphp
 
     <div data-dashboard>
@@ -168,6 +193,33 @@
             </div>
         </div>
 
+        {{-- ===== Reader demographics (bar charts) ===== --}}
+        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jinsi bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar jinsi bo‘yicha taqsimot') }}</p>
+                <div id="chart-gender" data-bar class="mt-1"
+                     data-labels="{{ json_encode($genderLabels) }}" data-colors="{{ json_encode($genderColors) }}"
+                     data-series-copies="{{ json_encode($genderSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Yoshi bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar yosh guruhi bo‘yicha taqsimot') }}</p>
+                <div id="chart-age" data-bar class="mt-1"
+                     data-labels="{{ json_encode($ageLabels) }}" data-colors="{{ json_encode($ageColors) }}"
+                     data-series-copies="{{ json_encode($ageSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Millati bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar millati bo‘yicha taqsimot') }}</p>
+                <div id="chart-nationality" data-bar class="mt-1"
+                     data-labels="{{ json_encode($natLabels) }}" data-colors="{{ json_encode($natColors) }}"
+                     data-series-copies="{{ json_encode($natSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+            </div>
+        </div>
+
         {{-- ===== Online readings filter + quick counts ===== --}}
         <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
             <div class="lg:col-span-2 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
@@ -235,7 +287,7 @@
                             ['document-text', __('Maqolalar'), $articlesTotal],
                             ['newspaper', __('Yangiliklar'), $newsTotal],
                             ['computer-desktop', __('Kompyuterlar'), $computersTotal],
-                            ['clipboard-list', __('Obunalar'), $subscriptionsTotal],
+                            ['clipboard-list', __('Obuna :year', ['year' => $subscriptionYear]), $subscribersThisYear],
                             ['folder', __('Kategoriyalar'), $categoriesTotal],
                         ];
                     @endphp
@@ -246,10 +298,6 @@
                             <p class="text-theme-xs text-gray-400">{{ $label }}</p>
                         </div>
                     @endforeach
-                </div>
-                <div class="mt-3 rounded-xl bg-brand-50 p-4 dark:bg-brand-500/10">
-                    <p class="text-theme-xs text-brand-600 dark:text-brand-400">{{ __('Jami obuna summasi') }}</p>
-                    <p class="mt-1 text-lg font-bold text-brand-700 dark:text-brand-300">{{ number_format($subscriptionsAmount, 0, '.', ' ') }} {{ __('so‘m') }}</p>
                 </div>
             </div>
         </div>
