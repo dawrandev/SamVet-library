@@ -4,7 +4,6 @@ namespace App\Repositories\Eloquent;
 
 use App\Enums\PublicationKind;
 use App\Models\Article;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Journal;
@@ -32,7 +31,6 @@ class StatisticsRepository implements StatisticsRepositoryInterface
             'issues' => JournalIssue::count(),
             'articles' => Article::count(),
             'news' => News::whereNotNull('published_at')->count(),
-            'authors' => Author::count(),
         ];
     }
 }

@@ -6,7 +6,7 @@
     $translating = ! $editing && ! is_null($sourceBook);
 
     // Prefill values for shared fields (old() takes priority, then source)
-    $preAuthorIds = $translating ? old('author_ids', $sourceBook->authors->pluck('id')->all()) : ($editing ? $book->authors->pluck('id')->all() : []);
+    $preAuthors = $translating ? old('authors', $sourceBook->authors) : old('authors', $book?->authors);
     $preCategoryIds = $translating ? old('category_ids', $sourceBook->categories->pluck('id')->all()) : ($editing ? $book->categories->pluck('id')->all() : []);
     $preBookTypeId = $translating ? old('book_type_id', $sourceBook->book_type_id) : $book?->book_type_id;
     $prePublicationPlaceId = $translating ? old('publication_place_id', $sourceBook->publication_place_id) : $book?->publication_place_id;
@@ -20,7 +20,6 @@
     $preParallelTitles = old('parallel_titles', $book?->parallel_titles ?? []);
     $preLanguageIds = old('language_ids', $editing ? $book->languages->pluck('id')->all() : []);
 
-    $authorOptions = $authors->map(fn ($a) => ['id' => $a->id, 'label' => $a->name])->all();
     $categoryOptions = $categories->map(fn ($c) => [
         'id' => $c->id,
         'label' => $c->parent ? $c->parent->name . ' › ' . $c->name : $c->name,
@@ -105,9 +104,9 @@
                             </div>
                         </div>
 
-                        <x-admin.form.multiselect name="author_ids" :label="__('Mualliflar')" :options="$authorOptions"
-                            :selected="$preAuthorIds" :placeholder="__('Muallif(lar)ni tanlang')"
-                            creatable create-type="author" :create-label="__('Yangi muallif...')" />
+                        <x-admin.form.input name="authors" :label="__('Mualliflar')" :value="$preAuthors"
+                            :placeholder="__('masalan: Aliyev A., Valiyev B.')"
+                            :help="__('Bir nechta muallif vergul bilan ajratiladi.')" />
 
                         <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa mualliflar')"
                             :value="$book?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"

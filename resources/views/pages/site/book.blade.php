@@ -4,7 +4,7 @@
 @section('meta_description', \Illuminate\Support\Str::limit(strip_tags((string) $book->annotation), 160))
 
 @php
-    $authors = $book->authors->pluck('name')->join(', ');
+    $authors = $book->authors;
     $available = (int) ($book->available_copies ?? 0);
 
     // Bibliographic rows — empty values are dropped so the table only shows real data.

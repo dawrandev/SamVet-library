@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             PublicationPlaceSeeder::class,
             LocationSeeder::class,
-            AuthorSeeder::class,
             CategorySeeder::class,
             BookSeeder::class,
             MenuSeeder::class,

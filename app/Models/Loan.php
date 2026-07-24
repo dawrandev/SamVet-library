@@ -77,7 +77,7 @@ class Loan extends Model
     public function materialSubtitle(): ?string
     {
         if ($this->loanable instanceof BookCopy) {
-            $authors = $this->loanable->book?->authors->pluck('name')->implode(', ');
+            $authors = $this->loanable->book?->authors;
 
             return filled($authors) ? $authors : null;
         }

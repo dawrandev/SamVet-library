@@ -13,6 +13,7 @@ class BookData
 {
     public function __construct(
         public readonly string $title,
+        public readonly ?string $authors,
         /** @var string[] */
         public readonly array $parallel_titles,
         public readonly ?string $udc,
@@ -31,8 +32,6 @@ class BookData
         public readonly ?string $target_audience,
         public readonly ?int $size_cm,
         public readonly ?string $print_sheets,
-        /** @var int[] */
-        public readonly array $author_ids,
         /** @var int[] */
         public readonly array $category_ids,
         public readonly ?UploadedFile $cover,
@@ -63,6 +62,7 @@ class BookData
 
         return new self(
             title: $request->string('title')->toString(),
+            authors: $request->input('authors') ?: null,
             parallel_titles: $parallelTitles,
             udc: $request->input('udc'),
             author_mark: $request->input('author_mark'),
@@ -79,7 +79,6 @@ class BookData
             target_audience: $request->input('target_audience') ?: null,
             size_cm: $request->integer('size_cm') ?: null,
             print_sheets: $request->input('print_sheets') ?: null,
-            author_ids: $request->input('author_ids', []),
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
@@ -96,6 +95,7 @@ class BookData
     {
         return [
             'title' => $this->title,
+            'authors' => $this->authors,
             'parallel_titles' => $this->parallel_titles ?: null,
             'udc' => $this->udc,
             'author_mark' => $this->author_mark,

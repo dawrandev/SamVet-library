@@ -21,6 +21,7 @@ class StoreBookRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:255'],
+            'authors' => ['nullable', 'string', 'max:1000'],
             // Titles printed in another language on the same title page — a row is dropped client-side if left blank.
             'parallel_titles' => ['nullable', 'array'],
             'parallel_titles.*' => ['nullable', 'string', 'max:255'],
@@ -44,8 +45,6 @@ class StoreBookRequest extends FormRequest
 
             'translation_of' => ['nullable', 'integer', 'exists:books,id'],
 
-            'author_ids' => ['array'],
-            'author_ids.*' => ['integer', 'exists:authors,id'],
             'category_ids' => ['array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
 
@@ -66,6 +65,7 @@ class StoreBookRequest extends FormRequest
     {
         return [
             'title' => __('Sarlavha'),
+            'authors' => __('Mualliflar'),
             'parallel_titles' => __('Parallel sarlavhalar'),
             'udc' => __('UO‘K'),
             'author_mark' => __('Mualliflik belgi'),

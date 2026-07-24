@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Author;
 use App\Models\BookType;
 use App\Models\Category;
 use App\Models\ContributorRole;
@@ -20,7 +19,7 @@ use App\Models\ResourceField;
 use App\Models\ScienceField;
 
 /**
- * Creates a lookup (type, language, publication place, author, category, location)
+ * Creates a lookup (type, language, publication place, category, location)
  * "on the fly" from a form. Security: only whitelisted types.
  */
 class LookupService
@@ -31,7 +30,6 @@ class LookupService
         'journal_type' => JournalType::class,
         'language' => Language::class,
         'publication_place' => PublicationPlace::class,
-        'author' => Author::class,
         'contributor_role' => ContributorRole::class,
         'event_location' => EventLocation::class,
         'delivery_location' => DeliveryLocation::class,

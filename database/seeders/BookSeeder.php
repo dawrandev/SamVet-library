@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Enums\BookFormat;
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Category;
@@ -33,7 +32,7 @@ class BookSeeder extends Seeder
             'isbn' => '978-9943-13-456-7',
             'print_run' => 1000,
             'annotation' => 'Iqtisodiyot nazariyasining asosiy tushunchalari, bozor mexanizmi va makroiqtisodiyot masalalari yoritilgan darslik.',
-            'authors' => ['A. O‘lmasov', 'A. Vahobov'],
+            'authors' => 'A. O‘lmasov, A. Vahobov',
             'categories' => ['Iqtisodiyot nazariyasi'],
             'copies' => [
                 ['inventory_number' => 'INV-0001', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Kitob berish bo‘limi', 'price' => 45000],
@@ -56,7 +55,7 @@ class BookSeeder extends Seeder
             'isbn' => '978-9943-11-222-3',
             'print_run' => 500,
             'annotation' => 'Veterinariya sohasining umumiy asoslari, hayvonlar salomatligi va profilaktika masalalari bo‘yicha o‘quv darslik.',
-            'authors' => ['B. Xodiyev'],
+            'authors' => 'B. Xodiyev',
             'categories' => ['Umumiy veterinariya'],
             'copies' => [
                 ['inventory_number' => 'INV-0101', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Ilmiy adabiyotlar zali', 'price' => 38000],
@@ -71,6 +70,7 @@ class BookSeeder extends Seeder
             ['slug' => Str::slug($data['title'])],
             [
                 'title' => $data['title'],
+                'authors' => $data['authors'],
                 'udc' => $data['udc'],
                 'author_mark' => $data['author_mark'],
                 'book_type_id' => BookType::where('name->uz', $data['type'])->value('id'),
@@ -84,10 +84,6 @@ class BookSeeder extends Seeder
                 'annotation' => $data['annotation'],
             ]
         );
-
-        // Authors (many-to-many)
-        $authorIds = Author::whereIn('name', $data['authors'])->pluck('id');
-        $book->authors()->sync($authorIds);
 
         // Categories (many-to-many) — translated, matched by uz
         $categoryIds = Category::whereIn('name->uz', $data['categories'])->pluck('id');

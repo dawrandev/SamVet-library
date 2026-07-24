@@ -10,7 +10,7 @@
         [__('Jami nusxalar'), $n($totals['copies'])],
         [__('Kitob nomlari'), $n($totals['titles'])],
         [__('Foydalanuvchilar'), $n($totals['readers'])],
-        [__('Mualliflar'), $n($totals['authors'])],
+        [__('Maqolalar'), $n($totals['articles'])],
     ];
 
     // Secondary figures: live counts + the two config-driven facts.
@@ -18,7 +18,6 @@
         [__('Jurnallar'), $n($totals['journals'])],
         [__('Gazetalar'), $n($totals['newspapers'])],
         [__('Jurnal sonlari'), $n($totals['issues'])],
-        [__('Maqolalar'), $n($totals['articles'])],
         [__('Yangiliklar'), $n($totals['news'])],
         [__('Tashkil etilgan'), (string) $facts['founded_year']],
         [__('O‘qish zali o‘rni'), $n($facts['reading_room_seats'])],

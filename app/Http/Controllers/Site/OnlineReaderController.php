@@ -31,7 +31,7 @@ class OnlineReaderController extends Controller
 
         return view('pages.site.reader', [
             'title' => $book->title,
-            'subtitle' => $book->authors->pluck('name')->join(', '),
+            'subtitle' => $book->authors,
             'backUrl' => route('book.show', $book->slug),
             'fileUrl' => route('read.book.file', $book->slug),
         ]);

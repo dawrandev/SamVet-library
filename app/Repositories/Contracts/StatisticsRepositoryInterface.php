@@ -10,7 +10,7 @@ interface StatisticsRepositoryInterface
     /**
      * Fund and usage totals.
      *
-     * @return array{copies: int, titles: int, readers: int, journals: int, newspapers: int, issues: int, articles: int, news: int, authors: int}
+     * @return array{copies: int, titles: int, readers: int, journals: int, newspapers: int, issues: int, articles: int, news: int}
      */
     public function totals(): array;
 }

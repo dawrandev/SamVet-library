@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\CopyStatus;
 use App\Enums\ReaderStatus;
 use App\Models\Article;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\BookReading;
@@ -115,7 +114,6 @@ class DashboardService
             'subscriptionsTotal' => Subscription::count(),
             'subscriptionsAmount' => (float) Subscription::sum('amount'),
             'categoriesTotal' => Category::count(),
-            'authorsTotal' => Author::count(),
         ];
     }
 

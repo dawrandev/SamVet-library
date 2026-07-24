@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Data\BookData;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Category;
@@ -58,7 +57,6 @@ class BookService
             'types' => BookType::orderBy('name')->get(),
             'languages' => Language::orderBy('name')->get(),
             'publicationPlaces' => PublicationPlace::orderBy('name')->get(),
-            'authors' => Author::orderBy('name')->get(),
             'categories' => Category::with('parent')->orderBy('name')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
         ];
@@ -84,7 +82,6 @@ class BookService
 
             $book = $this->books->create($attributes); // slug — Observer
 
-            $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
             $book->languages()->sync($data->language_ids);
             $this->contributors->sync($book, $data->contributors);
@@ -125,7 +122,6 @@ class BookService
 
             $book = $this->books->update($book, $attributes);
 
-            $book->authors()->sync($data->author_ids);
             $book->categories()->sync($data->category_ids);
             $book->languages()->sync($data->language_ids);
             $this->contributors->sync($book, $data->contributors);

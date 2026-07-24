@@ -32,7 +32,7 @@ class BookRepository implements BookRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->filtered($filters)
-            ->with(['type', 'language', 'authors'])
+            ->with(['type', 'language'])
             ->withCount([
                 'copies',
                 'copies as available_copies_count' => fn ($q) => $q->where('status', CopyStatus::Available->value),
@@ -44,7 +44,7 @@ class BookRepository implements BookRepositoryInterface
 
     public function find(int $id): ?Book
     {
-        return Book::with(['type', 'language', 'languages', 'publicationPlace', 'authors', 'categories', 'copies.location'])
+        return Book::with(['type', 'language', 'languages', 'publicationPlace', 'categories', 'copies.location'])
             ->find($id);
     }
 

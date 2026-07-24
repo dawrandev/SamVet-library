@@ -210,7 +210,6 @@
                                         'languages' => __('Tillar'),
                                         'locations' => __('Joylashuvlar'),
                                         'publication-places' => __('Nashriyot joylari'),
-                                        'authors' => __('Mualliflar'),
                                         'contributor-roles' => __('Mualliflik rollari'),
                                         'event-locations' => __('Tadbir joylari'),
                                         'delivery-locations' => __('Yetkazib berish manzillari'),

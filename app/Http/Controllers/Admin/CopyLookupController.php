@@ -23,7 +23,7 @@ class CopyLookupController extends Controller
             return response()->json(['found' => false]);
         }
 
-        $bookCopy = BookCopy::with('book.authors')->where('inventory_number', $inventory)->first();
+        $bookCopy = BookCopy::with('book')->where('inventory_number', $inventory)->first();
 
         if ($bookCopy !== null) {
             return response()->json([
@@ -37,7 +37,7 @@ class CopyLookupController extends Controller
                 ],
                 'book' => [
                     'title' => $bookCopy->book?->title,
-                    'authors' => $bookCopy->book?->authors->pluck('name')->implode(', '),
+                    'authors' => $bookCopy->book?->authors,
                     'udc' => $bookCopy->book?->udc,
                     'year' => $bookCopy->book?->publication_year,
                 ],

@@ -92,7 +92,7 @@ class LoanRepository implements LoanRepositoryInterface
             'reader',
             'loanable' => function ($morphTo) {
                 $morphTo->morphWith([
-                    BookCopy::class => ['book.authors'],
+                    BookCopy::class => ['book'],
                     JournalCopy::class => ['issue.journal'],
                 ]);
             },

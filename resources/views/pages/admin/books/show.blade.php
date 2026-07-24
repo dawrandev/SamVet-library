@@ -16,7 +16,7 @@
         ]);
 
         $meta = array_filter([
-            __('Mualliflar') => $book->authors->pluck('name')->join(', '),
+            __('Mualliflar') => $book->authors,
             __('Turi') => $book->type?->name,
             __('Tili') => $book->languages->isNotEmpty() ? $book->languages->pluck('name')->join(', ') : $book->language?->name,
             __('Nashriyoti') => $book->publisher,

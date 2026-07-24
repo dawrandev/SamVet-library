@@ -95,7 +95,6 @@ it('saves a book with contributors but no author', function () {
 
     $this->post(route('admin.books.store'), [
         'title' => 'Muharriri bor, muallifi yo‘q kitob',
-        'author_ids' => [],
         'contributors' => [
             ['contributor_role_id' => $role->id, 'name' => 'Tahrirchi T.'],
         ],
@@ -103,7 +102,7 @@ it('saves a book with contributors but no author', function () {
 
     $book = Book::firstWhere('title', 'Muharriri bor, muallifi yo‘q kitob');
     expect($book)->not->toBeNull()
-        ->and($book->authors)->toHaveCount(0)
+        ->and($book->authors)->toBeNull()
         ->and($book->contributors)->toHaveCount(1)
         ->and($book->contributors->first()->name)->toBe('Tahrirchi T.')
         ->and($book->contributors->first()->contributorRole->name)->toBe('Muharrir');

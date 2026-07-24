@@ -36,7 +36,6 @@ use App\Http\Controllers\Admin\WarningController;
 use App\Http\Controllers\Admin\Lookups\AffiliationGroupController;
 use App\Http\Controllers\Admin\Lookups\AffiliationPlaceController;
 use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
-use App\Http\Controllers\Admin\Lookups\AuthorController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
@@ -300,7 +299,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('languages', LanguageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('locations', LocationController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('publication-places', PublicationPlaceController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('authors', AuthorController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('contributor-roles', ContributorRoleController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['contributor-roles' => 'contributorRole']);
         Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['news-categories' => 'newsCategory']);
         Route::resource('resource-fields', ResourceFieldController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['resource-fields' => 'resourceField']);

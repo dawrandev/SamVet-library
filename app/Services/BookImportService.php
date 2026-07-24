@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\BookFormat;
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\BookType;
@@ -24,7 +23,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * location/author) are created automatically if missing. Source text is stored raw
  * (no transliteration); only `uz` is written to the 3-language lookups.
  *
- * @phpstan-type ImportStats array{books:int, copies:int, skipped:int, authors:int, book_types:int, languages:int, publication_places:int, locations:int}
+ * @phpstan-type ImportStats array{books:int, copies:int, skipped:int, book_types:int, languages:int, publication_places:int, locations:int}
  */
 class BookImportService
 {
@@ -77,7 +76,7 @@ class BookImportService
 
         $this->stats = [
             'books' => 0, 'copies' => 0, 'skipped' => 0,
-            'authors' => 0, 'book_types' => 0, 'languages' => 0, 'publication_places' => 0, 'locations' => 0,
+            'book_types' => 0, 'languages' => 0, 'publication_places' => 0, 'locations' => 0,
         ];
         $this->lookupCache = [];
 
@@ -125,8 +124,6 @@ class BookImportService
         DB::transaction(function () use ($row, $title, $inventory) {
             $book = $this->resolveBook($row, $title);
 
-            $this->attachAuthors($book, $this->clean($row[self::COL['authors']] ?? null));
-
             if ($this->createCopy($book, $row, $inventory)) {
                 $this->stats['copies']++;
             } else {
@@ -161,6 +158,7 @@ class BookImportService
 
         $book = Book::create([
             'title' => $title,
+            'authors' => $this->clean($row[self::COL['authors']] ?? null),
             'author_mark' => $authorMark,
             'udc' => $udc,
             'publication_year' => $year,
@@ -176,34 +174,6 @@ class BookImportService
         $this->stats['books']++;
 
         return $book;
-    }
-
-    /**
-     * Splits a "Author1, Author2" string, finds/creates each one, and links them to the book.
-     */
-    private function attachAuthors(Book $book, ?string $authorsString): void
-    {
-        if ($authorsString === null) {
-            return;
-        }
-
-        $ids = [];
-        foreach (preg_split('/[,;]+/', $authorsString) ?: [] as $name) {
-            $name = trim($name);
-            if ($name === '') {
-                continue;
-            }
-
-            $author = Author::firstOrCreate(['name' => $name]);
-            if ($author->wasRecentlyCreated) {
-                $this->stats['authors']++;
-            }
-            $ids[] = $author->id;
-        }
-
-        if ($ids !== []) {
-            $book->authors()->syncWithoutDetaching($ids);
-        }
     }
 
     /**

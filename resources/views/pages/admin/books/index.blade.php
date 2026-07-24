@@ -95,7 +95,7 @@
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-theme-sm truncate font-medium text-gray-800 dark:text-white/90">{{ $book->title }}</p>
-                                        <p class="text-theme-xs truncate text-gray-500 dark:text-gray-400">{{ $book->authors->pluck('name')->join(', ') ?: '—' }}</p>
+                                        <p class="text-theme-xs truncate text-gray-500 dark:text-gray-400">{{ $book->authors ?: '—' }}</p>
                                     </div>
                                 </div>
                             </td>

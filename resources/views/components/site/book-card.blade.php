@@ -4,7 +4,7 @@
 ])
 
 @php
-    $authors = $book->authors->pluck('name')->join(', ');
+    $authors = $book->authors;
     $available = $book->available_copies ?? null;
 @endphp
 

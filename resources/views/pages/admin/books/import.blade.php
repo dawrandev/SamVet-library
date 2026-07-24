@@ -141,7 +141,6 @@
             <h4 class="mt-6 mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Avtomatik yaratilgan ma’lumotnomalar') }}</h4>
             <div class="flex flex-wrap gap-2 text-theme-sm">
                 @foreach ([
-                    __('Muallif') => $stats['authors'],
                     __('Kitob turi') => $stats['book_types'],
                     __('Til') => $stats['languages'],
                     __('Nashriyot joyi') => $stats['publication_places'],

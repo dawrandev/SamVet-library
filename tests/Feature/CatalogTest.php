@@ -42,6 +42,15 @@ it('searches by title', function () {
     expect($res->viewData('total'))->toBe(1);
 });
 
+it('filters by author (plain-text field, not a lookup)', function () {
+    Book::factory()->create(['title' => 'Iqtisodiyot nazariyasi', 'authors' => 'A. O‘lmasov, A. Vahobov']);
+    Book::factory()->create(['title' => 'Boshqa kitob', 'authors' => 'B. Xodiyev']);
+
+    $res = $this->get(route('catalog', ['author' => 'O‘lmasov']));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
 it('filters by copy format (bosma/elektron/brayl)', function () {
     $printBook = Book::factory()->create();
     BookCopy::factory()->create(['book_id' => $printBook->id, 'format' => 'print']);

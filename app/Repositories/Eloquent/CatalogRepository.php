@@ -21,7 +21,7 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function paginate(CatalogFilters $filters, int $perPage): LengthAwarePaginator
     {
         $query = Book::query()
-            ->with(['type', 'authors'])
+            ->with(['type'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])
@@ -50,9 +50,7 @@ class CatalogRepository implements CatalogRepositoryInterface
             })
             ->when($filters->yearFrom, fn (Builder $query, int $year) => $query->where('publication_year', '>=', $year))
             ->when($filters->yearTo, fn (Builder $query, int $year) => $query->where('publication_year', '<=', $year))
-            ->when($filters->author, fn (Builder $query, string $author) => $query->whereHas(
-                'authors', fn (Builder $q) => $q->where('name', 'like', "%{$author}%")
-            ));
+            ->when($filters->author, fn (Builder $query, string $author) => $query->where('authors', 'like', "%{$author}%"));
 
         $filters->sort->apply($query);
 
@@ -126,7 +124,7 @@ class CatalogRepository implements CatalogRepositoryInterface
     public function findPublicBySlug(string $slug): ?Book
     {
         return Book::query()
-            ->with(['type', 'language', 'languages', 'publicationPlace', 'authors', 'categories.parent'])
+            ->with(['type', 'language', 'languages', 'publicationPlace', 'categories.parent'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])
@@ -143,7 +141,7 @@ class CatalogRepository implements CatalogRepositoryInterface
         }
 
         return Book::query()
-            ->with(['type', 'authors'])
+            ->with(['type'])
             ->withCount([
                 'copies as available_copies' => fn (Builder $q) => $q->where('status', CopyStatus::Available->value),
             ])

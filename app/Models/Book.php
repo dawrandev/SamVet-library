@@ -17,7 +17,7 @@ class Book extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'parallel_titles', 'udc', 'author_mark',
+        'title', 'slug', 'authors', 'parallel_titles', 'udc', 'author_mark',
         'book_type_id', 'language_id', 'publisher', 'publication_place_id', 'work_id',
         'publication_year', 'pages', 'isbn', 'print_run', 'annotation',
         'target_audience', 'size_cm', 'print_sheets',
@@ -69,11 +69,6 @@ class Book extends Model
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);
-    }
-
-    public function authors(): BelongsToMany
-    {
-        return $this->belongsToMany(Author::class, 'book_author');
     }
 
     public function categories(): BelongsToMany

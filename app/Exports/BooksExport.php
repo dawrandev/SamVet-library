@@ -25,7 +25,7 @@ class BooksExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMappin
     public function query(): Builder
     {
         return app(BookRepositoryInterface::class)->filtered($this->filters)
-            ->with(['type', 'language', 'languages', 'publicationPlace', 'authors', 'categories'])
+            ->with(['type', 'language', 'languages', 'publicationPlace', 'categories'])
             ->withCount([
                 'copies',
                 'copies as available_copies_count' => fn ($q) => $q->where('status', CopyStatus::Available->value),
@@ -58,7 +58,7 @@ class BooksExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMappin
             $book->type?->name,
             $book->language?->name,
             $book->languages->pluck('name')->implode(', '),
-            $book->authors->pluck('name')->implode(', '),
+            $book->authors,
             $book->categories->pluck('name')->implode(', '),
             $book->publisher,
             $book->publicationPlace?->name,
