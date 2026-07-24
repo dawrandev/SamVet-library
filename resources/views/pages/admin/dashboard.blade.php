@@ -124,8 +124,8 @@
                  data-dates="{{ json_encode($dailyUsage['dates']) }}" data-series="{{ json_encode($dailySeries) }}"></div>
         </div>
 
-        {{-- ===== Donut charts ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
+        {{-- ===== Donut + bar charts (2x2) ===== --}}
+        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
@@ -149,24 +149,23 @@
                      data-series="{{ json_encode($rdSeries) }}" data-labels="{{ json_encode($rdLabels) }}"
                      data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
             </div>
-        </div>
 
-        {{-- ===== Bar: books by language (nusxa / nomi toggle) ===== --}}
-        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
-                    <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitoblar tili bo‘yicha taqsimot') }}</p>
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
+                        <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitoblar tili bo‘yicha taqsimot') }}</p>
+                    </div>
+                    <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
+                        <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
+                        <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
+                    </div>
                 </div>
-                <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
-                    <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
-                    <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
-                </div>
+                <div id="chart-language-bar" data-bar class="mt-1"
+                     data-labels="{{ json_encode($langLabels) }}" data-colors="{{ json_encode($langColors) }}"
+                     data-series-copies="{{ json_encode($langCopySeries) }}" data-series-titles="{{ json_encode($langTitleSeries) }}"
+                     data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
             </div>
-            <div id="chart-language-bar" data-bar class="mt-3"
-                 data-labels="{{ json_encode($langLabels) }}" data-colors="{{ json_encode($langColors) }}"
-                 data-series-copies="{{ json_encode($langCopySeries) }}" data-series-titles="{{ json_encode($langTitleSeries) }}"
-                 data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
         </div>
 
         {{-- ===== Online readings filter + quick counts ===== --}}

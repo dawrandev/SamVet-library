@@ -13,7 +13,7 @@
     "isEntry": true
   },
   "resources/js/admin/charts.js": {
-    "file": "assets/charts-C3UQrezv.js",
+    "file": "assets/charts-D7cM7MbA.js",
     "name": "charts",
     "src": "resources/js/admin/charts.js",
     "isDynamicEntry": true
@@ -28,7 +28,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-UsOd6hEw.js",
+    "file": "assets/app-C25ngEkQ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

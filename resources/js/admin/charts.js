@@ -125,7 +125,7 @@ const bar = (el) => {
     // A handful of bars spread across the full card width leaves a huge dead
     // gap between them — cap the chart's own width and center it instead.
     const fewCategories = labels.length <= 3;
-    const chartWidth = fewCategories ? Math.max(280, labels.length * 200) : '100%';
+    const chartWidth = fewCategories ? Math.max(220, labels.length * 150) : '100%';
     if (fewCategories) {
         el.style.display = 'flex';
         el.style.justifyContent = 'center';
