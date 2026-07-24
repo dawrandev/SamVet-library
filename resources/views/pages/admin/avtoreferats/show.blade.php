@@ -115,14 +115,6 @@
                     @endforelse
                 </dl>
             </div>
-
-            {{-- Location note --}}
-            <div class="rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-500/30 dark:bg-brand-500/10 sm:p-6">
-                <h3 class="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-300">{{ __('Joylashuvi') }}</h3>
-                <p class="text-theme-sm text-brand-700 dark:text-brand-300">
-                    {{ __('Axborot resurs markazi Elektron o‘qish zalida joylashgan.') }}
-                </p>
-            </div>
         </div>
     </div>
 @endsection

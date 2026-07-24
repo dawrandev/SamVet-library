@@ -71,10 +71,6 @@
                         <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $computer->location?->label() ?? '—' }}</dd>
                     </div>
                 </dl>
-
-                <p class="text-theme-sm mt-5 rounded-lg bg-gray-50 px-4 py-3 leading-relaxed text-gray-500 dark:bg-white/[0.03] dark:text-gray-400">
-                    {{ __('Axborot resurs markazi Elektron o‘qish zalida joylashgan.') }}
-                </p>
             </div>
         </div>
 

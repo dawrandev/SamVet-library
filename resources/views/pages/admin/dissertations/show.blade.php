@@ -46,65 +46,51 @@
         <x-alert type="success" class="mb-5">{{ session('success') }}</x-alert>
     @endif
 
-    <div class="grid grid-cols-12 gap-6">
-        {{-- Left: dissertation details --}}
-        <div class="col-span-12 space-y-6 xl:col-span-7">
+    <div class="space-y-6 xl:max-w-3xl">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Dissertatsiya ma’lumotlari') }}</h3>
+            <dl class="space-y-3">
+                @foreach ($details as $label => $value)
+                    <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                        <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                        <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+
+            @if ($dissertation->annotation)
+                <div class="mt-5">
+                    <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Annotatsiya') }}</h4>
+                    <p class="text-theme-sm whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $dissertation->annotation }}</p>
+                </div>
+            @endif
+        </div>
+
+        {{-- Admin-only fields (inventory/condition) — never shown on the client site. --}}
+        @if ($adminDetails)
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Dissertatsiya ma’lumotlari') }}</h3>
+                <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Inventar (faqat admin)') }}</h3>
                 <dl class="space-y-3">
-                    @foreach ($details as $label => $value)
+                    @foreach ($adminDetails as $label => $value)
                         <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
                             <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
                             <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
                         </div>
                     @endforeach
                 </dl>
-
-                @if ($dissertation->annotation)
-                    <div class="mt-5">
-                        <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ __('Annotatsiya') }}</h4>
-                        <p class="text-theme-sm whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $dissertation->annotation }}</p>
-                    </div>
-                @endif
             </div>
+        @endif
 
-            {{-- Admin-only fields (inventory/condition) — never shown on the client site. --}}
-            @if ($adminDetails)
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                    <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Inventar (faqat admin)') }}</h3>
-                    <dl class="space-y-3">
-                        @foreach ($adminDetails as $label => $value)
-                            <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
-                                <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ $label }}</dt>
-                                <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $value }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                </div>
-            @endif
-
-            {{-- Electronic file indicator --}}
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-                <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Elektron fayl') }}</h3>
-                @if ($dissertation->electronic_file)
-                    <p class="text-theme-sm inline-flex items-center gap-2 text-success-600">
-                        <span>📎</span> {{ __('PDF fayl biriktirilgan (himoyalangan).') }}
-                    </p>
-                @else
-                    <p class="text-theme-sm text-gray-400">{{ __('Elektron fayl biriktirilmagan.') }}</p>
-                @endif
-            </div>
-        </div>
-
-        {{-- Right: location --}}
-        <div class="col-span-12 space-y-6 xl:col-span-5">
-            {{-- Location note --}}
-            <div class="rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-500/30 dark:bg-brand-500/10 sm:p-6">
-                <h3 class="mb-2 text-sm font-semibold text-brand-700 dark:text-brand-300">{{ __('Joylashuvi') }}</h3>
-                <p class="text-theme-sm text-brand-700 dark:text-brand-300">
-                    {{ __('Axborot resurs markazi Elektron o‘qish zalida joylashgan.') }}
+        {{-- Electronic file indicator --}}
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <h3 class="mb-3 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Elektron fayl') }}</h3>
+            @if ($dissertation->electronic_file)
+                <p class="text-theme-sm inline-flex items-center gap-2 text-success-600">
+                    <span>📎</span> {{ __('PDF fayl biriktirilgan (himoyalangan).') }}
                 </p>
-            </div>
+            @else
+                <p class="text-theme-sm text-gray-400">{{ __('Elektron fayl biriktirilmagan.') }}</p>
+            @endif
         </div>
     </div>
 @endsection
