@@ -55,7 +55,7 @@ class AvtoreferatController extends Controller
 
     public function show(Avtoreferat $avtoreferat): View
     {
-        $avtoreferat->load('publicationPlace');
+        $avtoreferat->load('publicationPlace', 'languages');
 
         return view('pages.admin.avtoreferats.show', ['avtoreferat' => $avtoreferat]);
     }

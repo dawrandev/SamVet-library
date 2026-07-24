@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\AvtoreferatData;
 use App\Models\Avtoreferat;
 use App\Models\ContributorRole;
+use App\Models\Language;
 use App\Models\PublicationPlace;
 use App\Models\ScienceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
@@ -44,6 +45,7 @@ class AvtoreferatService
             'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
             'scienceFields' => ScienceField::orderBy('name')->get(),
+            'languages' => Language::orderBy('name')->get(),
         ];
     }
 
@@ -59,6 +61,7 @@ class AvtoreferatService
             $avtoreferat = $this->avtoreferats->create($attributes); // slug — Observer
 
             $this->contributors->sync($avtoreferat, $data->contributors);
+            $avtoreferat->languages()->sync($data->language_ids);
 
             return $avtoreferat;
         });
@@ -77,6 +80,7 @@ class AvtoreferatService
             $avtoreferat = $this->avtoreferats->update($avtoreferat, $attributes);
 
             $this->contributors->sync($avtoreferat, $data->contributors);
+            $avtoreferat->languages()->sync($data->language_ids);
 
             return $avtoreferat;
         });

@@ -32,6 +32,8 @@ class AvtoreferatData
         public readonly ?UploadedFile $electronic_file,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
+        /** @var array<int, int> */
+        public readonly array $language_ids = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -54,6 +56,7 @@ class AvtoreferatData
             inventory_number: $request->input('inventory_number') ?: null,
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
+            language_ids: $request->input('language_ids', []),
         );
     }
 

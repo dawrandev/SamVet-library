@@ -107,6 +107,11 @@
                     </div>
 
                     <x-admin.form.input name="inventory_number" :label="__('Inventari')" :value="$avtoreferat?->inventory_number" />
+
+                    <x-admin.form.multiselect name="language_ids" :label="__('Tillari')"
+                        :options="$languages->map(fn ($l) => ['id' => $l->id, 'label' => $l->name])"
+                        :selected="$avtoreferat?->languages->pluck('id')->all()" :placeholder="__('Tanlang')"
+                        :help="__('Avtoreferat bir nechta tilda bo‘lishi mumkin.')" />
                 </div>
             </x-admin.form.section>
 

@@ -28,6 +28,7 @@
             __('Nashr joyi') => $avtoreferat->publicationPlace?->name,
             __('Himoya yili') => $avtoreferat->defense_year,
             __('Inventari') => $avtoreferat->inventory_number,
+            __('Tillari') => $avtoreferat->languages->pluck('name')->implode(', ') ?: null,
         ], fn ($v) => filled($v));
     @endphp
 

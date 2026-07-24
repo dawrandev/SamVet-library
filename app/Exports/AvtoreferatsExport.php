@@ -24,7 +24,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
     public function query(): Builder
     {
         return app(AvtoreferatRepositoryInterface::class)->filtered($this->filters)
-            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole'])
+            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole', 'languages'])
             ->latest('id');
     }
 
@@ -37,7 +37,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             'ID', 'Sarlavha', 'Muallif', 'Boshqa ishtirokchilar', 'Ixtisosligi', 'Fan nomi', 'Darajasi',
             'Kengash raqami', 'Himoya muassasasi', 'Bajarilgan muassasa', 'Ilmiy rahbar',
             'UDC', "Ro'yxatga olish raqami", 'Holati', 'Nashr joyi', 'Himoya yili', 'Inventar raqami',
-            'Elektron nusxa', "Ko'rishlar soni",
+            'Tillari', 'Elektron nusxa', "Ko'rishlar soni",
         ];
     }
 
@@ -65,6 +65,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $avtoreferat->publicationPlace?->name,
             $avtoreferat->defense_year,
             $avtoreferat->inventory_number,
+            $avtoreferat->languages->pluck('name')->implode(', '),
             $avtoreferat->electronic_file ? 'Ha' : "Yo'q",
             $avtoreferat->views_count,
         ];

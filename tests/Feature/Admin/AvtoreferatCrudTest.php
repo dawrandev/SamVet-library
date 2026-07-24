@@ -3,6 +3,7 @@
 use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
+use App\Models\Language;
 use App\Models\PublicationPlace;
 use App\Models\ScienceField;
 use Illuminate\Http\UploadedFile;
@@ -105,6 +106,47 @@ it('shows the science field and defense year on the show page', function () {
         ->assertSee('Veterinariya fanlari')
         ->assertSee('Himoya yili')
         ->assertSee('2025');
+});
+
+it('saves an avtoreferat written in more than one language', function () {
+    $uz = Language::factory()->create(['name' => 'O‘zbek']);
+    $ru = Language::factory()->create(['name' => 'Rus']);
+
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Ko‘p tilli avtoreferat',
+        'advisor' => 'Aliyev A.',
+        'language_ids' => [$uz->id, $ru->id],
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Ko‘p tilli avtoreferat');
+    expect($avtoreferat->languages->pluck('id')->sort()->values()->all())->toBe([$uz->id, $ru->id]);
+});
+
+it('replaces (not appends to) the previous language set on update', function () {
+    $uz = Language::factory()->create();
+    $ru = Language::factory()->create();
+    $kk = Language::factory()->create();
+
+    $avtoreferat = Avtoreferat::factory()->create();
+    $avtoreferat->languages()->sync([$uz->id, $ru->id]);
+
+    $this->put(route('admin.avtoreferats.update', $avtoreferat), [
+        'title' => $avtoreferat->title,
+        'advisor' => $avtoreferat->advisor,
+        'language_ids' => [$kk->id],
+    ])->assertRedirect();
+
+    expect($avtoreferat->fresh()->languages->pluck('id')->all())->toBe([$kk->id]);
+});
+
+it('shows the avtoreferat languages on the show page', function () {
+    $uz = Language::factory()->create(['name' => 'Sinov tili']);
+    $avtoreferat = Avtoreferat::factory()->create();
+    $avtoreferat->languages()->attach($uz->id);
+
+    $this->get(route('admin.avtoreferats.show', $avtoreferat))
+        ->assertSee(__('Tillari'))
+        ->assertSee('Sinov tili');
 });
 
 it('does not show an "ishtirokchi qo‘shish" (contributors) block on the create or edit form', function () {
