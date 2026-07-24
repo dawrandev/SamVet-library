@@ -238,9 +238,8 @@ class DashboardService
     }
 
     /**
-     * Reader count per gender, label => count. Missing gender is bucketed
-     * under "Noma'lum" rather than dropped, so the chart total still matches
-     * the reader total.
+     * Reader count per gender, label => count. Only Erkak/Ayol — readers with
+     * no gender on file are simply excluded, not bucketed as "Noma'lum".
      *
      * @return array<string, int>
      */
@@ -254,12 +253,6 @@ class DashboardService
             if ($c > 0) {
                 $result[$gender->label()] = $c;
             }
-        }
-
-        // Anything not matching a known Gender case (including NULL) falls here too.
-        $unknown = (int) $counts->sum() - array_sum($result);
-        if ($unknown > 0) {
-            $result[__('Noma’lum')] = $unknown;
         }
 
         return $result;
