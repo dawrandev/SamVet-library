@@ -34,24 +34,41 @@
             $fmtColors[] = $formatClr[$fmt->value] ?? '#98a2b3';
         }
 
-        // --- Donut: books by language (top slices; the rest folds into "Boshqa") ---
-        $langPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#7592ff', '#32d583'];
-        $langEntries = collect($booksByLanguage)
-            ->map(fn ($count, $langId) => ['label' => $languageNames[$langId] ?? '—', 'count' => (int) $count])
-            ->values()
-            ->sortByDesc('count')
+        // --- Bar: books by language, toggled between nusxa (copy) and nomi (title) counts ---
+        // Same label set for both modes, so toggling never reshuffles categories.
+        $langPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#06aed4', '#7a5af8'];
+        $langIds = collect($booksByLanguage->keys())->merge($copiesByLanguage->keys())->unique()->values();
+        $langEntries = $langIds
+            ->map(fn ($id) => [
+                'label' => $languageNames[$id] ?? '—',
+                'titles' => (int) ($booksByLanguage[$id] ?? 0),
+                'copies' => (int) ($copiesByLanguage[$id] ?? 0),
+            ])
+            ->sortByDesc(fn ($e) => $e['titles'] + $e['copies'])
             ->values();
-        $langSeries = $langLabels = $langColors = [];
+        $langLabels = $langCopySeries = $langTitleSeries = $langColors = [];
         foreach ($langEntries->take(count($langPalette)) as $i => $entry) {
-            $langSeries[] = $entry['count'];
             $langLabels[] = $entry['label'];
+            $langCopySeries[] = $entry['copies'];
+            $langTitleSeries[] = $entry['titles'];
             $langColors[] = $langPalette[$i];
         }
         if ($langEntries->count() > count($langPalette)) {
-            $langSeries[] = $langEntries->slice(count($langPalette))->sum('count');
+            $rest = $langEntries->slice(count($langPalette));
             $langLabels[] = __('Boshqa');
+            $langCopySeries[] = $rest->sum('copies');
+            $langTitleSeries[] = $rest->sum('titles');
             $langColors[] = '#98a2b3';
         }
+
+        // --- Line: daily usage (5 series, one shared count axis) ---
+        $dailySeries = [
+            ['name' => __('Berilgan kitoblar'), 'data' => $dailyUsage['loans'], 'color' => '#465fff'],
+            ['name' => __('Onlayn o‘qishlar'), 'data' => $dailyUsage['onlineReadings'], 'color' => '#12b76a'],
+            ['name' => __('Kompyuterdan foydalanish'), 'data' => $dailyUsage['computerSessions'], 'color' => '#f79009', 'dashed' => true],
+            ['name' => __('Tadbirlarda qatnashish'), 'data' => $dailyUsage['eventParticipations'], 'color' => '#f04438'],
+            ['name' => __('Umumiy foydalanish'), 'data' => $dailyUsage['total'], 'color' => '#1d2939', 'dashed' => true],
+        ];
     @endphp
 
     <div data-dashboard>
@@ -82,8 +99,33 @@
             </div>
         </div>
 
+        {{-- ===== Daily usage line chart ===== --}}
+        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kunlik statistika') }}</h3>
+                    <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Berilgan kitoblar, onlayn o‘qishlar, kompyuterdan foydalanish, tadbir ishtiroki') }}</p>
+                </div>
+                <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-end gap-2">
+                    <div>
+                        <label class="mb-1.5 block text-theme-xs font-medium text-gray-700 dark:text-gray-400">{{ __('Sanadan') }}</label>
+                        <input type="date" name="stats_from" value="{{ $statsFrom->format('Y-m-d') }}"
+                               class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-10 rounded-lg border border-gray-200 bg-transparent px-3 text-theme-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-theme-xs font-medium text-gray-700 dark:text-gray-400">{{ __('Sanagacha') }}</label>
+                        <input type="date" name="stats_to" value="{{ $statsTo->format('Y-m-d') }}"
+                               class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-10 rounded-lg border border-gray-200 bg-transparent px-3 text-theme-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                    </div>
+                    <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg px-4 text-theme-sm font-medium text-white transition">{{ __('Filtrlash') }}</button>
+                </form>
+            </div>
+            <div id="chart-daily-usage" data-line class="mt-4"
+                 data-dates="{{ json_encode($dailyUsage['dates']) }}" data-series="{{ json_encode($dailySeries) }}"></div>
+        </div>
+
         {{-- ===== Donut charts ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4 md:gap-5">
+        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
@@ -107,14 +149,24 @@
                      data-series="{{ json_encode($rdSeries) }}" data-labels="{{ json_encode($rdLabels) }}"
                      data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
             </div>
+        </div>
 
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitoblar tili bo‘yicha taqsimot') }}</p>
-                <div id="chart-language" data-donut class="mt-1"
-                     data-series="{{ json_encode($langSeries) }}" data-labels="{{ json_encode($langLabels) }}"
-                     data-colors="{{ json_encode($langColors) }}" data-center="{{ __('Kitob') }}"></div>
+        {{-- ===== Bar: books by language (nusxa / nomi toggle) ===== --}}
+        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
+                    <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitoblar tili bo‘yicha taqsimot') }}</p>
+                </div>
+                <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
+                    <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
+                    <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
+                </div>
             </div>
+            <div id="chart-language-bar" data-bar class="mt-3"
+                 data-labels="{{ json_encode($langLabels) }}" data-colors="{{ json_encode($langColors) }}"
+                 data-series-copies="{{ json_encode($langCopySeries) }}" data-series-titles="{{ json_encode($langTitleSeries) }}"
+                 data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
         </div>
 
         {{-- ===== Online readings filter + quick counts ===== --}}

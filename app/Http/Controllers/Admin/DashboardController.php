@@ -17,6 +17,8 @@ class DashboardController extends Controller
         return view('pages.admin.dashboard', $dashboard->stats(
             $request->query('from'),
             $request->query('to'),
+            $request->query('stats_from'),
+            $request->query('stats_to'),
         ));
     }
 }

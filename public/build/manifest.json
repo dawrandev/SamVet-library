@@ -8,12 +8,12 @@
     "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-cPmbMjoK.css",
+    "file": "assets/app-DVPlqaA4.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/admin/charts.js": {
-    "file": "assets/charts-oF6nX8Jw.js",
+    "file": "assets/charts--fHRHMip.js",
     "name": "charts",
     "src": "resources/js/admin/charts.js",
     "isDynamicEntry": true
@@ -28,7 +28,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BJRy9OVO.js",
+    "file": "assets/app-BeZtuTf0.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
