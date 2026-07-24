@@ -51,9 +51,10 @@
         table.affiliation-sub { width: 100%; border-collapse: collapse; }
         table.affiliation-sub td { width: 50%; vertical-align: top; padding: 0; }
 
-        table.footer-row { width: 100%; border-collapse: collapse; margin-top: 14px; }
-        table.footer-row td { font-size: 9.5px; color: #374151; vertical-align: bottom; }
-        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 130px; height: 12px; margin-left: 4px; }
+        .footer-row { margin-top: 14px; }
+        .footer-row p { margin: 0 0 8px; font-size: 9.5px; color: #374151; }
+        .footer-row p:last-child { margin-bottom: 0; }
+        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 150px; height: 12px; margin-left: 4px; }
 
         .right-title { font-size: 10px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 8px; }
         .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 10px; }
@@ -102,20 +103,16 @@
                     </table>
                 </div>
 
-                <table class="footer-row">
-                    <tr>
-                        <td width="50%">
-                            {{ __('Kitobxon imzosi') }}: <span class="sign-line"></span>
-                        </td>
-                        <td width="50%">
-                            @if ($reader->issued_date)
-                                {{ __('Berilgan sana') }}: {{ $reader->issued_date->format('d.m.Y') }}
-                            @else
-                                {{ __('Berilgan sana') }}: <span class="sign-line"></span>
-                            @endif
-                        </td>
-                    </tr>
-                </table>
+                <div class="footer-row">
+                    <p>{{ __('Kitobxon imzosi') }}: <span class="sign-line"></span></p>
+                    <p>
+                        @if ($reader->issued_date)
+                            {{ __('Berilgan sana') }}: {{ $reader->issued_date->format('d.m.Y') }}
+                        @else
+                            {{ __('Berilgan sana') }}: <span class="sign-line"></span>
+                        @endif
+                    </p>
+                </div>
             </td>
 
             <td class="right-col">
