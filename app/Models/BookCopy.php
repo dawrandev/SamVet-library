@@ -27,8 +27,8 @@ class BookCopy extends Model
             'condition' => CopyCondition::class,
             'status' => CopyStatus::class,
             'price' => 'decimal:2',
-            'acquisition_act_at' => 'datetime',
-            'disposal_act_at' => 'datetime',
+            'acquisition_act_at' => 'date',
+            'disposal_act_at' => 'date',
         ];
     }
 

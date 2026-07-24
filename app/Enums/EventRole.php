@@ -19,7 +19,7 @@ enum EventRole: string
             self::Participant => __('Ishtirokchi'),
             self::Host => __('Boshlovchi'),
             self::Spectator => __('Tomoshabin'),
-            self::Jury => __('Juri'),
+            self::Jury => __('Hakam'),
             self::Guest => __('Mehmon'),
         };
     }

@@ -250,11 +250,11 @@
                                     <td class="px-5 py-3 text-theme-xs">
                                         <div class="{{ $copy->acquisition_act_number ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400' }}">
                                             {{ __('Kirish') }}: {{ $copy->acquisition_act_number ?? '—' }}
-                                            @if ($copy->acquisition_act_at) <span class="text-gray-400">({{ $copy->acquisition_act_at->format('d.m.Y H:i') }})</span> @endif
+                                            @if ($copy->acquisition_act_at) <span class="text-gray-400">({{ $copy->acquisition_act_at->format('d.m.Y') }})</span> @endif
                                         </div>
                                         <div class="{{ $copy->disposal_act_number ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400' }}">
                                             {{ __('Chiqish') }}: {{ $copy->disposal_act_number ?? '—' }}
-                                            @if ($copy->disposal_act_at) <span class="text-gray-400">({{ $copy->disposal_act_at->format('d.m.Y H:i') }})</span> @endif
+                                            @if ($copy->disposal_act_at) <span class="text-gray-400">({{ $copy->disposal_act_at->format('d.m.Y') }})</span> @endif
                                         </div>
                                     </td>
                                     <td class="px-5 py-3 text-right text-theme-xs">
@@ -340,9 +340,9 @@
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" />
-                                <x-admin.form.input name="acquisition_act_at" type="datetime-local" :label="__('Kirish akti sanasi')" />
+                                <x-admin.form.input name="acquisition_act_at" type="date" :label="__('Kirish akti sanasi')" />
                                 <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')" />
-                                <x-admin.form.input name="disposal_act_at" type="datetime-local" :label="__('Chiqish akti sanasi')" />
+                                <x-admin.form.input name="disposal_act_at" type="date" :label="__('Chiqish akti sanasi')" />
                             </div>
 
                             <div class="flex justify-end gap-3 pt-2">
@@ -488,12 +488,12 @@
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')"
                                         :value="$isEditing ? old('acquisition_act_number') : $copy->acquisition_act_number" />
-                                    <x-admin.form.input name="acquisition_act_at" type="datetime-local" :label="__('Kirish akti sanasi')"
-                                        :value="$isEditing ? old('acquisition_act_at') : $copy->acquisition_act_at?->format('Y-m-d\TH:i')" />
+                                    <x-admin.form.input name="acquisition_act_at" type="date" :label="__('Kirish akti sanasi')"
+                                        :value="$isEditing ? old('acquisition_act_at') : $copy->acquisition_act_at?->format('Y-m-d')" />
                                     <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')"
                                         :value="$isEditing ? old('disposal_act_number') : $copy->disposal_act_number" />
-                                    <x-admin.form.input name="disposal_act_at" type="datetime-local" :label="__('Chiqish akti sanasi')"
-                                        :value="$isEditing ? old('disposal_act_at') : $copy->disposal_act_at?->format('Y-m-d\TH:i')" />
+                                    <x-admin.form.input name="disposal_act_at" type="date" :label="__('Chiqish akti sanasi')"
+                                        :value="$isEditing ? old('disposal_act_at') : $copy->disposal_act_at?->format('Y-m-d')" />
                                 </div>
 
                                 <div class="flex justify-end gap-3 pt-2">

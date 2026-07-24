@@ -42,7 +42,7 @@
                 <label class="flex items-center gap-1.5">
                     <input type="radio" :name="`ptype_${i}`" :checked="!row.is_external"
                            @change="row.is_external = false; row.external_name = ''" class="text-brand-500" />
-                    {{ __('O‘quvchi') }}
+                    {{ __('Foydalanuvchi') }}
                 </label>
                 <label class="flex items-center gap-1.5">
                     <input type="radio" :name="`ptype_${i}`" :checked="row.is_external"
@@ -59,7 +59,7 @@
                 <div class="relative mb-2">
                     <button type="button" @click="open = !open"
                             class="{{ $base }} flex items-center justify-between text-left">
-                        <span x-text="row.reader_label || '{{ __('O‘quvchini tanlang') }}'" :class="!row.reader_id && 'text-gray-400'"></span>
+                        <span x-text="row.reader_label || '{{ __('Foydalanuvchini tanlang') }}'" :class="!row.reader_id && 'text-gray-400'"></span>
                         <span class="text-gray-400">&#9662;</span>
                     </button>
                     <input type="hidden" :name="`participants[${i}][reader_id]`" :value="row.reader_id" />
@@ -96,7 +96,7 @@
     </template>
 
     <div class="flex gap-3">
-        <button type="button" @click="addRow(false)" class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">+ {{ __('O‘quvchi qo‘shish') }}</button>
+        <button type="button" @click="addRow(false)" class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">+ {{ __('Foydalanuvchi qo‘shish') }}</button>
         <button type="button" @click="addRow(true)" class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">+ {{ __('Tashqi ishtirokchi qo‘shish') }}</button>
     </div>
 
