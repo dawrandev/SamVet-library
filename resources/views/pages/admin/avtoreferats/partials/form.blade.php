@@ -49,10 +49,6 @@
                     <x-admin.form.input name="title" :label="__('Avtoreferat nomi')" :value="$avtoreferat?->title" required :placeholder="__('Avtoreferat nomi')" />
                     <x-admin.form.input name="author" :label="__('Muallifi')" :value="$avtoreferat?->author" :placeholder="__('masalan: Aliyev A.')" />
 
-                    <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"
-                        :value="$avtoreferat?->contributors->map(fn ($c) => ['contributor_role_id' => $c->contributor_role_id, 'name' => $c->name])"
-                        :help="__('Muallif yo‘q yoki bo‘lsa ham — muharrir, tarjimon kabi boshqa ishtirokchilarni shu yerda qo‘shing.')" />
-
                     <x-admin.form.input name="specialty" :label="__('Ixtisoslik shifri va nomi')" :value="$avtoreferat?->specialty" :placeholder="__('masalan: 05.07.01 – ...')" />
 
                     <x-admin.form.select name="science_field_id" :label="__('Fan nomi')" :options="$scienceFields" :selected="$avtoreferat?->science_field_id" :placeholder="__('Tanlang')"

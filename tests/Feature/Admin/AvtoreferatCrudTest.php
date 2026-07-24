@@ -107,6 +107,16 @@ it('shows the science field and defense year on the show page', function () {
         ->assertSee('2025');
 });
 
+it('does not show an "ishtirokchi qo‘shish" (contributors) block on the create or edit form', function () {
+    $avtoreferat = Avtoreferat::factory()->create();
+
+    $this->get(route('admin.avtoreferats.create'))
+        ->assertDontSee(__('Boshqa ishtirokchilar'));
+
+    $this->get(route('admin.avtoreferats.edit', $avtoreferat))
+        ->assertDontSee(__('Boshqa ishtirokchilar'));
+});
+
 it('does not show a resurs sohasi or annotatsiya field on the create form or show page', function () {
     $avtoreferat = Avtoreferat::factory()->create();
 
