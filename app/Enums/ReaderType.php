@@ -45,14 +45,16 @@ enum ReaderType: string
 
     /**
      * Badge color on the printed reader certificate (kitobxon guvohnomasi).
-     * Bakalavr = blue, Magistr = purple, Doktorant = red, everyone else = yellow.
+     * Bakalavr/Texnikum talabasi = blue, Magistr = purple, Doktorant = red,
+     * xodim/o‘qituvchi (FX/PO‘) = green, everyone else (tashqi a’zo) = yellow.
      */
     public function certificateColor(): string
     {
         return match ($this) {
-            self::Bachelor => '#2563eb',
+            self::Bachelor, self::TechnicumStudent => '#2563eb',
             self::Master => '#7c3aed',
             self::Doctoral => '#dc2626',
+            self::BranchStaff, self::Professor, self::TechnicumTeacher, self::TechnicumStaff => '#12b76a',
             default => '#d97706',
         };
     }

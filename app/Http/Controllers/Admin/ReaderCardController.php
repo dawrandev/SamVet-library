@@ -16,7 +16,7 @@ class ReaderCardController extends Controller
         $pdf = Pdf::loadView('pages.admin.readers.card', [
             'reader' => $reader,
             'photo' => $this->photoPath($reader),
-        ])->setPaper('a5', 'landscape');
+        ])->setPaper('a4', 'landscape');
 
         // Opens in the browser (target=_blank) — the user views, prints, or saves it.
         return $pdf->stream('guvohnoma-'.($reader->id_number ?: $reader->id).'.pdf');

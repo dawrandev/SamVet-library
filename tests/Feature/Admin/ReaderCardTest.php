@@ -56,9 +56,11 @@ it('shows student labels (O‘qish joyi/Mutaxassisligi/Guruhi) for a student rea
 it('colors the badge by reader type', function () {
     $cases = [
         ReaderType::Bachelor->value => '#2563eb',
+        ReaderType::TechnicumStudent->value => '#2563eb',
         ReaderType::Master->value => '#7c3aed',
         ReaderType::Doctoral->value => '#dc2626',
-        ReaderType::Professor->value => '#d97706',
+        ReaderType::Professor->value => '#12b76a',
+        ReaderType::BranchStaff->value => '#12b76a',
     ];
 
     foreach ($cases as $type => $color) {
@@ -87,13 +89,13 @@ it('shows the actual issued_date instead of a blank line once it is known', func
         ->and(substr_count($html, 'class="sign-line"'))->toBe(1);
 });
 
-it('shows 5 registration-year rows', function () {
+it('shows 7 registration-year rows', function () {
     $reader = Reader::factory()->create();
 
     $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
 
-    expect(substr_count($html, 'o‘quv yili'))->toBe(5)
-        ->and($html)->toContain('5.');
+    expect(substr_count($html, 'o‘quv yili'))->toBe(7)
+        ->and($html)->toContain('7.');
 });
 
 it('passes the reader\'s uploaded photo as a local file path, not a data URI', function () {
