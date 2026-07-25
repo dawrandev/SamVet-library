@@ -169,7 +169,11 @@
                      data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:col-span-2">
+        </div>
+
+        {{-- ===== Tillar/Jinsi/Yoshi/Millati bar charts (2x2) ===== --}}
+        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>
@@ -185,10 +189,7 @@
                      data-series-copies="{{ json_encode($langCopySeries) }}" data-series-titles="{{ json_encode($langTitleSeries) }}"
                      data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
             </div>
-        </div>
 
-        {{-- ===== Reader demographics (bar charts) ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jinsi bo‘yicha') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar jinsi bo‘yicha taqsimot') }}</p>
