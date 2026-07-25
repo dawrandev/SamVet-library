@@ -22,6 +22,7 @@ class HomeService
 {
     private const FEATURED_LIMIT = 5;
     private const NEWS_LIMIT = 4;
+    private const HERO_ANNOUNCEMENTS_LIMIT = 5;
 
     public function __construct(
         private readonly SectionService $sections,
@@ -32,12 +33,17 @@ class HomeService
      */
     public function homeData(): array
     {
+        // Fetched once at the wider limit — the hero slider uses the full set,
+        // the "latest news" section below reuses the first NEWS_LIMIT of it.
+        $announcements = $this->latestNews();
+
         return [
             'stats' => $this->stats(),
             'collectionTiles' => $this->sections->tiles(),
             'mostRead' => $this->mostRead(),
             'newArrivals' => $this->newArrivals(),
-            'latestNews' => $this->latestNews(),
+            'heroAnnouncements' => $announcements,
+            'latestNews' => $announcements->take(self::NEWS_LIMIT),
         ];
     }
 
@@ -89,7 +95,8 @@ class HomeService
     }
 
     /**
-     * Latest published news.
+     * Latest published news/announcements, at the wider of the two limits
+     * this page needs (see homeData()).
      *
      * @return Collection<int, News>
      */
@@ -100,7 +107,7 @@ class HomeService
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->latest('published_at')
-            ->limit(self::NEWS_LIMIT)
+            ->limit(self::HERO_ANNOUNCEMENTS_LIMIT)
             ->get();
     }
 }

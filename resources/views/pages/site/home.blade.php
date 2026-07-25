@@ -46,38 +46,70 @@
             </div>
 
             {{-- Gateway panel — fund stats live in the band right below, so this
-                 slot doubles as a "what's new" teaser instead of repeating them. --}}
+                 slot doubles as an auto-rotating "latest announcements" slider. --}}
             <div class="lg:col-span-5">
                 <div class="rounded-2xl bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-blue-100">{{ __('So‘nggi yangiliklar') }}</p>
-                        @if ($latestNews->isNotEmpty())
+                        <p class="text-sm font-medium text-blue-100">{{ __('So‘nggi e’lonlar') }}</p>
+                        @if ($heroAnnouncements->isNotEmpty())
                             <a href="{{ route('news.index') }}" class="text-xs font-medium text-blue-200 transition hover:text-white">{{ __('Barchasi') }} →</a>
                         @endif
                     </div>
 
-                    @if ($latestNews->isNotEmpty())
-                        <div class="mt-4 divide-y divide-white/10">
-                            @foreach ($latestNews as $item)
-                                <a href="{{ route('news.show', $item->slug) }}"
-                                   class="group flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                                    <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-amber-400"></span>
-                                    <div class="min-w-0">
-                                        <p class="line-clamp-1 text-sm font-medium text-white transition group-hover:text-amber-300">
-                                            {{ $item->getTranslation('title', 'uz') }}
-                                        </p>
-                                        <p class="mt-0.5 text-xs text-blue-100/60">
-                                            {{ $item->published_at?->format('d.m.Y') }}
+                    @if ($heroAnnouncements->isNotEmpty())
+                        <div
+                            x-data="{
+                                active: 0,
+                                total: {{ $heroAnnouncements->count() }},
+                                timer: null,
+                                start() { this.stop(); this.timer = setInterval(() => this.active = (this.active + 1) % this.total, 4500); },
+                                stop() { clearInterval(this.timer); },
+                                goto(i) { this.active = i; this.start(); },
+                            }"
+                            x-init="start()"
+                            @mouseenter="stop()" @mouseleave="start()"
+                            class="mt-5"
+                        >
+                            <div class="relative min-h-[136px]">
+                                @foreach ($heroAnnouncements as $i => $item)
+                                    <a href="{{ route('news.show', $item->slug) }}"
+                                       x-show="active === {{ $i }}" x-cloak
+                                       x-transition:enter="transition ease-out duration-500"
+                                       x-transition:enter-start="opacity-0 translate-x-3"
+                                       x-transition:enter-end="opacity-100 translate-x-0"
+                                       x-transition:leave="transition ease-in duration-200"
+                                       x-transition:leave-start="opacity-100"
+                                       x-transition:leave-end="opacity-0"
+                                       class="group absolute inset-0 flex flex-col justify-between"
+                                    >
+                                        <div>
                                             @if ($item->category)
-                                                &middot; {{ $item->category->name }}
+                                                <span class="inline-block rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-blue-950">{{ $item->category->name }}</span>
                                             @endif
-                                        </p>
-                                    </div>
-                                </a>
-                            @endforeach
+                                            <p class="mt-3 line-clamp-2 text-lg font-semibold leading-snug text-white transition group-hover:text-amber-300">
+                                                {{ $item->getTranslation('title', 'uz') }}
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs text-blue-100/70">
+                                            <span>{{ $item->published_at?->format('d.m.Y') }}</span>
+                                            <span class="font-medium text-blue-100 transition group-hover:text-amber-300">{{ __('O‘qish') }} →</span>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+
+                            {{-- Dots --}}
+                            <div class="mt-4 flex items-center gap-1.5">
+                                @foreach ($heroAnnouncements as $i => $item)
+                                    <button type="button" @click="goto({{ $i }})"
+                                            :class="active === {{ $i }} ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/25 hover:bg-white/40'"
+                                            class="h-1.5 rounded-full transition-all duration-300"
+                                            aria-label="{{ __('E’lon') }} {{ $i + 1 }}"></button>
+                                @endforeach
+                            </div>
                         </div>
                     @else
-                        <p class="mt-4 text-sm text-blue-100/60">{{ __('Hozircha yangiliklar yo‘q.') }}</p>
+                        <p class="mt-5 text-sm text-blue-100/60">{{ __('Hozircha e’lonlar yo‘q.') }}</p>
                     @endif
                 </div>
             </div>
