@@ -18,6 +18,7 @@ use App\Models\Language;
 use App\Models\Loan;
 use App\Models\News;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use App\Models\Subscription;
 use App\Models\Video;
 use Illuminate\Support\Carbon;
@@ -50,7 +51,16 @@ class DashboardService
             )->count(),
         ]);
 
-        $readersByType = Reader::query()->selectRaw('type, COUNT(*) as c')->groupBy('type')->pluck('c', 'type');
+        // "By title" (nomi) — bosma/brayl counted by distinct book, not copy
+        // row; elektron is already a title count under $copiesByFormat (see
+        // the comment above), so it's reused as-is for both modes.
+        $titlesByFormat = collect([
+            'print' => Book::whereHas('copies', fn ($q) => $q->where('format', 'print'))->count(),
+            'braille' => Book::whereHas('copies', fn ($q) => $q->where('format', 'braille'))->count(),
+            'electronic' => $copiesByFormat['electronic'],
+        ]);
+
+        $readersByType = Reader::query()->selectRaw('reader_type_id, COUNT(*) as c')->groupBy('reader_type_id')->pluck('c', 'reader_type_id');
 
         $booksByLanguage = Book::query()
             ->whereNotNull('language_id')
@@ -105,6 +115,7 @@ class DashboardService
             'audiobooksTotal' => Audiobook::count(),
             'videosTotal' => Video::count(),
             'readersByType' => $readersByType,
+            'readerTypes' => ReaderType::query()->orderBy('id')->get(),
             'booksByLanguage' => $booksByLanguage,
             'copiesByLanguage' => $copiesByLanguage,
             'languageNames' => $languageNames,
@@ -123,10 +134,14 @@ class DashboardService
             'subscribersThisYear' => $subscribersThisYear,
             'categoriesTotal' => Category::count(),
 
-            // Reader demographics (bar charts, not donuts — see dashboard view)
+            // Reader demographics
             'readersByGender' => $this->readersByGender(),
             'readersByNationality' => $this->readersByNationality(),
             'readersByAgeGroup' => $this->readersByAgeGroup(),
+
+            // Fund composition, nomi/nusxa toggles
+            'titlesByFormat' => $titlesByFormat,
+            'categoryStats' => $this->literatureByCategory(),
         ];
     }
 
@@ -324,5 +339,45 @@ class DashboardService
         }
 
         return $result;
+    }
+
+    /**
+     * Book/copy counts per top-level category (e.g. o‘quv-uslubiy, ilmiy,
+     * xorijiy, badiiy adabiyotlar), each rolled up to include every
+     * descendant sub-category — mirrors the catalog's "parent count
+     * includes its children" convention. Whatever top-level categories
+     * exist drives the chart; nothing here is hardcoded to specific names.
+     *
+     * @return array{labels: array<int, string>, titles: array<int, int>, copies: array<int, int>}
+     */
+    private function literatureByCategory(): array
+    {
+        $topCategories = Category::query()->whereNull('parent_id')->orderBy('id')->get(['id', 'name']);
+        $childrenByParent = Category::query()->whereNotNull('parent_id')->get(['id', 'parent_id'])->groupBy('parent_id');
+
+        $descendantIds = function (int $id) use (&$descendantIds, $childrenByParent): array {
+            $ids = [$id];
+            foreach ($childrenByParent->get($id, collect()) as $child) {
+                array_push($ids, ...$descendantIds($child->id));
+            }
+
+            return $ids;
+        };
+
+        $labels = $titles = $copies = [];
+
+        foreach ($topCategories as $category) {
+            $bookIds = Book::query()
+                ->join('book_category', 'book_category.book_id', '=', 'books.id')
+                ->whereIn('book_category.category_id', $descendantIds($category->id))
+                ->distinct()
+                ->pluck('books.id');
+
+            $labels[] = $category->name;
+            $titles[] = $bookIds->count();
+            $copies[] = BookCopy::whereIn('book_id', $bookIds)->count();
+        }
+
+        return ['labels' => $labels, 'titles' => $titles, 'copies' => $copies];
     }
 }

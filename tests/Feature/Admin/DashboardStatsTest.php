@@ -3,6 +3,7 @@
 use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\Category;
 use App\Models\Language;
 use App\Models\Video;
 
@@ -19,30 +20,33 @@ it('no longer shows the loan/overdue KPI cards — those live on the Berilgan ki
         ->assertDontSee('ko‘rish uchun bosing');
 });
 
-it('replaces the "Kitob nomi"/"Foydalanuvchi" KPI cards with a single nomda/nusxada donut', function () {
-    $books = Book::factory()->count(2)->create();
-    BookCopy::factory()->count(3)->create(['book_id' => $books->first()->id]);
-
-    $res = $this->get(route('admin.dashboard'));
-
-    $res->assertOk()
-        ->assertSee('Kitob nomi')
-        ->assertSee('Nomda')
-        ->assertSee('Nusxada');
-
-    expect($res->viewData('booksTotal'))->toBe(2)
-        ->and($res->viewData('copiesTotal'))->toBe(3);
+it('groups charts under "Foydalanuvchi statistikasi" and "Fond statistikasi" sections', function () {
+    $this->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('Foydalanuvchi statistikasi')
+        ->assertSee('Fond statistikasi')
+        ->assertDontSee('Kitob nomi');
 });
 
-it('adds audio and video counts to the "Nusxalar shakli" donut', function () {
+it('shows a nomda/nusxada toggle on the "Shakli bo‘yicha" chart, with audio/video counts included', function () {
+    $books = Book::factory()->count(2)->create();
+    BookCopy::factory()->count(3)->create(['book_id' => $books->first()->id, 'format' => 'print']);
     Audiobook::factory()->count(2)->create();
     Video::factory()->create();
 
     $res = $this->get(route('admin.dashboard'));
 
-    $res->assertOk()->assertSee('Audio')->assertSee('Video');
+    $res->assertOk()
+        ->assertSee('Shakli bo‘yicha')
+        ->assertSee('Bosma')
+        ->assertSee('Elektron')
+        ->assertSee('Brayl')
+        ->assertSee('Audio')
+        ->assertSee('Video');
 
-    expect($res->viewData('audiobooksTotal'))->toBe(2)
+    expect($res->viewData('titlesByFormat')['print'])->toBe(1)
+        ->and($res->viewData('copiesByFormat')['print'])->toBe(3)
+        ->and($res->viewData('audiobooksTotal'))->toBe(2)
         ->and($res->viewData('videosTotal'))->toBe(1);
 });
 
@@ -54,18 +58,23 @@ it('replaces the computer-status donut with a language-by-book donut', function 
         ->assertSee('Tillar bo‘yicha');
 });
 
-it('shows a copies-by-format donut (bosma/elektron/brayl)', function () {
+it('shows a "asosiy toifalar" chart with a nomda/nusxada toggle, one bar per top-level category', function () {
+    $parent = Category::factory()->create(['name' => ['uz' => 'Sinov toifasi'], 'parent_id' => null]);
+    $child = Category::factory()->create(['name' => ['uz' => 'Sinov bola toifasi'], 'parent_id' => $parent->id]);
     $book = Book::factory()->create();
-    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'print']);
-    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'electronic']);
+    $book->categories()->attach($child->id);
+    BookCopy::factory()->count(2)->create(['book_id' => $book->id]);
 
     $res = $this->get(route('admin.dashboard'));
 
-    $res->assertOk()
-        ->assertSee('Nusxalar shakli')
-        ->assertSee('Bosma')
-        ->assertSee('Elektron')
-        ->assertSee('Brayl');
+    $res->assertOk()->assertSee('Asosiy toifalar bo‘yicha')->assertSee('Sinov toifasi');
+
+    $stats = $res->viewData('categoryStats');
+    $index = array_search('Sinov toifasi', $stats['labels']);
+
+    expect($index)->not->toBeFalse()
+        ->and($stats['titles'][$index])->toBe(1) // rolled up from the child category
+        ->and($stats['copies'][$index])->toBe(2);
 });
 
 it('counts a book with an online-readable PDF as "elektron", even with no electronic BookCopy row', function () {

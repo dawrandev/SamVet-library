@@ -16,34 +16,32 @@
         // --- Donut: readers by type (only non-empty slices) ---
         $palette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#9cb9ff', '#7592ff', '#32d583', '#fdb022'];
         $rdSeries = $rdLabels = $rdColors = [];
-        foreach (\App\Enums\ReaderType::cases() as $t) {
-            $c = (int) ($readersByType[$t->value] ?? 0);
+        foreach ($readerTypes as $t) {
+            $c = (int) ($readersByType[$t->id] ?? 0);
             if ($c > 0) {
                 $rdColors[] = $palette[count($rdSeries) % count($palette)];
                 $rdSeries[] = $c;
-                $rdLabels[] = $t->label();
+                $rdLabels[] = $t->name;
             }
         }
 
-        // --- Donut: copies by format (bosma/elektron/brayl) + audio/video totals ---
+        // --- Bar: copies by format (bosma/elektron/brayl/audio/video), toggled nusxa/nomi ---
         $formatClr = ['print' => '#465fff', 'electronic' => '#12b76a', 'braille' => '#f79009'];
-        $fmtSeries = $fmtLabels = $fmtColors = [];
+        $fmtLabels = $fmtCopySeries = $fmtTitleSeries = $fmtColors = [];
         foreach (\App\Enums\BookFormat::cases() as $fmt) {
-            $fmtSeries[] = (int) ($copiesByFormat[$fmt->value] ?? 0);
             $fmtLabels[] = $fmt->label();
+            $fmtCopySeries[] = (int) ($copiesByFormat[$fmt->value] ?? 0);
+            $fmtTitleSeries[] = (int) ($titlesByFormat[$fmt->value] ?? 0);
             $fmtColors[] = $formatClr[$fmt->value] ?? '#98a2b3';
         }
+        // Audio/video aren't "copied" — a digitized track is one catalogued
+        // item, so nomi and nusxa are the same number for these two.
         $fmtLabels[] = __('Audio');
-        $fmtSeries[] = $audiobooksTotal;
+        $fmtCopySeries[] = $fmtTitleSeries[] = $audiobooksTotal;
         $fmtColors[] = '#06aed4';
         $fmtLabels[] = __('Video');
-        $fmtSeries[] = $videosTotal;
+        $fmtCopySeries[] = $fmtTitleSeries[] = $videosTotal;
         $fmtColors[] = '#7a5af8';
-
-        // --- Donut: book count by title vs by copy ---
-        $bookCountLabels = [__('Nomda'), __('Nusxada')];
-        $bookCountSeries = [$booksTotal, $copiesTotal];
-        $bookCountColors = ['#465fff', '#12b76a'];
 
         // --- Bar: books by language, toggled between nusxa (copy) and nomi (title) counts ---
         // Same label set for both modes, so toggling never reshuffles categories.
@@ -70,6 +68,18 @@
             $langCopySeries[] = $rest->sum('copies');
             $langTitleSeries[] = $rest->sum('titles');
             $langColors[] = '#98a2b3';
+        }
+
+        // --- Bar: books by top-level category (o‘quv-uslubiy/ilmiy/... — whatever
+        // exists), toggled nusxa/nomi. Whatever top-level categories exist drives
+        // this chart; nothing here is hardcoded to specific category names.
+        $catPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#06aed4', '#7a5af8'];
+        $catLabels = $categoryStats['labels'];
+        $catTitleSeries = $categoryStats['titles'];
+        $catCopySeries = $categoryStats['copies'];
+        $catColors = [];
+        foreach ($catLabels as $i => $label) {
+            $catColors[] = $catPalette[$i % count($catPalette)];
         }
 
         // --- Line: daily usage (5 series, one shared count axis) ---
@@ -135,16 +145,45 @@
                  data-dates="{{ json_encode($dailyUsage['dates']) }}" data-series="{{ json_encode($dailySeries) }}"></div>
         </div>
 
-        {{-- ===== Donut + bar charts ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
+        {{-- ===== Foydalanuvchi statistikasi ===== --}}
+        <h2 class="mt-8 text-lg font-bold text-gray-900 dark:text-white/90">{{ __('Foydalanuvchi statistikasi') }}</h2>
+        <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Kitob nomi') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nomda va nusxada') }}</p>
-                <div id="chart-book-count" data-donut class="mt-1"
-                     data-series="{{ json_encode($bookCountSeries) }}" data-labels="{{ json_encode($bookCountLabels) }}"
-                     data-colors="{{ json_encode($bookCountColors) }}" data-center="{{ __('Kitob') }}"></div>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchilar turi') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Tur bo‘yicha taqsimot') }}</p>
+                <div id="chart-readers" data-donut class="mt-1"
+                     data-series="{{ json_encode($rdSeries) }}" data-labels="{{ json_encode($rdLabels) }}"
+                     data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
             </div>
 
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jinsi bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar jinsi bo‘yicha taqsimot') }}</p>
+                <div id="chart-gender" data-donut class="mt-1"
+                     data-series="{{ json_encode($genderSeries) }}" data-labels="{{ json_encode($genderLabels) }}"
+                     data-colors="{{ json_encode($genderColors) }}" data-center="{{ __('Kishi') }}"></div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Yoshi bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar yosh guruhi bo‘yicha taqsimot') }}</p>
+                <div id="chart-age" data-bar class="mt-1"
+                     data-labels="{{ json_encode($ageLabels) }}" data-colors="{{ json_encode($ageColors) }}"
+                     data-series-copies="{{ json_encode($ageSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Millati bo‘yicha') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar millati bo‘yicha taqsimot') }}</p>
+                <div id="chart-nationality" data-bar class="mt-1"
+                     data-labels="{{ json_encode($natLabels) }}" data-colors="{{ json_encode($natColors) }}"
+                     data-series-copies="{{ json_encode($natSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+            </div>
+        </div>
+
+        {{-- ===== Fond statistikasi ===== --}}
+        <h2 class="mt-8 text-lg font-bold text-gray-900 dark:text-white/90">{{ __('Fond statistikasi') }}</h2>
+        <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Fond holati') }}</h3>
                 <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Nusxalar holat bo‘yicha') }}</p>
@@ -154,25 +193,22 @@
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Nusxalar shakli') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Bosma, elektron, brayl, audio, video') }}</p>
-                <div id="chart-format" data-donut class="mt-1"
-                     data-series="{{ json_encode($fmtSeries) }}" data-labels="{{ json_encode($fmtLabels) }}"
-                     data-colors="{{ json_encode($fmtColors) }}" data-center="{{ __('Nusxa') }}"></div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Shakli bo‘yicha') }}</h3>
+                        <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Bosma, elektron, brayl, audio, video') }}</p>
+                    </div>
+                    <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
+                        <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
+                        <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
+                    </div>
+                </div>
+                <div id="chart-format" data-bar class="mt-1"
+                     data-labels="{{ json_encode($fmtLabels) }}" data-colors="{{ json_encode($fmtColors) }}"
+                     data-series-copies="{{ json_encode($fmtCopySeries) }}" data-series-titles="{{ json_encode($fmtTitleSeries) }}"
+                     data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Foydalanuvchilar turi') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Tur bo‘yicha taqsimot') }}</p>
-                <div id="chart-readers" data-donut class="mt-1"
-                     data-series="{{ json_encode($rdSeries) }}" data-labels="{{ json_encode($rdLabels) }}"
-                     data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
-            </div>
-
-        </div>
-
-        {{-- ===== Tillar/Jinsi/Yoshi/Millati bar charts (2x2) ===== --}}
-        <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-5">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="flex items-center justify-between">
                     <div>
@@ -191,27 +227,20 @@
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Jinsi bo‘yicha') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar jinsi bo‘yicha taqsimot') }}</p>
-                <div id="chart-gender" data-bar class="mt-1"
-                     data-labels="{{ json_encode($genderLabels) }}" data-colors="{{ json_encode($genderColors) }}"
-                     data-series-copies="{{ json_encode($genderSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
-            </div>
-
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Yoshi bo‘yicha') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar yosh guruhi bo‘yicha taqsimot') }}</p>
-                <div id="chart-age" data-bar class="mt-1"
-                     data-labels="{{ json_encode($ageLabels) }}" data-colors="{{ json_encode($ageColors) }}"
-                     data-series-copies="{{ json_encode($ageSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
-            </div>
-
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Millati bo‘yicha') }}</h3>
-                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Foydalanuvchilar millati bo‘yicha taqsimot') }}</p>
-                <div id="chart-nationality" data-bar class="mt-1"
-                     data-labels="{{ json_encode($natLabels) }}" data-colors="{{ json_encode($natColors) }}"
-                     data-series-copies="{{ json_encode($natSeries) }}" data-label-copies="{{ __('Kishi') }}"></div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Asosiy toifalar bo‘yicha') }}</h3>
+                        <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('O‘quv-uslubiy, ilmiy, xorijiy, badiiy adabiyotlar') }}</p>
+                    </div>
+                    <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
+                        <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
+                        <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
+                    </div>
+                </div>
+                <div id="chart-category-bar" data-bar class="mt-1"
+                     data-labels="{{ json_encode($catLabels) }}" data-colors="{{ json_encode($catColors) }}"
+                     data-series-copies="{{ json_encode($catCopySeries) }}" data-series-titles="{{ json_encode($catTitleSeries) }}"
+                     data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
             </div>
         </div>
 
