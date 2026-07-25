@@ -6,6 +6,7 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 
 import lookupTable from './admin/lookup-table';
+import readerTypeTable from './admin/reader-type-table';
 import articleForm from './admin/article-form';
 import uploadForm from './admin/upload-form';
 import readerForm from './admin/reader-form';
@@ -18,6 +19,7 @@ window.Alpine = Alpine;
 
 // Lookup management table (add/edit modal)
 Alpine.data('lookupTable', lookupTable);
+Alpine.data('readerTypeTable', readerTypeTable);
 
 // Article form (journal autocomplete + dependent issue select)
 Alpine.data('articleForm', articleForm);

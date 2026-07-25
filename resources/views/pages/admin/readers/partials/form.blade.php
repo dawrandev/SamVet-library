@@ -2,10 +2,10 @@
     $reader = $reader ?? null;
     $editing = ! is_null($reader);
 
-    // Student types (so Alpine can swap labels) — matches ReaderType::isStudent()
-    $studentTypes = collect($types)->filter(fn ($t) => $t->isStudent())->map(fn ($t) => $t->value)->values()->all();
+    // Student types (so Alpine can swap labels) — matches ReaderType::is_student
+    $studentTypes = collect($types)->filter(fn ($t) => $t->is_student)->map(fn ($t) => (string) $t->id)->values()->all();
 
-    $curType = old('type', $reader?->type?->value);
+    $curType = old('reader_type_id', $reader?->reader_type_id);
     $curStatus = old('status', $reader?->status?->value);
     $curGender = old('gender', $reader?->gender?->value);
     $curAffiliationPlace = old('affiliation_place_id', $reader?->affiliation_place_id);
@@ -22,7 +22,7 @@
     enctype="multipart/form-data"
     x-data="readerForm({
         studentTypes: @js($studentTypes),
-        type: @js((string) $curType),
+        type: @js((string) ($curType ?? '')),
         districtsUrlTemplate: '{{ route('admin.regions.districts.lookup', ['region' => '__RID__']) }}',
         initialRegionId: @js($curRegion ? (int) $curRegion : null),
         initialDistrictId: @js(old('district_id', $reader?->district_id)),
@@ -63,17 +63,17 @@
                     <x-admin.form.input name="full_name" :label="__('F.I.SH')" :value="$reader?->full_name" required :placeholder="__('To‘liq ism sharif')" />
 
                     <div class="grid gap-5 sm:grid-cols-2">
-                        {{-- Type (enum) --}}
+                        {{-- Type (lookup) --}}
                         <div>
-                            <label for="type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}<span class="text-error-500">*</span></label>
-                            <select name="type" id="type" required x-model="type"
-                                    class="{{ $base }} {{ $errors->has('type') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
+                            <label for="reader_type_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Turi') }}<span class="text-error-500">*</span></label>
+                            <select name="reader_type_id" id="reader_type_id" required x-model="type"
+                                    class="{{ $base }} {{ $errors->has('reader_type_id') ? 'border-error-500' : 'border-gray-300 dark:border-gray-700' }}">
                                 <option value="">{{ __('Tanlang') }}</option>
                                 @foreach ($types as $t)
-                                    <option value="{{ $t->value }}">{{ $t->label() }}</option>
+                                    <option value="{{ $t->id }}">{{ $t->name }}</option>
                                 @endforeach
                             </select>
-                            @error('type')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                            @error('reader_type_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Status (enum) --}}

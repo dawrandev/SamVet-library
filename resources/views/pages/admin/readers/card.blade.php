@@ -1,5 +1,5 @@
 @php
-    $isStudent = $reader->type->isStudent();
+    $isStudent = $reader->type->is_student;
 
     // "Familyasi Ismi Sharifi" — split from the single stored full_name (the DB
     // has no separate surname/first-name/patronymic columns). First word is the
@@ -14,9 +14,7 @@
     $unitLabel = $isStudent ? __('Mutaxassisligi') : __('Bo‘limi');
     $groupLabel = $isStudent ? __('Guruhi') : __('Lavozimi');
 
-    // A4 has more vertical room than the old A5 card, so the usage log now
-    // tracks more academic years too, instead of leaving that space blank.
-    $yearsCount = 7;
+    $yearsCount = 5;
 @endphp
 <!DOCTYPE html>
 <html lang="uz">
@@ -69,7 +67,7 @@
     <table class="card">
         <tr>
             <td class="left-col">
-                <div class="badge" style="background: {{ $reader->type->certificateColor() }};">{{ __('KITOBXON GUVOHNOMASI') }}</div>
+                <div class="badge" style="background: {{ $reader->type->certificate_color }};">{{ __('KITOBXON GUVOHNOMASI') }}</div>
 
                 <table class="id-row">
                     <tr>

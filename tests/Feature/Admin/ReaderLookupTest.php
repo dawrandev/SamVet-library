@@ -7,12 +7,13 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Loan;
 use App\Models\Reader;
+use App\Models\ReaderType;
 
 beforeEach(fn () => actingAsAdmin());
 
 it('finds a reader by id number with student-labeled affiliation fields', function () {
     $reader = Reader::factory()->create([
-        'type' => 'bachelor',
+        'reader_type_id' => ReaderType::factory()->create(['is_student' => true])->id,
         'id_number' => 'BT0199001',
         'full_name' => 'Test Talaba',
         'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Veterinariya fakulteti'])->id,
@@ -41,7 +42,7 @@ it('finds a reader by id number with student-labeled affiliation fields', functi
 
 it('finds a reader by id number with staff-labeled affiliation fields', function () {
     Reader::factory()->create([
-        'type' => 'professor',
+        'reader_type_id' => ReaderType::factory()->create(['is_student' => false])->id,
         'id_number' => 'PF0199002',
         'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Kafedra'])->id,
         'affiliation_unit_id' => AffiliationUnit::factory()->create(['name' => 'Ichki kasalliklar'])->id,

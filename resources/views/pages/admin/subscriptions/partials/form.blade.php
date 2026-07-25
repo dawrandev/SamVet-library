@@ -18,7 +18,7 @@
         readersData: @js($readers->map(fn ($r) => [
             'id' => (string) $r->id,
             'label' => $r->full_name,
-            'isStudent' => $r->type->isStudent(),
+            'isStudent' => $r->type->is_student,
             'place' => $r->affiliationPlace?->name,
             'unit' => $r->affiliationUnit?->name,
             'group' => $r->affiliationGroup?->name,

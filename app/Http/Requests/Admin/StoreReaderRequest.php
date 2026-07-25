@@ -4,7 +4,6 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\Gender;
 use App\Enums\ReaderStatus;
-use App\Enums\ReaderType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -25,7 +24,7 @@ class StoreReaderRequest extends FormRequest
     {
         return [
             'full_name' => ['required', 'string', 'max:255'],
-            'type' => ['required', new Enum(ReaderType::class)],
+            'reader_type_id' => ['required', 'integer', 'exists:reader_types,id'],
             'status' => ['required', new Enum(ReaderStatus::class)],
 
             'id_number' => ['nullable', 'string', 'max:255', $this->idNumberUnique()],
@@ -69,7 +68,7 @@ class StoreReaderRequest extends FormRequest
     {
         return [
             'full_name' => __('F.I.SH'),
-            'type' => __('Turi'),
+            'reader_type_id' => __('Turi'),
             'status' => __('Holati'),
             'id_number' => __('ID raqami'),
             'registration_number' => __('Ro‘yxat raqami'),

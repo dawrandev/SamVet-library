@@ -5,6 +5,7 @@ use App\Models\AffiliationPlace;
 use App\Models\AffiliationUnit;
 use App\Models\District;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use App\Models\Region;
 
 beforeEach(fn () => actingAsAdmin());
@@ -18,7 +19,7 @@ it('creates a reader with the affiliation and region/district lookups', function
 
     $this->post(route('admin.readers.store'), [
         'full_name' => 'Test Foydalanuvchi',
-        'type' => 'bachelor',
+        'reader_type_id' => ReaderType::factory()->create()->id,
         'status' => 'active',
         'affiliation_place_id' => $place->id,
         'affiliation_unit_id' => $unit->id,
@@ -39,7 +40,7 @@ it('creates a reader with the affiliation and region/district lookups', function
 it('creates a reader without any of the optional lookups', function () {
     $this->post(route('admin.readers.store'), [
         'full_name' => 'Lookupsiz foydalanuvchi',
-        'type' => 'bachelor',
+        'reader_type_id' => ReaderType::factory()->create()->id,
         'status' => 'active',
     ])->assertRedirect();
 
@@ -69,7 +70,7 @@ it('updates a reader’s affiliation and district lookups', function () {
 
     $this->put(route('admin.readers.update', $reader), [
         'full_name' => $reader->full_name,
-        'type' => $reader->type->value,
+        'reader_type_id' => $reader->reader_type_id,
         'status' => $reader->status->value,
         'affiliation_place_id' => $newPlace->id,
         'district_id' => $newDistrict->id,

@@ -24,7 +24,7 @@ class ReadersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
     public function query(): Builder
     {
         return app(ReaderRepositoryInterface::class)->filtered($this->filters)
-            ->with(['affiliationPlace', 'affiliationUnit', 'affiliationGroup', 'region', 'district'])
+            ->with(['type', 'affiliationPlace', 'affiliationUnit', 'affiliationGroup', 'region', 'district'])
             ->latest('id');
     }
 
@@ -54,7 +54,7 @@ class ReadersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
             $reader->id_number,
             $reader->registration_number,
             $reader->issued_date?->format('d.m.Y'),
-            $reader->type?->label(),
+            $reader->type?->name,
             $reader->affiliationPlace?->name,
             $reader->affiliationUnit?->name,
             $reader->affiliationGroup?->name,

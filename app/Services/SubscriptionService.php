@@ -51,9 +51,9 @@ class SubscriptionService
     {
         return [
             // affiliation_* / index — shown as a read-only reference once a reader/journal is picked.
-            'readers' => Reader::with(['affiliationPlace', 'affiliationUnit', 'affiliationGroup'])
+            'readers' => Reader::with(['type', 'affiliationPlace', 'affiliationUnit', 'affiliationGroup'])
                 ->orderBy('full_name')
-                ->get(['id', 'full_name', 'type', 'affiliation_place_id', 'affiliation_unit_id', 'affiliation_group_id']),
+                ->get(['id', 'full_name', 'reader_type_id', 'affiliation_place_id', 'affiliation_unit_id', 'affiliation_group_id']),
             'journals' => Journal::orderBy('name')->get(['id', 'name', 'kind', 'index']),
             'deliveryLocations' => DeliveryLocation::orderBy('name')->get(['id', 'name']),
             'postBranches' => PostBranch::orderBy('name')->get(['id', 'name']),

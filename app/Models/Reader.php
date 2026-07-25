@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\Gender;
 use App\Enums\LoanStatus;
 use App\Enums\ReaderStatus;
-use App\Enums\ReaderType;
 use App\Observers\ReaderObserver;
 use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -25,7 +24,7 @@ class Reader extends Model implements Authenticatable
 
     protected $fillable = [
         'id_number', 'registration_number', 'issued_date',
-        'type', 'full_name',
+        'reader_type_id', 'full_name',
         'affiliation_place_id', 'affiliation_unit_id', 'affiliation_group_id',
         'nationality', 'birth_date', 'passport', 'pinfl', 'gender',
         'region_id', 'district_id', 'address', 'phone', 'member_year',
@@ -37,7 +36,6 @@ class Reader extends Model implements Authenticatable
     {
         return [
             'password' => 'hashed',
-            'type' => ReaderType::class,
             'status' => ReaderStatus::class,
             'gender' => Gender::class,
             'issued_date' => 'date',
@@ -48,6 +46,13 @@ class Reader extends Model implements Authenticatable
     }
 
     // --- Relationships ---
+
+    public function type(): BelongsTo
+    {
+        // Explicit FK — belongsTo() would otherwise infer "type_id" from the
+        // relation method name, not the real "reader_type_id" column.
+        return $this->belongsTo(ReaderType::class, 'reader_type_id');
+    }
 
     public function affiliationPlace(): BelongsTo
     {

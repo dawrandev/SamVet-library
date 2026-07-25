@@ -31,7 +31,7 @@ class ReaderLookupController extends Controller
             return response()->json(['found' => false]);
         }
 
-        $isStudent = $reader->type->isStudent();
+        $isStudent = $reader->type->is_student;
 
         return response()->json([
             'found' => true,

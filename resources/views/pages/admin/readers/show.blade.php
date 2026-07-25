@@ -4,7 +4,7 @@
 
 @section('content')
     @php
-        $isStudent = $reader->type->isStudent();
+        $isStudent = $reader->type->is_student;
 
         $statusColor = [
             'active' => 'bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500',
@@ -255,7 +255,7 @@
                 </div>
                 <h3 class="mt-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ $reader->full_name }}</h3>
                 <div class="mt-3 flex flex-wrap justify-center gap-2">
-                    <span class="text-theme-xs rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->label() }}</span>
+                    <span class="text-theme-xs rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->name }}</span>
                     <span class="text-theme-xs rounded-full px-3 py-1 font-medium {{ $statusColor[$reader->status->value] ?? '' }}">{{ $reader->status->label() }}</span>
                 </div>
                 @if ($reader->id_number)

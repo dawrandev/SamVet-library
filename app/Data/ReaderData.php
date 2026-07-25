@@ -13,7 +13,7 @@ class ReaderData
 {
     public function __construct(
         public readonly string $full_name,
-        public readonly string $type,
+        public readonly int $reader_type_id,
         public readonly string $status,
         public readonly ?string $id_number,
         public readonly ?string $registration_number,
@@ -40,7 +40,7 @@ class ReaderData
     {
         return new self(
             full_name: $request->string('full_name')->toString(),
-            type: $request->string('type')->toString(),
+            reader_type_id: $request->integer('reader_type_id'),
             status: $request->string('status')->toString(),
             id_number: $request->input('id_number'),
             registration_number: $request->input('registration_number'),
@@ -73,7 +73,7 @@ class ReaderData
     {
         return [
             'full_name' => $this->full_name,
-            'type' => $this->type,
+            'reader_type_id' => $this->reader_type_id,
             'status' => $this->status,
             'id_number' => $this->id_number,
             'registration_number' => $this->registration_number,

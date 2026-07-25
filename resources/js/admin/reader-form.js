@@ -9,8 +9,8 @@ import uploadForm from './upload-form';
  * articleForm's journal -> issue select).
  *
  * @param {object} config
- * @param {string[]} config.studentTypes  ReaderType values that count as "student"
- * @param {string} config.type            Currently selected reader type
+ * @param {string[]} config.studentTypes  ReaderType ids (as strings) that count as "student"
+ * @param {string} config.type            Currently selected reader type id (as a string)
  * @param {string} config.districtsUrlTemplate  Has a `__RID__` placeholder for the region id
  * @param {?number} config.initialRegionId
  * @param {?number} config.initialDistrictId

@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\ReaderType;
 use App\Models\AffiliationGroup;
 use App\Models\AffiliationPlace;
 use App\Models\AffiliationUnit;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(fn () => actingAsAdmin());
@@ -20,7 +20,7 @@ it('streams the reader card as a PDF', function () {
 
 it('splits full_name into Familyasi/Ismi/Sharifi and shows staff labels', function () {
     $reader = Reader::factory()->create([
-        'type' => ReaderType::BranchStaff->value,
+        'reader_type_id' => ReaderType::factory()->create(['is_student' => false])->id,
         'full_name' => 'Palensheyev Tólenshe Tólensheyevich',
         'id_number' => 'FX0119001',
         'affiliation_place_id' => AffiliationPlace::factory()->create(['name' => 'Ish joyi nomi'])->id,
@@ -42,7 +42,9 @@ it('splits full_name into Familyasi/Ismi/Sharifi and shows staff labels', functi
 });
 
 it('shows student labels (O‘qish joyi/Mutaxassisligi/Guruhi) for a student reader', function () {
-    $reader = Reader::factory()->create(['type' => ReaderType::Bachelor->value]);
+    $reader = Reader::factory()->create([
+        'reader_type_id' => ReaderType::factory()->create(['is_student' => true])->id,
+    ]);
 
     $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
 
@@ -53,18 +55,11 @@ it('shows student labels (O‘qish joyi/Mutaxassisligi/Guruhi) for a student rea
         ->not->toContain('Lavozimi');
 });
 
-it('colors the badge by reader type', function () {
-    $cases = [
-        ReaderType::Bachelor->value => '#2563eb',
-        ReaderType::TechnicumStudent->value => '#2563eb',
-        ReaderType::Master->value => '#7c3aed',
-        ReaderType::Doctoral->value => '#dc2626',
-        ReaderType::Professor->value => '#12b76a',
-        ReaderType::BranchStaff->value => '#12b76a',
-    ];
-
-    foreach ($cases as $type => $color) {
-        $reader = Reader::factory()->create(['type' => $type]);
+it('colors the badge with the reader type\'s own certificate_color', function () {
+    foreach (['#2563eb', '#7c3aed', '#dc2626', '#12b76a'] as $color) {
+        $reader = Reader::factory()->create([
+            'reader_type_id' => ReaderType::factory()->create(['certificate_color' => $color])->id,
+        ]);
 
         $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
 
@@ -89,13 +84,14 @@ it('shows the actual issued_date instead of a blank line once it is known', func
         ->and(substr_count($html, 'class="sign-line"'))->toBe(1);
 });
 
-it('shows 7 registration-year rows', function () {
+it('shows 5 registration-year rows', function () {
     $reader = Reader::factory()->create();
 
     $html = view('pages.admin.readers.card', ['reader' => $reader, 'photo' => null])->render();
 
-    expect(substr_count($html, 'o‘quv yili'))->toBe(7)
-        ->and($html)->toContain('7.');
+    expect(substr_count($html, 'o‘quv yili'))->toBe(5)
+        ->and($html)->toContain('5.')
+        ->and($html)->not->toContain('6.');
 });
 
 it('passes the reader\'s uploaded photo as a local file path, not a data URI', function () {

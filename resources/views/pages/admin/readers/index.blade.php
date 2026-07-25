@@ -59,7 +59,7 @@
                     class="shadow-theme-xs h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90">
                 <option value="">{{ __('Barchasi') }}</option>
                 @foreach ($types as $type)
-                    <option value="{{ $type->value }}" @selected(($filters['type'] ?? null) === $type->value)>{{ $type->label() }}</option>
+                    <option value="{{ $type->id }}" @selected(((string) ($filters['type'] ?? '')) === (string) $type->id)>{{ $type->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -114,7 +114,7 @@
                                 </div>
                             </td>
                             <td class="px-5 py-4">
-                                <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->label() }}</span>
+                                <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ $reader->type->name }}</span>
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $reader->affiliationGroup?->name ?? '—' }}</td>
                             <td class="px-5 py-4">

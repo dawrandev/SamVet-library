@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Enums\Gender;
 use App\Enums\ReaderStatus;
-use App\Enums\ReaderType;
 use App\Models\AffiliationGroup;
 use App\Models\AffiliationPlace;
 use App\Models\AffiliationUnit;
 use App\Models\District;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -27,20 +28,19 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 class ReaderImportService
 {
     /**
-     * "Regular" sheets to import → ReaderType.
-     * In these sheets status = active.
+     * "Regular" sheets to import → reader_types.name (resolved to an id via
+     * {@see typeId()}). In these sheets status = active. Texnikum sheets
+     * (TT/TO/TX) are no longer imported as their own type — that taxonomy
+     * was dropped from reader_types entirely.
      *
-     * @var array<string, ReaderType>
+     * @var array<string, string>
      */
     private const SHEET_TYPES = [
-        'BT' => ReaderType::Bachelor,
-        'MT' => ReaderType::Master,
-        'DT' => ReaderType::Doctoral,
-        'TT' => ReaderType::TechnicumStudent,
-        'PO' => ReaderType::Professor,
-        'FX' => ReaderType::BranchStaff,
-        'TO' => ReaderType::TechnicumTeacher,
-        'TX' => ReaderType::TechnicumStaff,
+        'BT' => 'Bakalavr talabasi (kunduzgi)',
+        'MT' => 'Magistr talabasi',
+        'DT' => 'Doktorant',
+        'PO' => 'Professor-o‘qituvchi',
+        'FX' => 'Filial xodimi',
     ];
 
     /**
@@ -72,19 +72,17 @@ class ReaderImportService
     ];
 
     /**
-     * ID prefix (e.g. "BT" -> Bachelor) — used to determine type in the Ketkenler sheet.
+     * ID prefix (e.g. "BT" -> Bakalavr talabasi (kunduzgi)) — used to determine
+     * type in the Ketkenler sheet. Same dropped-texnikum note as SHEET_TYPES.
      *
-     * @var array<string, ReaderType>
+     * @var array<string, string>
      */
     private const ID_PREFIX_TYPES = [
-        'BT' => ReaderType::Bachelor,
-        'MT' => ReaderType::Master,
-        'DT' => ReaderType::Doctoral,
-        'TT' => ReaderType::TechnicumStudent,
-        'PO' => ReaderType::Professor,
-        'FX' => ReaderType::BranchStaff,
-        'TO' => ReaderType::TechnicumTeacher,
-        'TX' => ReaderType::TechnicumStaff,
+        'BT' => 'Bakalavr talabasi (kunduzgi)',
+        'MT' => 'Magistr talabasi',
+        'DT' => 'Doktorant',
+        'PO' => 'Professor-o‘qituvchi',
+        'FX' => 'Filial xodimi',
     ];
 
     /**
@@ -110,9 +108,32 @@ class ReaderImportService
     /** @var callable|null Progress callback: fn(string $sheet, string $message): void */
     private $onSheet = null;
 
+    /** @var Collection<string, int>|null Lazily-resolved reader_types.name => id, see typeId(). */
+    private ?Collection $typeIdsByName = null;
+
     public function __construct(
         private readonly ReaderPhotoExtractor $photos = new ReaderPhotoExtractor(),
     ) {}
+
+    /** Resolves a reader_types.name to its id (cached for the whole import run). */
+    private function typeId(string $name): ?int
+    {
+        $this->typeIdsByName ??= ReaderType::query()->pluck('id', 'name');
+
+        return $this->typeIdsByName[$name] ?? null;
+    }
+
+    /** Reverse of typeId() — for the progress-stats display only. */
+    private function typeName(?int $id): ?string
+    {
+        if ($id === null) {
+            return null;
+        }
+
+        $this->typeIdsByName ??= ReaderType::query()->pluck('id', 'name');
+
+        return $this->typeIdsByName->flip()[$id] ?? null;
+    }
 
     public function onSheet(callable $callback): self
     {
@@ -175,14 +196,14 @@ class ReaderImportService
     }
 
     /**
-     * Determines the import context (mode + default type + status) from the sheet name.
+     * Determines the import context (mode + default type id + status) from the sheet name.
      *
-     * @return array{mode:string, type:?ReaderType, status:ReaderStatus}|null
+     * @return array{mode:string, type:?int, status:ReaderStatus}|null
      */
     private function resolveSheet(string $sheetName): ?array
     {
         if ($sheetName === self::SHEET_ST) {
-            return ['mode' => 'st', 'type' => ReaderType::Bachelor, 'status' => ReaderStatus::Active];
+            return ['mode' => 'st', 'type' => $this->typeId('Bakalavr talabasi (kunduzgi)'), 'status' => ReaderStatus::Active];
         }
 
         if ($sheetName === self::SHEET_LEFT) {
@@ -190,7 +211,7 @@ class ReaderImportService
         }
 
         if (isset(self::SHEET_TYPES[$sheetName])) {
-            return ['mode' => 'header', 'type' => self::SHEET_TYPES[$sheetName], 'status' => ReaderStatus::Active];
+            return ['mode' => 'header', 'type' => $this->typeId(self::SHEET_TYPES[$sheetName]), 'status' => ReaderStatus::Active];
         }
 
         return null;
@@ -199,7 +220,7 @@ class ReaderImportService
     /**
      * Loads a single sheet and imports its rows.
      *
-     * @param  array{mode:string, type:?ReaderType, status:ReaderStatus}  $context
+     * @param  array{mode:string, type:?int, status:ReaderStatus}  $context
      * @return SheetStat
      */
     private function importSheet(string $path, string $sheetName, array $context): array
@@ -223,7 +244,7 @@ class ReaderImportService
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
 
-            return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => $context['type']?->value];
+            return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => $this->typeName($context['type'])];
         }
 
         // ST — positional; others — header map.
@@ -263,7 +284,7 @@ class ReaderImportService
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        return ['imported' => $imported, 'updated' => $updated, 'skipped' => $skipped, 'photos' => $photoCount, 'type' => $context['type']?->value];
+        return ['imported' => $imported, 'updated' => $updated, 'skipped' => $skipped, 'photos' => $photoCount, 'type' => $this->typeName($context['type'])];
     }
 
     /**
@@ -350,7 +371,7 @@ class ReaderImportService
      *
      * @param  array<int, mixed>  $row
      * @param  array<string, int>  $columnMap  field => 0-based column index
-     * @param  array{mode:string, type:?ReaderType, status:ReaderStatus}  $context
+     * @param  array{mode:string, type:?int, status:ReaderStatus}  $context
      * @param  array{bytes:string, ext:string}|null  $photo  image attached to this row
      * @return 'imported'|'updated'|'skipped'
      */
@@ -390,7 +411,7 @@ class ReaderImportService
         }
 
         $attributes = [
-            'type' => $type,
+            'reader_type_id' => $type,
             'status' => $context['status'],
             'full_name' => $fullName,
             'registration_number' => $get('registration_number'),
@@ -498,9 +519,9 @@ class ReaderImportService
     }
 
     /**
-     * ReaderType from the ID number prefix (BT, MT, ...).
+     * ReaderType id from the ID number prefix (BT, MT, ...).
      */
-    private function typeFromIdNumber(?string $idNumber): ?ReaderType
+    private function typeFromIdNumber(?string $idNumber): ?int
     {
         if ($idNumber === null) {
             return null;
@@ -510,7 +531,9 @@ class ReaderImportService
             return null;
         }
 
-        return self::ID_PREFIX_TYPES[strtoupper($m[1])] ?? null;
+        $name = self::ID_PREFIX_TYPES[strtoupper($m[1])] ?? null;
+
+        return $name !== null ? $this->typeId($name) : null;
     }
 
     /**

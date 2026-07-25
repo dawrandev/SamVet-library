@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\ReaderStatus;
-use App\Enums\ReaderType;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +21,7 @@ class ReaderFactory extends Factory
         return [
             'id_number' => strtoupper($this->faker->unique()->bothify('??######')),
             'full_name' => $this->faker->name(),
-            'type' => ReaderType::Bachelor->value,
+            'reader_type_id' => ReaderType::factory(),
             'status' => ReaderStatus::Active->value,
         ];
     }

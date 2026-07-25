@@ -7,7 +7,6 @@ use App\Enums\CopyCondition;
 use App\Enums\Gender;
 use App\Enums\LoanMaterialType;
 use App\Enums\ReaderStatus;
-use App\Enums\ReaderType;
 use App\Exports\ReadersExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreReaderRequest;
@@ -17,6 +16,7 @@ use App\Models\AffiliationPlace;
 use App\Models\AffiliationUnit;
 use App\Models\Computer;
 use App\Models\Reader;
+use App\Models\ReaderType;
 use App\Models\Region;
 use App\Services\BookReadingService;
 use App\Services\LoanService;
@@ -43,7 +43,7 @@ class ReaderController extends Controller
         return view('pages.admin.readers.index', [
             'readers' => $this->readerService->paginate($filters),
             'filters' => $filters,
-            'types' => ReaderType::cases(),
+            'types' => ReaderType::orderBy('id')->get(),
             'statuses' => ReaderStatus::cases(),
         ]);
     }
@@ -58,7 +58,7 @@ class ReaderController extends Controller
     public function create(): View
     {
         return view('pages.admin.readers.create', [
-            'types' => ReaderType::cases(),
+            'types' => ReaderType::orderBy('id')->get(),
             'statuses' => ReaderStatus::cases(),
             'genders' => Gender::cases(),
             ...$this->lookupOptions(),
@@ -92,7 +92,7 @@ class ReaderController extends Controller
     public function show(Reader $reader, Request $request): View
     {
         $reader->load([
-            'warnings', 'eventParticipations.event.locations', 'computerSessions.computer',
+            'type', 'warnings', 'eventParticipations.event.locations', 'computerSessions.computer',
             'affiliationPlace', 'affiliationUnit', 'affiliationGroup', 'region', 'district',
         ]);
 
@@ -119,7 +119,7 @@ class ReaderController extends Controller
     {
         return view('pages.admin.readers.edit', [
             'reader' => $reader,
-            'types' => ReaderType::cases(),
+            'types' => ReaderType::orderBy('id')->get(),
             'statuses' => ReaderStatus::cases(),
             'genders' => Gender::cases(),
             ...$this->lookupOptions(),

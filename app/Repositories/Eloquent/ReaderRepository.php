@@ -22,7 +22,7 @@ class ReaderRepository implements ReaderRepositoryInterface
                 });
             })
             ->when($filters['type'] ?? null, function ($query, string $type) {
-                $query->where('type', $type);
+                $query->where('reader_type_id', $type);
             })
             ->when($filters['status'] ?? null, function ($query, string $status) {
                 $query->where('status', $status);
@@ -37,7 +37,7 @@ class ReaderRepository implements ReaderRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->filtered($filters)
-            ->with('affiliationGroup')
+            ->with(['affiliationGroup', 'type'])
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();

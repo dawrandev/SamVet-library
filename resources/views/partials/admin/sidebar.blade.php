@@ -222,6 +222,7 @@
                                         'affiliation-groups' => __('Guruh/lavozimlar'),
                                         'regions' => __('Viloyatlar'),
                                         'districts' => __('Tumanlar'),
+                                        'reader-types' => __('Foydalanuvchi turlari'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

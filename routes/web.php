@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
+use App\Http\Controllers\Admin\Lookups\ReaderTypeController;
 use App\Http\Controllers\Admin\Lookups\DeliveryLocationController;
 use App\Http\Controllers\Admin\Lookups\DistrictController;
 use App\Http\Controllers\Admin\Lookups\EventLocationController;
@@ -321,6 +322,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('affiliation-groups', AffiliationGroupController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['affiliation-groups' => 'affiliationGroup']);
         Route::resource('regions', RegionController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('districts', DistrictController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('reader-types', ReaderTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['reader-types' => 'readerType']);
     });
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
