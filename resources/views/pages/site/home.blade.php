@@ -45,28 +45,40 @@
                 </div>
             </div>
 
-            {{-- Gateway panel --}}
+            {{-- Gateway panel — fund stats live in the band right below, so this
+                 slot doubles as a "what's new" teaser instead of repeating them. --}}
             <div class="lg:col-span-5">
                 <div class="rounded-2xl bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur">
-                    <p class="text-sm font-medium text-blue-100">{{ __('Fond bir qarashda') }}</p>
-                    <div class="mt-5 grid grid-cols-2 gap-4">
-                        <div class="rounded-xl bg-white/10 p-4">
-                            <p class="text-2xl font-bold">{{ number_format($stats['copies'], 0, '.', ' ') }}</p>
-                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Jami kitoblar') }}</p>
-                        </div>
-                        <div class="rounded-xl bg-white/10 p-4">
-                            <p class="text-2xl font-bold">{{ number_format($stats['titles'], 0, '.', ' ') }}</p>
-                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Kitob nomlari') }}</p>
-                        </div>
-                        <div class="rounded-xl bg-white/10 p-4">
-                            <p class="text-2xl font-bold">{{ number_format($stats['periodicals'], 0, '.', ' ') }}</p>
-                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Davriy nashrlar') }}</p>
-                        </div>
-                        <div class="rounded-xl bg-white/10 p-4">
-                            <p class="text-2xl font-bold">{{ number_format($stats['articles'], 0, '.', ' ') }}</p>
-                            <p class="mt-1 text-xs text-blue-100/70">{{ __('Maqolalar') }}</p>
-                        </div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-blue-100">{{ __('So‘nggi yangiliklar') }}</p>
+                        @if ($latestNews->isNotEmpty())
+                            <a href="{{ route('news.index') }}" class="text-xs font-medium text-blue-200 transition hover:text-white">{{ __('Barchasi') }} →</a>
+                        @endif
                     </div>
+
+                    @if ($latestNews->isNotEmpty())
+                        <div class="mt-4 divide-y divide-white/10">
+                            @foreach ($latestNews as $item)
+                                <a href="{{ route('news.show', $item->slug) }}"
+                                   class="group flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                                    <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-amber-400"></span>
+                                    <div class="min-w-0">
+                                        <p class="line-clamp-1 text-sm font-medium text-white transition group-hover:text-amber-300">
+                                            {{ $item->getTranslation('title', 'uz') }}
+                                        </p>
+                                        <p class="mt-0.5 text-xs text-blue-100/60">
+                                            {{ $item->published_at?->format('d.m.Y') }}
+                                            @if ($item->category)
+                                                &middot; {{ $item->category->name }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="mt-4 text-sm text-blue-100/60">{{ __('Hozircha yangiliklar yo‘q.') }}</p>
+                    @endif
                 </div>
             </div>
         </div>

@@ -98,6 +98,7 @@ class HomeService
         return News::query()
             ->with('category')
             ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->latest('published_at')
             ->limit(self::NEWS_LIMIT)
             ->get();
