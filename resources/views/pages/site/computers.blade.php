@@ -5,9 +5,9 @@
 @php
     // Literal Tailwind class strings (not built at runtime) so the JIT scanner keeps them.
     $statusStyles = [
-        'success' => ['pill' => 'bg-green-50 text-green-700', 'screen' => 'fill-green-50 stroke-green-400'],
-        'error' => ['pill' => 'bg-red-50 text-red-700', 'screen' => 'fill-red-50 stroke-red-400'],
-        'warning' => ['pill' => 'bg-amber-50 text-amber-700', 'screen' => 'fill-amber-50 stroke-amber-400'],
+        'success' => ['pill' => 'bg-green-50 text-green-700', 'screen' => 'fill-green-50', 'ring' => 'ring-green-100'],
+        'error' => ['pill' => 'bg-red-50 text-red-700', 'screen' => 'fill-red-50', 'ring' => 'ring-red-100'],
+        'warning' => ['pill' => 'bg-amber-50 text-amber-700', 'screen' => 'fill-amber-50', 'ring' => 'ring-amber-100'],
     ];
     $totalFree = $rooms->sum('freeCount');
     $totalAll = $rooms->sum('totalCount');
@@ -52,19 +52,25 @@
                     <span class="text-xs font-medium text-gray-400">{{ $room['freeCount'] }}/{{ $room['totalCount'] }} {{ __('bo‘sh') }}</span>
                 </div>
 
-                <div class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-5 lg:grid-cols-6">
+                <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     @foreach ($room['computers'] as $computer)
                         @php $style = $statusStyles[$computer->publicStatusColor()]; @endphp
-                        <div class="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white py-4">
+                        <div class="flex flex-col items-center gap-3 rounded-2xl border border-gray-200 bg-white py-6 transition hover:-translate-y-0.5 hover:shadow-md">
                             <div class="relative">
-                                <span class="absolute -left-1.5 -top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-[11px] font-bold text-white">{{ $computer->computer_number }}</span>
-                                <svg class="h-12 w-14" viewBox="0 0 64 52" fill="none">
-                                    <rect x="4" y="4" width="56" height="34" rx="4" class="{{ $style['screen'] }}" stroke-width="2" />
-                                    <rect x="26" y="38" width="12" height="6" class="fill-gray-300" />
-                                    <rect x="16" y="44" width="32" height="4" rx="2" class="fill-gray-300" />
+                                <span class="absolute -left-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white ring-4 ring-white">{{ $computer->computer_number }}</span>
+                                <svg class="h-20 w-24" viewBox="0 0 100 84" fill="none">
+                                    {{-- Bezel --}}
+                                    <rect x="6" y="6" width="88" height="56" rx="8" class="fill-gray-800" />
+                                    {{-- Screen (tinted by status) --}}
+                                    <rect x="14" y="14" width="72" height="40" rx="3" class="{{ $style['screen'] }}" />
+                                    {{-- Camera notch --}}
+                                    <circle cx="50" cy="10" r="1.6" class="fill-gray-600" />
+                                    {{-- Stand --}}
+                                    <rect x="42" y="64" width="16" height="9" class="fill-gray-400" />
+                                    <rect x="24" y="75" width="52" height="6" rx="3" class="fill-gray-400" />
                                 </svg>
                             </div>
-                            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium {{ $style['pill'] }}">
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold {{ $style['pill'] }}">
                                 @if ($computer->publicStatusColor() === 'error' && $computer->status->value === 'working')
                                     <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500"></span>
                                 @endif
