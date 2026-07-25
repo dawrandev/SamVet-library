@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\ArticleData;
+use App\Enums\PublicationKind;
 use App\Models\Article;
 use App\Models\ContributorRole;
 use App\Models\Journal;
@@ -93,7 +94,7 @@ class ArticleService
     public function create(ArticleData $data): Article
     {
         return DB::transaction(function () use ($data) {
-            $attributes = $data->toAttributes();
+            $attributes = $this->clearDoiForNewspaper($data->toAttributes());
 
             if ($data->electronic_file) {
                 $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
@@ -110,7 +111,7 @@ class ArticleService
     public function update(Article $article, ArticleData $data): Article
     {
         return DB::transaction(function () use ($article, $data) {
-            $attributes = $data->toAttributes();
+            $attributes = $this->clearDoiForNewspaper($data->toAttributes());
 
             if ($data->electronic_file) {
                 $this->deleteFile($article->electronic_file);
@@ -132,6 +133,26 @@ class ArticleService
 
             $this->articles->delete($article);
         });
+    }
+
+    /**
+     * A gazeta (newspaper) article never has a DOI — enforced server-side,
+     * not just hidden in the form, in case the field is ever tampered with.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function clearDoiForNewspaper(array $attributes): array
+    {
+        if (! empty($attributes['journal_issue_id'])) {
+            $kind = JournalIssue::find($attributes['journal_issue_id'])?->journal?->kind;
+
+            if ($kind === PublicationKind::Newspaper) {
+                $attributes['doi'] = null;
+            }
+        }
+
+        return $attributes;
     }
 
     private function storeProtected(UploadedFile $file): string

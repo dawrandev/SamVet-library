@@ -120,8 +120,11 @@
                 @error('category')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
             </div>
 
-            <div class="grid gap-5 sm:grid-cols-2">
-                <x-admin.form.input name="doi" :label="__('DOI')" :value="$article?->doi" :placeholder="__('masalan: 10.1000/xyz')" />
+            {{-- DOI only applies to journal articles — a newspaper article never has one. --}}
+            <div class="grid gap-5 {{ $isNewspaperForm ? '' : 'sm:grid-cols-2' }}">
+                @unless ($isNewspaperForm)
+                    <x-admin.form.input name="doi" :label="__('DOI')" :value="$article?->doi" :placeholder="__('masalan: 10.1000/xyz')" />
+                @endunless
                 <x-admin.form.input name="pages" :label="__('Sahifalar')" :value="$article?->pages" :placeholder="__('masalan: 45-52')" />
             </div>
 

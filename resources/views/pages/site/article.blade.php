@@ -6,8 +6,10 @@
 @php
     $issue = $article->journalIssue;
     $journal = $issue?->journal;
+    $isNewspaper = $journal?->kind === \App\Enums\PublicationKind::Newspaper;
     $issueLabel = $issue ? $issue->year.', №'.$issue->issue_number : null;
 
+    // DOI only applies to journal articles — a gazeta article never has one.
     $rows = array_filter([
         [__('Maqola nomi'), $article->title],
         [__('Muallifi'), $article->author],
@@ -15,7 +17,7 @@
         [__('Jurnal turi'), $journal?->type?->name],
         [__('Jurnal soni'), $issueLabel],
         [__('Resurs sohasi'), $article->resourceField?->name],
-        [__('DOI kodi'), $article->doi],
+        ...($isNewspaper ? [] : [[__('DOI kodi'), $article->doi]]),
         [__('Tili'), $article->language?->name],
         [__('Beti'), $article->pages],
         [__('Yili'), $issue?->year ?? $article->external_journal_year],

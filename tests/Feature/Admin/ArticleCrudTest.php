@@ -145,6 +145,44 @@ it('shows dynamic "Gazeta" labels on a newspaper article\'s show page', function
         ->assertDontSee('Jurnal haqida ma’lumot');
 });
 
+it('hides the DOI field on a newspaper (gazeta) article\'s create form, but shows it for a journal article', function () {
+    $journal = Journal::factory()->create(['kind' => 'journal']);
+    $newspaper = Journal::factory()->create(['kind' => 'newspaper']);
+
+    $this->get(route('admin.articles.create', ['kind' => 'journal']))->assertSee('name="doi"', false);
+    $this->get(route('admin.articles.create', ['kind' => 'newspaper']))->assertDontSee('name="doi"', false);
+});
+
+it('never saves a DOI on a newspaper (gazeta) article, even if one is submitted', function () {
+    $newspaper = Journal::factory()->create(['kind' => 'newspaper']);
+    $issue = JournalIssue::factory()->create(['journal_id' => $newspaper->id]);
+
+    $this->post(route('admin.articles.store'), [
+        'journal_issue_id' => $issue->id,
+        'title' => 'Gazeta maqolasi DOI bilan',
+        'author' => 'Muxbir',
+        'doi' => '10.1000/xyz',
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Gazeta maqolasi DOI bilan');
+    expect($article->doi)->toBeNull();
+});
+
+it('still saves a DOI on a journal article', function () {
+    $journal = Journal::factory()->create(['kind' => 'journal']);
+    $issue = JournalIssue::factory()->create(['journal_id' => $journal->id]);
+
+    $this->post(route('admin.articles.store'), [
+        'journal_issue_id' => $issue->id,
+        'title' => 'Jurnal maqolasi DOI bilan',
+        'author' => 'Muallif',
+        'doi' => '10.1000/xyz',
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Jurnal maqolasi DOI bilan');
+    expect($article->doi)->toBe('10.1000/xyz');
+});
+
 it('creates a library-external article with a free-text journal name (no journal_issue_id)', function () {
     $field = ResourceField::factory()->create();
 

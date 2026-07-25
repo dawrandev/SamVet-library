@@ -9,13 +9,13 @@
         // A library-external article has no journal → always lives under "Maqolalar".
         $backParams = array_filter(['kind' => $journal?->kind?->value ?? \App\Enums\PublicationKind::Journal->value]);
 
-        // Article's own fields
+        // Article's own fields — DOI only applies to journal articles, never gazeta.
         $details = array_filter([
             __('Muallif(lar)') => $article->author,
             __('Resurs sohasi') => $article->resourceField?->name,
             __('Tili') => $article->language?->name,
             __('Kategoriyasi') => $article->category?->label(),
-            __('DOI') => $article->doi,
+            ...($isNewspaper ? [] : [__('DOI') => $article->doi]),
             __('Sahifalar') => $article->pages,
         ], fn ($v) => filled($v));
 
