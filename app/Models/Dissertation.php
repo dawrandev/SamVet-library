@@ -6,6 +6,7 @@ use App\Enums\CopyCondition;
 use App\Enums\DissertationType;
 use App\Observers\DissertationObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,7 @@ class Dissertation extends Model
     {
         return [
             'degree' => DissertationType::class,
-            'condition' => CopyCondition::class,
+            'condition' => AsEnumCollection::of(CopyCondition::class),
             'defense_year' => 'integer',
             'pages' => 'integer',
             'views_count' => 'integer',

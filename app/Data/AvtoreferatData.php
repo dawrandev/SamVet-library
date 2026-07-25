@@ -2,7 +2,6 @@
 
 namespace App\Data;
 
-use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -25,7 +24,6 @@ class AvtoreferatData
         public readonly string $advisor,
         public readonly ?string $udc,
         public readonly ?string $registration_number,
-        public readonly ?CopyCondition $condition,
         public readonly ?int $publication_place_id,
         public readonly ?int $defense_year,
         public readonly ?string $inventory_number,
@@ -36,6 +34,8 @@ class AvtoreferatData
         public readonly array $contributors = [],
         /** @var array<int, int> */
         public readonly array $language_ids = [],
+        /** @var array<int, string> */
+        public readonly array $condition = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -52,7 +52,6 @@ class AvtoreferatData
             advisor: $request->string('advisor')->toString(),
             udc: $request->input('udc') ?: null,
             registration_number: $request->input('registration_number') ?: null,
-            condition: $request->filled('condition') ? CopyCondition::from($request->string('condition')->toString()) : null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             defense_year: $request->integer('defense_year') ?: null,
             inventory_number: $request->input('inventory_number') ?: null,
@@ -61,6 +60,7 @@ class AvtoreferatData
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
             language_ids: $request->input('language_ids', []),
+            condition: $request->input('condition', []),
         );
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BookFormat;
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +25,7 @@ class BookCopy extends Model
     {
         return [
             'format' => BookFormat::class,
-            'condition' => CopyCondition::class,
+            'condition' => AsEnumCollection::of(CopyCondition::class),
             'status' => CopyStatus::class,
             'price' => 'decimal:2',
             'acquisition_act_at' => 'date',

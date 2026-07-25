@@ -12,7 +12,7 @@ it('creates a copy with plain-text acquisition and disposal act fields', functio
         '_copy_form' => 'store',
         'inventory_number' => 'INV-ACT-1',
         'format' => 'print',
-        'condition' => 'new',
+        'condition' => ['new'],
         'status' => 'available',
         'acquisition_act_number' => 'KA-12',
         'acquisition_act_at' => '2026-07-01',
@@ -35,7 +35,7 @@ it('saves a copy with no act info at all', function () {
         '_copy_form' => 'store',
         'inventory_number' => 'INV-ACT-2',
         'format' => 'print',
-        'condition' => 'new',
+        'condition' => ['new'],
         'status' => 'available',
     ])->assertRedirect();
 
@@ -54,7 +54,7 @@ it('updates a copy’s act fields', function () {
         '_copy_form' => 'edit',
         'inventory_number' => $copy->inventory_number,
         'format' => $copy->format->value,
-        'condition' => $copy->condition->value,
+        'condition' => $copy->condition->map(fn ($c) => $c->value)->all(),
         'status' => $copy->status->value,
         'acquisition_act_number' => 'YANGI-KA',
         'acquisition_act_at' => '2026-08-01',

@@ -6,6 +6,7 @@ use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Observers\AvtoreferatObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +32,7 @@ class Avtoreferat extends Model
     {
         return [
             'degree' => DissertationDegree::class,
-            'condition' => CopyCondition::class,
+            'condition' => AsEnumCollection::of(CopyCondition::class),
             'defense_year' => 'integer',
             'views_count' => 'integer',
         ];

@@ -11,7 +11,8 @@ class JournalCopyData
 {
     public function __construct(
         public readonly ?string $inventory_number,
-        public readonly ?string $condition,
+        /** @var array<int, string> */
+        public readonly array $condition,
         public readonly string $status,
         public readonly ?int $location_id,
         public readonly ?string $arrival_date,
@@ -21,7 +22,7 @@ class JournalCopyData
     {
         return new self(
             inventory_number: $request->input('inventory_number') ?: null,
-            condition: $request->input('condition') ?: null,
+            condition: $request->input('condition', []),
             status: $request->string('status')->toString(),
             location_id: $request->integer('location_id') ?: null,
             arrival_date: $request->input('arrival_date') ?: null,

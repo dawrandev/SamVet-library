@@ -5,6 +5,7 @@
 @section('content')
     @php
         $conditionOptions = \App\Enums\CopyCondition::cases();
+        $conditionSelectOptions = collect($conditionOptions)->map(fn ($c) => ['id' => $c->value, 'label' => $c->label()]);
         $statusOptions = \App\Enums\CopyStatus::cases();
 
         $statusColor = [
@@ -114,7 +115,7 @@
                             @forelse ($issue->copies as $copy)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/50">
                                     <td class="px-5 py-3 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $copy->inventory_number ?? '—' }}</td>
-                                    <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->condition?->label() ?? '—' }}</td>
+                                    <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->condition?->map(fn ($c) => $c->label())->join(', ') ?: '—' }}</td>
                                     <td class="px-5 py-3">
                                         <span class="rounded-full px-2.5 py-0.5 text-theme-xs font-medium {{ $statusColor[$copy->status->value] ?? '' }}">{{ $copy->status->label() }}</span>
                                     </td>
@@ -157,14 +158,7 @@
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Holati') }}</label>
-                                    <select name="condition" class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                        <option value="">{{ __('Tanlanmagan') }}</option>
-                                        @foreach ($conditionOptions as $opt)
-                                            <option value="{{ $opt->value }}" @selected(old('condition') === $opt->value)>{{ $opt->label() }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('condition')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                                    <x-admin.form.multiselect name="condition" :label="__('Holati')" :options="$conditionSelectOptions" />
                                 </div>
                                 <div>
                                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Mavjudligi') }}<span class="text-error-500">*</span></label>
@@ -220,14 +214,8 @@
 
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Holati') }}</label>
-                                        @php $curCondition = $isEditing ? old('condition') : $copy->condition?->value; @endphp
-                                        <select name="condition" class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                            <option value="">{{ __('Tanlanmagan') }}</option>
-                                            @foreach ($conditionOptions as $opt)
-                                                <option value="{{ $opt->value }}" @selected($curCondition === $opt->value)>{{ $opt->label() }}</option>
-                                            @endforeach
-                                        </select>
+                                        <x-admin.form.multiselect name="condition" :label="__('Holati')" :options="$conditionSelectOptions"
+                                            :selected="$copy->condition?->map(fn ($c) => $c->value)->values()->all() ?? []" />
                                     </div>
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Mavjudligi') }}<span class="text-error-500">*</span></label>

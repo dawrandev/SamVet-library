@@ -27,7 +27,8 @@ class StoreJournalCopyRequest extends FormRequest
 
         return [
             'inventory_number' => [$isNewspaper ? 'nullable' : 'required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
-            'condition' => ['nullable', new Enum(CopyCondition::class)],
+            'condition' => ['nullable', 'array'],
+            'condition.*' => [new Enum(CopyCondition::class)],
             'status' => ['required', new Enum(CopyStatus::class)],
             'location_id' => ['nullable', 'exists:locations,id'],
             'arrival_date' => ['nullable', 'date'],

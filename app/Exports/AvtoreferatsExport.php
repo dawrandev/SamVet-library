@@ -61,7 +61,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $avtoreferat->advisor,
             $avtoreferat->udc,
             $avtoreferat->registration_number,
-            $avtoreferat->condition?->label(),
+            $avtoreferat->condition?->map(fn ($c) => $c->label())->join(', '),
             $avtoreferat->publicationPlace?->name,
             $avtoreferat->defense_year,
             $avtoreferat->inventory_number,

@@ -87,7 +87,10 @@ class LoanService
                 'due_at' => $dueAt,
                 'status' => LoanStatus::OnLoan,
                 'note' => $note,
-                'issued_condition' => $copy->condition,
+                // Loan's own condition fields are single-value snapshots — the
+                // copy's live condition can be multiple, so just the first tag
+                // is recorded here (matches what "the" condition was at issue).
+                'issued_condition' => $copy->condition?->first(),
             ]);
 
             $copy->update(['status' => CopyStatus::Borrowed]);
@@ -118,9 +121,12 @@ class LoanService
                 'returned_condition' => $returnedCondition,
             ]);
 
+            // The copy's condition is multi-value; a recorded return condition
+            // replaces the whole set with that one tag (the librarian can add
+            // more via the copy's own edit form afterward if needed).
             $loan->loanable?->update(array_filter([
                 'status' => CopyStatus::Available,
-                'condition' => $returnedCondition,
+                'condition' => $returnedCondition ? [$returnedCondition] : null,
             ], fn ($v) => $v !== null));
 
             return $loan;

@@ -26,7 +26,7 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         'advisor' => 'Karimov K.',
         'udc' => '619:616.98',
         'registration_number' => 'B24.15',
-        'condition' => CopyCondition::New->value,
+        'condition' => [CopyCondition::New->value],
         'publication_place_id' => $place->id,
         'defense_year' => 2024,
         'inventory_number' => 'AR-00123',
@@ -35,7 +35,7 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
     $avtoreferat = Avtoreferat::firstWhere('title', 'Veterinariya sohasida yangi usullar');
     expect($avtoreferat)->not->toBeNull()
         ->and($avtoreferat->degree)->toBe(DissertationDegree::Dsc)
-        ->and($avtoreferat->condition)->toBe(CopyCondition::New)
+        ->and($avtoreferat->condition->first())->toBe(CopyCondition::New)
         ->and($avtoreferat->advisor)->toBe('Karimov K.')
         ->and($avtoreferat->publication_place_id)->toBe($place->id)
         ->and($avtoreferat->defense_year)->toBe(2024)
@@ -59,9 +59,9 @@ it('rejects an invalid degree or condition', function () {
             'author' => 'Y',
             'advisor' => 'Z',
             'degree' => 'professor', // not a DissertationDegree case
-            'condition' => 'destroyed', // not a CopyCondition case
+            'condition' => ['destroyed'], // not a CopyCondition case
         ])
-        ->assertSessionHasErrors(['degree', 'condition']);
+        ->assertSessionHasErrors(['degree', 'condition.0']);
 });
 
 it('rejects a non-pdf file', function () {

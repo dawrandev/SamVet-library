@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +21,7 @@ class JournalCopy extends Model
     protected function casts(): array
     {
         return [
-            'condition' => CopyCondition::class,
+            'condition' => AsEnumCollection::of(CopyCondition::class),
             'status' => CopyStatus::class,
             'arrival_date' => 'date',
         ];

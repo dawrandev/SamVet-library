@@ -151,12 +151,12 @@ it('saves admin-only inventory and condition fields', function () {
     $this->post(route('admin.dissertations.store'), [
         'title' => 'Inventarli dissertatsiya',
         'inventory_number' => 'INV-D-0001',
-        'condition' => 'new',
+        'condition' => ['new'],
     ])->assertRedirect();
 
     $dissertation = Dissertation::firstWhere('title', 'Inventarli dissertatsiya');
     expect($dissertation->inventory_number)->toBe('INV-D-0001')
-        ->and($dissertation->condition->value)->toBe('new');
+        ->and($dissertation->condition->first()->value)->toBe('new');
 });
 
 // --- Form rendering ---

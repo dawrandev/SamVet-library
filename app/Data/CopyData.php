@@ -13,7 +13,8 @@ class CopyData
     public function __construct(
         public readonly string $inventory_number,
         public readonly string $format,
-        public readonly string $condition,
+        /** @var array<int, string> */
+        public readonly array $condition,
         public readonly string $status,
         public readonly ?int $location_id,
         public readonly ?float $price,
@@ -28,7 +29,7 @@ class CopyData
         return new self(
             inventory_number: $request->string('inventory_number')->toString(),
             format: $request->string('format')->toString(),
-            condition: $request->string('condition')->toString(),
+            condition: $request->input('condition', []),
             status: $request->string('status')->toString(),
             location_id: $request->integer('location_id') ?: null,
             price: $request->filled('price') ? (float) $request->input('price') : null,

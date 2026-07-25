@@ -30,7 +30,7 @@ class AvtoreferatFactory extends Factory
             'advisor' => $this->faker->name(),
             'udc' => $this->faker->numerify('###.#'),
             'registration_number' => $this->faker->numerify('B##.##'),
-            'condition' => $this->faker->randomElement(CopyCondition::cases()),
+            'condition' => [$this->faker->randomElement(CopyCondition::cases())->value],
             'publication_place_id' => PublicationPlace::factory(),
             'defense_year' => $this->faker->numberBetween(2000, (int) date('Y')),
             'inventory_number' => $this->faker->numerify('INV-#####'),

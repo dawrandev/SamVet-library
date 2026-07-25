@@ -27,11 +27,12 @@ class DissertationData
         public readonly ?int $pages,
         public readonly ?string $udc,
         public readonly ?string $inventory_number,
-        public readonly ?string $condition,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
+        /** @var array<int, string> */
+        public readonly array $condition = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -52,10 +53,10 @@ class DissertationData
             pages: $request->integer('pages') ?: null,
             udc: $request->input('udc') ?: null,
             inventory_number: $request->input('inventory_number') ?: null,
-            condition: $request->input('condition') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
+            condition: $request->input('condition', []),
         );
     }
 

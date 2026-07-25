@@ -25,7 +25,8 @@ class StoreCopyRequest extends FormRequest
         return [
             'inventory_number' => ['required', 'string', 'max:100', $this->inventoryNumberUniqueRule()],
             'format' => ['required', new Enum(BookFormat::class)],
-            'condition' => ['required', new Enum(CopyCondition::class)],
+            'condition' => ['required', 'array', 'min:1'],
+            'condition.*' => [new Enum(CopyCondition::class)],
             'status' => ['required', new Enum(CopyStatus::class)],
             'location_id' => ['nullable', 'exists:locations,id'],
             'price' => ['nullable', 'numeric', 'min:0'],

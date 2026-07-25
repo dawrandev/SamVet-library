@@ -42,7 +42,8 @@ class DissertationRequest extends FormRequest
             'pages' => ['nullable', 'integer', 'min:1'],
             'udc' => ['nullable', 'string', 'max:50'],
             'inventory_number' => ['nullable', 'string', 'max:100'],
-            'condition' => ['nullable', new Enum(CopyCondition::class)],
+            'condition' => ['nullable', 'array'],
+            'condition.*' => [new Enum(CopyCondition::class)],
             'annotation' => ['nullable', 'string'],
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
 

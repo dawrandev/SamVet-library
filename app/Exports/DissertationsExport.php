@@ -68,7 +68,7 @@ class DissertationsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wi
             $dissertation->pages,
             $dissertation->udc,
             $dissertation->inventory_number,
-            $dissertation->condition?->label(),
+            $dissertation->condition?->map(fn ($c) => $c->label())->join(', '),
             $dissertation->annotation,
             $dissertation->electronic_file ? 'Ha' : "Yo'q",
             $dissertation->views_count,

@@ -25,7 +25,7 @@
         $bibliographic = array_filter([
             __('UO‘K') => $avtoreferat->udc,
             __('Ro‘yxat raqami') => $avtoreferat->registration_number,
-            __('Holati') => $avtoreferat->condition?->label(),
+            __('Holati') => $avtoreferat->condition?->map(fn ($c) => $c->label())->join(', '),
             __('Nashr joyi') => $avtoreferat->publicationPlace?->name,
             __('Himoya yili') => $avtoreferat->defense_year,
             __('Inventari') => $avtoreferat->inventory_number,

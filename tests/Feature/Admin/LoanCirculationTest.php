@@ -15,7 +15,7 @@ beforeEach(fn () => actingAsAdmin());
 
 it('issues a book copy and snapshots its condition', function () {
     $reader = Reader::factory()->create(['status' => 'active']);
-    $copy = BookCopy::factory()->create(['condition' => CopyCondition::Old->value]);
+    $copy = BookCopy::factory()->create(['condition' => [CopyCondition::Old->value]]);
 
     $loan = app(LoanService::class)->issueByInventory($reader, $copy->inventory_number, now()->addDays(10)->format('Y-m-d'), null);
 
@@ -30,7 +30,7 @@ it('issues a book copy and snapshots its condition', function () {
 it('issues a journal copy when no book copy matches the inventory number', function () {
     $reader = Reader::factory()->create(['status' => 'active']);
     $issue = JournalIssue::factory()->for(Journal::factory())->create();
-    $copy = JournalCopy::factory()->create(['journal_issue_id' => $issue->id, 'condition' => CopyCondition::New->value]);
+    $copy = JournalCopy::factory()->create(['journal_issue_id' => $issue->id, 'condition' => [CopyCondition::New->value]]);
 
     $loan = app(LoanService::class)->issueByInventory($reader, $copy->inventory_number, now()->addDays(10)->format('Y-m-d'), null);
 
@@ -58,7 +58,7 @@ it('shows Gazeta as the material type for a newspaper-kind journal copy', functi
 
 it('returns a loan with a recorded condition and updates the live copy condition', function () {
     $reader = Reader::factory()->create();
-    $copy = BookCopy::factory()->borrowed()->create(['condition' => CopyCondition::New->value]);
+    $copy = BookCopy::factory()->borrowed()->create(['condition' => [CopyCondition::New->value]]);
     $loan = Loan::factory()->create([
         'reader_id' => $reader->id,
         'loanable_id' => $copy->id,
@@ -74,18 +74,18 @@ it('returns a loan with a recorded condition and updates the live copy condition
         ->and($loan->returned_condition)->toBe(CopyCondition::Torn)
         ->and($loan->returned_at)->not->toBeNull();
 
-    expect($copy->fresh()->condition)->toBe(CopyCondition::Torn)
+    expect($copy->fresh()->condition->first())->toBe(CopyCondition::Torn)
         ->and($copy->fresh()->status)->toBe(CopyStatus::Available);
 });
 
 it('returns a loan without a condition without touching the copy condition', function () {
     $reader = Reader::factory()->create();
-    $copy = BookCopy::factory()->borrowed()->create(['condition' => CopyCondition::New->value]);
+    $copy = BookCopy::factory()->borrowed()->create(['condition' => [CopyCondition::New->value]]);
     $loan = Loan::factory()->create(['reader_id' => $reader->id, 'loanable_id' => $copy->id]);
 
     $this->patch(route('admin.loans.return', $loan))->assertRedirect();
 
-    expect($copy->fresh()->condition)->toBe(CopyCondition::New)
+    expect($copy->fresh()->condition->first())->toBe(CopyCondition::New)
         ->and($copy->fresh()->status)->toBe(CopyStatus::Available);
 });
 

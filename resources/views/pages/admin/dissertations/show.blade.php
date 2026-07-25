@@ -24,7 +24,7 @@
         // Admin-only fields — never surfaced on the client site.
         $adminDetails = array_filter([
             __('Inventari') => $dissertation->inventory_number,
-            __('Holati') => $dissertation->condition?->label(),
+            __('Holati') => $dissertation->condition?->map(fn ($c) => $c->label())->join(', '),
         ], fn ($v) => filled($v));
     @endphp
 

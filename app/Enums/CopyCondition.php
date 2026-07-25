@@ -12,6 +12,7 @@ enum CopyCondition: string
     case Torn = 'torn';
     case Repaired = 'repaired';
     case Scribbled = 'scribbled';
+    case PagesIncomplete = 'pages_incomplete';
 
     public function label(): string
     {
@@ -21,6 +22,7 @@ enum CopyCondition: string
             self::Torn => __('Yirtilgan'),
             self::Repaired => __('Ta’mirlangan'),
             self::Scribbled => __('Sizilgan'),
+            self::PagesIncomplete => __('Betlari to‘liq emas'),
         };
     }
 }
