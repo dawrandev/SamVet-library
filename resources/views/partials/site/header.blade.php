@@ -31,6 +31,14 @@
                    'text-blue-700' => request()->routeIs('catalog'),
                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('catalog'),
                ])>{{ __('Elektron katalog') }}</a>
+            @auth('reader')
+                <a href="{{ route('computers.index') }}"
+                   @class([
+                       'rounded-lg px-3.5 py-2 text-sm font-medium transition',
+                       'text-blue-700' => request()->routeIs('computers.index'),
+                       'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('computers.index'),
+                   ])>{{ __('Kompyuterlar') }}</a>
+            @endauth
 
             {{-- Admin-built menu tree (recursive: dropdowns + nested flyouts). --}}
             @foreach ($navMenu as $item)
@@ -88,6 +96,14 @@
                    'bg-blue-50 text-blue-700' => request()->routeIs('catalog'),
                    'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('catalog'),
                ])>{{ __('Elektron katalog') }}</a>
+            @auth('reader')
+                <a href="{{ route('computers.index') }}"
+                   @class([
+                       'rounded-lg px-3 py-2.5 text-sm font-medium',
+                       'bg-blue-50 text-blue-700' => request()->routeIs('computers.index'),
+                       'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('computers.index'),
+                   ])>{{ __('Kompyuterlar') }}</a>
+            @endauth
 
             {{-- Admin-built menu tree as nested accordions. --}}
             @foreach ($navMenu as $item)

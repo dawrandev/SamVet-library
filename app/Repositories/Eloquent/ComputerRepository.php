@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Computer;
 use App\Repositories\Contracts\ComputerRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class ComputerRepository implements ComputerRepositoryInterface
 {
@@ -30,6 +31,16 @@ class ComputerRepository implements ComputerRepositoryInterface
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
+    }
+
+    public function publicByLocation(): Collection
+    {
+        return Computer::query()
+            ->whereNotNull('computer_number')
+            ->with(['sessions' => fn ($q) => $q->whereNull('returned_at')])
+            ->orderBy('computer_number')
+            ->get()
+            ->groupBy(fn (Computer $computer) => $computer->location?->value);
     }
 
     public function find(int $id): ?Computer

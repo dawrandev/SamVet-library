@@ -59,6 +59,7 @@ use App\Http\Controllers\Site\AudiobookController as SiteAudiobookController;
 use App\Http\Controllers\Site\AudioReaderController;
 use App\Http\Controllers\Site\BookController as SiteBookController;
 use App\Http\Controllers\Site\CatalogController;
+use App\Http\Controllers\Site\ComputerAvailabilityController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\JournalController as SiteJournalController;
 use App\Http\Controllers\Site\NewsController as SiteNewsController;
@@ -134,6 +135,13 @@ Route::middleware('reader.auth')->prefix('tomosha')->group(function () {
     Route::get('video/{slug}', [VideoReaderController::class, 'show'])->name('watch.video');
     Route::get('video/{slug}/{track}/fayl', [VideoReaderController::class, 'trackFile'])->name('watch.video.file');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Computer availability — signed-in readers only
+|--------------------------------------------------------------------------
+*/
+Route::middleware('reader.auth')->get('/kompyuterlar', [ComputerAvailabilityController::class, 'index'])->name('computers.index');
 
 // Language switch (for everyone — including the login page)
 Route::get('locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
