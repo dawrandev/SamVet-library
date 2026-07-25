@@ -169,7 +169,7 @@
                      data-colors="{{ json_encode($rdColors) }}" data-center="{{ __('Kishi') }}"></div>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:col-span-2">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Tillar bo‘yicha') }}</h3>

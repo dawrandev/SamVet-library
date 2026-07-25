@@ -118,21 +118,25 @@ const bar = (el) => {
     const nameFor = (mode) => (mode === 'titles' ? el.dataset.labelTitles || 'Nomi' : el.dataset.labelCopies || 'Nusxa');
     const dataFor = (mode) => (mode === 'titles' ? seriesTitles : seriesCopies);
 
-    // Fewer categories means each gets a wider slot, so a fixed percentage
-    // would balloon into an oversized block — scale it down to stay thin.
-    const columnWidth = labels.length <= 3 ? '20%' : labels.length <= 5 ? '35%' : '45%';
+    // Fewer categories means each gets a wider slot. A 1-2 category slot is
+    // wide enough that a thin bar reads as sparse, so it gets a fatter bar;
+    // 3 is the pivot where a fixed percentage would otherwise balloon.
+    const columnWidth = labels.length <= 2 ? '35%' : labels.length <= 3 ? '20%' : labels.length <= 5 ? '35%' : '45%';
 
     // A handful of bars spread across the full card width leaves a huge dead
-    // gap between them — cap the chart's own width and center it instead.
+    // gap between them — constrain the container's own CSS width (a browser-
+    // resolved percentage of its real parent, unlike ApexCharts' own `width`
+    // option which can misjudge an unmeasured parent) and center it with
+    // plain margin auto. The chart itself then renders at a reliable 100%
+    // of that already-sized box.
     const fewCategories = labels.length <= 3;
-    const chartWidth = fewCategories ? Math.max(220, labels.length * 150) : '100%';
     if (fewCategories) {
-        el.style.display = 'flex';
-        el.style.justifyContent = 'center';
+        el.style.maxWidth = `${Math.min(85, 40 + labels.length * 20)}%`;
+        el.style.margin = '0 auto';
     }
 
     const chart = new ApexCharts(el, {
-        chart: { type: 'bar', height: 300, width: chartWidth, fontFamily: FONT, toolbar: { show: false }, animations: { enabled: true } },
+        chart: { type: 'bar', height: 300, width: '100%', fontFamily: FONT, toolbar: { show: false }, animations: { enabled: true } },
         series: [{ name: nameFor('copies'), data: dataFor('copies') }],
         colors,
         plotOptions: {
