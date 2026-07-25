@@ -75,6 +75,20 @@ it('shows a book tagged with a child category under its parent category name, no
         ->assertSee(route('catalog', ['categories' => [$parent->id]]), false);
 });
 
+it('shows only top-level categories as section tiles on the Bo‘limlar page, never children', function () {
+    $parent = Category::factory()->create(['name' => 'Ko‘rinadigan ota toifa']);
+    $child = Category::factory()->create(['name' => 'Yashirin bola toifa', 'parent_id' => $parent->id]);
+    $book = Book::factory()->create();
+    $book->categories()->attach($child->id);
+
+    $res = $this->get(route('sections'));
+
+    $res->assertOk()
+        ->assertSee('Ko‘rinadigan ota toifa')
+        ->assertDontSee('Yashirin bola toifa')
+        ->assertSee(route('catalog', ['categories' => [$parent->id]]), false);
+});
+
 it('shows a journal detail page but hides library-internal fields', function () {
     $place = PublicationPlace::factory()->create(['name' => ['uz' => 'Maxfiy shahar']]);
     $journal = Journal::factory()->create([

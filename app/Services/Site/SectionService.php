@@ -4,40 +4,39 @@ namespace App\Services\Site;
 
 use App\Enums\PublicationKind;
 use App\Models\Audiobook;
-use App\Models\Book;
-use App\Models\BookType;
 use App\Models\Journal;
 use App\Models\Video;
+use App\Repositories\Contracts\CatalogRepositoryInterface;
 use Illuminate\Support\Collection;
 
 /**
- * The fund's sections (book types + periodicals) with their sizes and the page
- * each one opens. Shared by the home page and the sections page.
+ * The fund's sections (top-level categories + periodicals) with their sizes
+ * and the page each one opens. Shared by the home page and the sections page.
  */
 class SectionService
 {
+    public function __construct(
+        private readonly CatalogRepositoryInterface $catalog,
+    ) {}
+
     /**
      * @return Collection<int, array{key: string, label: string, count: int, url: string}>
      */
     public function tiles(): Collection
     {
-        // One grouped query instead of a count per type.
-        $countsByType = Book::query()
-            ->selectRaw('book_type_id, COUNT(*) as c')
-            ->groupBy('book_type_id')
-            ->pluck('c', 'book_type_id');
-
-        $locale = app()->getLocale();
-
-        $tiles = BookType::query()
-            ->orderBy('id')
-            ->get(['id', 'name'])
-            ->map(fn (BookType $type): array => [
-                'key' => 'type-'.$type->id,
-                'label' => $type->getTranslation('name', $locale, false) ?: $type->getTranslation('name', 'uz', false),
-                'count' => (int) ($countsByType[$type->id] ?? 0),
-                'url' => route('catalog', ['types' => [$type->id]]),
-            ]);
+        // Only top-level categories browse as their own section — a child
+        // (e.g. "Iqtisodiyot nazariyasi") stays reachable via the catalog's
+        // own category filter, not as a section tile of its own. The facet
+        // count already rolls each parent's children up into it.
+        $tiles = $this->catalog->categoryFacets()
+            ->filter(fn (array $facet) => $facet['parentId'] === null)
+            ->map(fn (array $facet): array => [
+                'key' => 'category-'.$facet['id'],
+                'label' => $facet['label'],
+                'count' => $facet['count'],
+                'url' => route('catalog', ['categories' => [$facet['id']]]),
+            ])
+            ->values();
 
         $periodicalCounts = Journal::query()
             ->selectRaw('kind, COUNT(*) as c')
