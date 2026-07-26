@@ -206,7 +206,7 @@
 
     {{-- ===== Latest news ===== --}}
     @if ($latestNews->isNotEmpty())
-        <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <section class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
             <div class="mb-6 flex items-end justify-between">
                 <h2 class="text-2xl font-bold text-gray-900">{{ __('So‘nggi yangiliklar') }}</h2>
                 <a href="{{ route('news.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-800">{{ __('Barcha yangiliklar') }} →</a>
@@ -236,6 +236,36 @@
                         </div>
                     </a>
                 @endforeach
+            </div>
+        </section>
+    @endif
+
+    {{-- ===== Most active readers — continuously scrolling wall of fame ===== --}}
+    @if ($activeReaders->isNotEmpty())
+        <section class="border-t border-gray-100 bg-gray-50/60 py-14">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <p class="text-xs font-semibold uppercase tracking-wider text-blue-700">{{ __('Faollik reytingi') }}</p>
+                <h2 class="mt-1 text-2xl font-bold text-gray-900">{{ __('Eng faol kitobxonlar') }}</h2>
+            </div>
+
+            <div class="marquee-pause relative mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4rem,black_calc(100%-4rem),transparent)]">
+                <div class="animate-marquee flex w-max gap-5 px-4 sm:px-6 lg:px-8">
+                    @foreach ($activeReaders->concat($activeReaders) as $reader)
+                        <div class="w-40 flex-none rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm sm:w-44" aria-hidden="{{ $loop->iteration > $activeReaders->count() ? 'true' : 'false' }}">
+                            <div class="mx-auto h-20 w-20 overflow-hidden rounded-full ring-4 ring-blue-50">
+                                @if ($reader->photo)
+                                    <img src="{{ asset('storage/' . $reader->photo) }}" alt="" class="h-full w-full object-cover" />
+                                @else
+                                    <div class="flex h-full w-full items-center justify-center bg-blue-700 text-lg font-bold text-white">{{ $reader->initials() }}</div>
+                                @endif
+                            </div>
+                            <p class="mt-3 line-clamp-1 text-sm font-semibold text-gray-900">{{ $reader->full_name }}</p>
+                            @if ($reader->affiliationLine())
+                                <p class="mt-0.5 line-clamp-2 text-xs text-gray-500">{{ $reader->affiliationLine() }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </section>
     @endif

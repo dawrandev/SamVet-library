@@ -4,6 +4,7 @@ namespace App\Services\Site;
 
 use App\Enums\CopyStatus;
 use App\Enums\PublicationKind;
+use App\Enums\ReaderStatus;
 use App\Models\Article;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -23,6 +24,7 @@ class HomeService
     private const FEATURED_LIMIT = 5;
     private const NEWS_LIMIT = 4;
     private const HERO_ANNOUNCEMENTS_LIMIT = 5;
+    private const ACTIVE_READERS_LIMIT = 20;
 
     public function __construct(
         private readonly SectionService $sections,
@@ -44,6 +46,7 @@ class HomeService
             'newArrivals' => $this->newArrivals(),
             'heroAnnouncements' => $announcements,
             'latestNews' => $announcements->take(self::NEWS_LIMIT),
+            'activeReaders' => $this->activeReaders(),
         ];
     }
 
@@ -108,6 +111,27 @@ class HomeService
             ->where('published_at', '<=', now())
             ->latest('published_at')
             ->limit(self::HERO_ANNOUNCEMENTS_LIMIT)
+            ->get();
+    }
+
+    /**
+     * Most active readers — activity is the sum of physical loans, online book
+     * reads, computer sessions and event participations. Readers with no
+     * activity at all are excluded, not padded in as filler.
+     *
+     * @return Collection<int, Reader>
+     */
+    private function activeReaders(): Collection
+    {
+        $activityExpr = '(loans_count + book_readings_count + computer_sessions_count + event_participations_count)';
+
+        return Reader::query()
+            ->where('status', ReaderStatus::Active->value)
+            ->with(['type', 'affiliationUnit', 'affiliationGroup'])
+            ->withCount(['loans', 'bookReadings', 'computerSessions', 'eventParticipations'])
+            ->havingRaw("{$activityExpr} > 0")
+            ->orderByRaw("{$activityExpr} desc")
+            ->limit(self::ACTIVE_READERS_LIMIT)
             ->get();
     }
 }

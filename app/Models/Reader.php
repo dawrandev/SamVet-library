@@ -114,6 +114,31 @@ class Reader extends Model implements Authenticatable
         return $this->hasMany(Loan::class)->where('status', LoanStatus::OnLoan->value);
     }
 
+    /**
+     * Group + specialty for a student, or job position for staff — the line
+     * shown under a reader's name on the public "most active readers" wall.
+     */
+    public function affiliationLine(): ?string
+    {
+        if ($this->type?->is_student) {
+            return collect([$this->affiliationGroup?->name, $this->affiliationUnit?->name])
+                ->filter()
+                ->implode(' · ') ?: null;
+        }
+
+        return $this->affiliationGroup?->name;
+    }
+
+    /** Two-letter initials — the fallback avatar when no photo is set. */
+    public function initials(): string
+    {
+        return collect(explode(' ', trim($this->full_name)))
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->implode('');
+    }
+
     public function isBlocked(): bool
     {
         return $this->status === ReaderStatus::Blocked

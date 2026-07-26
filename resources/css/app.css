@@ -50,6 +50,25 @@ html.a11y-contrast {
     animation: indeterminate-bar 1.1s ease-in-out infinite;
 }
 
+/* Homepage "most active readers" wall: continuous horizontal scroll.
+   The track's content is duplicated once in the Blade template, so -50%
+   is exactly one full set and the loop is seamless. */
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.animate-marquee {
+    animation: marquee 40s linear infinite;
+}
+.marquee-pause:hover .animate-marquee {
+    animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+        animation: none;
+    }
+}
+
 /* TinyMCE fullscreen: default z-index (1200) stays below the admin header (z-99999) and
    the toolbar gets hidden. Bring fullscreen and its menus/dialogs to the very top. */
 .tox.tox-tinymce.tox-fullscreen {
