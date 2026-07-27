@@ -13,10 +13,17 @@ class Category extends Model
 {
     use HasFactory, HasTranslations;
 
-    protected $fillable = ['name', 'parent_id'];
+    protected $fillable = ['name', 'parent_id', 'sort_order'];
 
     /** @var array<int, string> */
     public array $translatable = ['name'];
+
+    protected function casts(): array
+    {
+        return [
+            'sort_order' => 'integer',
+        ];
+    }
 
     public function parent(): BelongsTo
     {

@@ -72,7 +72,10 @@ class CatalogRepository implements CatalogRepositoryInterface
         // too (so picking a broad parent still surfaces everything under
         // it); a child's count is just its own directly-tagged books.
         // `parentId` lets the sidebar indent children under their parent.
-        $parents = Category::query()->whereNull('parent_id')->with('children:id,parent_id,name')->orderBy('id')->get();
+        $parents = Category::query()->whereNull('parent_id')
+            ->with(['children' => fn ($q) => $q->select(['id', 'parent_id', 'name'])->orderBy('sort_order')->orderBy('id')])
+            ->orderBy('sort_order')->orderBy('id')
+            ->get();
 
         $facets = collect();
 

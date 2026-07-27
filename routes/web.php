@@ -318,6 +318,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Lookups management (CRUD)
     Route::prefix('lookups')->name('lookups.')->group(function () {
+        Route::patch('categories/{category}/move-up', [CategoryController::class, 'moveUp'])->name('categories.move-up');
+        Route::patch('categories/{category}/move-down', [CategoryController::class, 'moveDown'])->name('categories.move-down');
         Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('book-types', BookTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['book-types' => 'bookType']);
         Route::resource('journal-types', JournalTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['journal-types' => 'journalType']);

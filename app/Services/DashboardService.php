@@ -352,7 +352,7 @@ class DashboardService
      */
     private function literatureByCategory(): array
     {
-        $topCategories = Category::query()->whereNull('parent_id')->orderBy('id')->get(['id', 'name']);
+        $topCategories = Category::query()->whereNull('parent_id')->orderBy('sort_order')->orderBy('id')->get(['id', 'name']);
         $childrenByParent = Category::query()->whereNotNull('parent_id')->get(['id', 'parent_id'])->groupBy('parent_id');
 
         $descendantIds = function (int $id) use (&$descendantIds, $childrenByParent): array {

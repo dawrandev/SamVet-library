@@ -53,4 +53,22 @@ class CategoryController extends Controller
             ->route('admin.lookups.categories.index')
             ->with('success', __('Kategoriya o‘chirildi.'));
     }
+
+    /**
+     * Reorder among siblings (same parent) — drives the public site's tile
+     * order for top-level categories.
+     */
+    public function moveUp(Category $category): RedirectResponse
+    {
+        $this->service->moveUp($category);
+
+        return redirect()->route('admin.lookups.categories.index');
+    }
+
+    public function moveDown(Category $category): RedirectResponse
+    {
+        $this->service->moveDown($category);
+
+        return redirect()->route('admin.lookups.categories.index');
+    }
 }

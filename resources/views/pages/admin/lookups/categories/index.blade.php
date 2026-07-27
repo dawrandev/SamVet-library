@@ -4,8 +4,19 @@
 
 @section('content')
     @php
-        $rows = $categories->map(function ($c) {
+        // Position within its own sibling group (same parent_id) — already
+        // ordered by sort_order — to know when to disable/hide up/down.
+        $siblingIndex = [];
+        foreach ($categories->groupBy('parent_id') as $group) {
+            foreach ($group->values() as $i => $c) {
+                $siblingIndex[$c->id] = ['index' => $i, 'count' => $group->count()];
+            }
+        }
+
+        $rows = $categories->map(function ($c) use ($siblingIndex) {
             $tr = $c->getTranslations('name');
+            $pos = $siblingIndex[$c->id];
+
             return [
                 'id' => $c->id,
                 'uz' => $tr['uz'] ?? '',
@@ -16,6 +27,8 @@
                 'incomplete' => empty($tr['ru']) || empty($tr['kk']),
                 'update_url' => route('admin.lookups.categories.update', $c),
                 'destroy_url' => route('admin.lookups.categories.destroy', $c),
+                'move_up_url' => $pos['index'] > 0 ? route('admin.lookups.categories.move-up', $c) : null,
+                'move_down_url' => $pos['index'] < $pos['count'] - 1 ? route('admin.lookups.categories.move-down', $c) : null,
             ];
         })->values();
     @endphp
@@ -38,7 +51,7 @@
 
         <x-admin.lookups.table :translatable="true" :has-parent="true">
             @forelse ($rows as $row)
-                <x-admin.lookups.translatable-row :row="$row" :has-parent="true" />
+                <x-admin.lookups.translatable-row :row="$row" :has-parent="true" :sortable="true" />
             @empty
                 <x-admin.lookups.empty :colspan="4" :message="__('Kategoriyalar topilmadi.')" />
             @endforelse
