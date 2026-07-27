@@ -188,6 +188,7 @@ it('creates a library-external article with a free-text journal name (no journal
 
     $this->post(route('admin.articles.store'), [
         'external_journal_name' => 'Journal of Veterinary Science',
+        'external_journal_issue' => '2025, №3',
         'external_journal_year' => 2025,
         'title' => 'Xalqaro maqola',
         'author' => 'Prof. A. Aliyev',
@@ -198,6 +199,7 @@ it('creates a library-external article with a free-text journal name (no journal
     expect($article)->not->toBeNull()
         ->and($article->journal_issue_id)->toBeNull()
         ->and($article->external_journal_name)->toBe('Journal of Veterinary Science')
+        ->and($article->external_journal_issue)->toBe('2025, №3')
         ->and($article->external_journal_year)->toBe(2025)
         ->and($article->isExternal())->toBeTrue();
 });
@@ -222,15 +224,17 @@ it('lists an external article under Maqolalar, never under Gazeta maqolalari', f
         ->assertDontSee('Xalqaro maqola');
 });
 
-it('shows the external journal name/year on the article show page instead of an empty panel', function () {
+it('shows the external journal name/issue/year on the article show page instead of an empty panel', function () {
     $article = Article::factory()->external()->create([
         'external_journal_name' => 'Journal of Veterinary Science',
+        'external_journal_issue' => '2025, №3',
         'external_journal_year' => 2025,
     ]);
 
     $this->get(route('admin.articles.show', $article))
         ->assertSee('Tashqi jurnal haqida ma’lumot')
         ->assertSee('Journal of Veterinary Science')
+        ->assertSee('2025, №3')
         ->assertSee('2025')
         ->assertDontSee('Ma’lumot yo‘q');
 });
@@ -241,6 +245,18 @@ it('renders the public article page for an external article without crashing', f
     $this->get(route('article.show', $article->slug))
         ->assertOk()
         ->assertSee('Xalqaro ochiq maqola');
+});
+
+it('shows the external journal issue on the public article page', function () {
+    $article = Article::factory()->external()->create([
+        'title' => 'Xalqaro maqola soni bilan',
+        'external_journal_issue' => '2025, №3',
+    ]);
+
+    $this->get(route('article.show', $article->slug))
+        ->assertOk()
+        ->assertSee(__('Jurnal soni'))
+        ->assertSee('2025, №3');
 });
 
 it('restricts the journal-picker search to newspapers when creating via ?kind=newspaper', function () {

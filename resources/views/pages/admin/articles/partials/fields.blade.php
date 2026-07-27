@@ -83,8 +83,12 @@
             <div x-show="external" x-cloak class="space-y-5">
                 <x-admin.form.input name="external_journal_name" :label="__('Jurnal nomi')" :value="$article?->external_journal_name"
                     :placeholder="__('masalan: Journal of Veterinary Science')" />
-                <x-admin.form.input name="external_journal_year" type="number" :label="__('Nashr yili')" :value="$article?->external_journal_year"
-                    :placeholder="date('Y')" />
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <x-admin.form.input name="external_journal_issue" :label="__('Soni')" :value="$article?->external_journal_issue"
+                        :placeholder="__('masalan: 2024, №3')" />
+                    <x-admin.form.input name="external_journal_year" type="number" :label="__('Nashr yili')" :value="$article?->external_journal_year"
+                        :placeholder="date('Y')" />
+                </div>
                 @error('external_journal_name')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
             </div>
         </div>

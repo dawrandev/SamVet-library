@@ -24,12 +24,12 @@
         $inherited = $article->isExternal()
             ? array_filter([
                 __('Jurnal nomi') => $article->external_journal_name,
+                __('Soni') => $article->external_journal_issue,
                 __('Nashr yili') => $article->external_journal_year,
             ], fn ($v) => filled($v))
             : array_filter([
                 ($isNewspaper ? __('Gazeta nomi') : __('Jurnal nomi')) => $journal?->name,
                 ($isNewspaper ? __('Gazeta turi') : __('Jurnal turi')) => $journal?->type?->name,
-                __('Nashriyoti') => $journal?->publisher,
                 __('Nashr joyi') => $journal?->publicationPlace?->name,
                 __('Yili') => $article->journalIssue?->year,
                 ($isNewspaper ? __('Gazeta soni') : __('Soni')) => $article->journalIssue?->issue_number,

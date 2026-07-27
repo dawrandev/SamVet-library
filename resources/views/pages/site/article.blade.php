@@ -7,7 +7,7 @@
     $issue = $article->journalIssue;
     $journal = $issue?->journal;
     $isNewspaper = $journal?->kind === \App\Enums\PublicationKind::Newspaper;
-    $issueLabel = $issue ? $issue->year.', №'.$issue->issue_number : null;
+    $issueLabel = $issue ? $issue->year.', №'.$issue->issue_number : $article->external_journal_issue;
 
     // DOI only applies to journal articles — a gazeta article never has one.
     $rows = array_filter([
