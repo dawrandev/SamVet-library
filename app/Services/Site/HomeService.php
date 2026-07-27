@@ -26,6 +26,9 @@ class HomeService
     private const HERO_ANNOUNCEMENTS_LIMIT = 5;
     private const ACTIVE_READERS_LIMIT = 20;
 
+    /** The hero slider is announcements-only — must match NewsCategorySeeder's uz name exactly. */
+    private const HERO_CATEGORY_NAME = 'E‘lonlar';
+
     public function __construct(
         private readonly SectionService $sections,
     ) {}
@@ -35,17 +38,13 @@ class HomeService
      */
     public function homeData(): array
     {
-        // Fetched once at the wider limit — the hero slider uses the full set,
-        // the "latest news" section below reuses the first NEWS_LIMIT of it.
-        $announcements = $this->latestNews();
-
         return [
             'stats' => $this->stats(),
             'collectionTiles' => $this->sections->tiles(),
             'mostRead' => $this->mostRead(),
             'newArrivals' => $this->newArrivals(),
-            'heroAnnouncements' => $announcements,
-            'latestNews' => $announcements->take(self::NEWS_LIMIT),
+            'heroAnnouncements' => $this->heroAnnouncements(),
+            'latestNews' => $this->latestNews()->take(self::NEWS_LIMIT),
             'activeReaders' => $this->activeReaders(),
         ];
     }
@@ -98,8 +97,7 @@ class HomeService
     }
 
     /**
-     * Latest published news/announcements, at the wider of the two limits
-     * this page needs (see homeData()).
+     * Latest published news, across all categories.
      *
      * @return Collection<int, News>
      */
@@ -107,6 +105,24 @@ class HomeService
     {
         return News::query()
             ->with('category')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->latest('published_at')
+            ->limit(self::HERO_ANNOUNCEMENTS_LIMIT)
+            ->get();
+    }
+
+    /**
+     * Latest published "E'lonlar" (announcements) only — the hero slider is
+     * announcements-specific, unlike the full "latest news" section below it.
+     *
+     * @return Collection<int, News>
+     */
+    private function heroAnnouncements(): Collection
+    {
+        return News::query()
+            ->with('category')
+            ->whereHas('category', fn (Builder $q) => $q->where('name->uz', self::HERO_CATEGORY_NAME))
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->latest('published_at')

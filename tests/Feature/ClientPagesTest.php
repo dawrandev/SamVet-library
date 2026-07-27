@@ -120,6 +120,31 @@ it('shows the selected issue’s cover image, both as the page hero and its own 
         ->assertSee('storage/journal-covers/sinov.jpg', false);
 });
 
+it('shows the issue date and physical copy count on the journal client page', function () {
+    $journal = Journal::factory()->create(['name' => 'Sanali jurnal']);
+    $issue = JournalIssue::factory()->for($journal)->create(['issue_date' => '2026-03-15']);
+    \App\Models\JournalCopy::factory()->count(3)->for($issue, 'issue')->create();
+
+    $this->get(route('journal.show', $journal->slug, ['son' => $issue->id]))
+        ->assertOk()
+        ->assertSee('15.03.2026')
+        ->assertSee('3 nusxa');
+});
+
+it('never shows a journal issue’s inventory number, condition or arrival date on the client page', function () {
+    $journal = Journal::factory()->create(['name' => 'Ichki maydonli jurnal']);
+    $issue = JournalIssue::factory()->for($journal)->create();
+    \App\Models\JournalCopy::factory()->for($issue, 'issue')->create([
+        'inventory_number' => 'JINV-SECRET-1',
+        'arrival_date' => '2020-01-01',
+    ]);
+
+    $this->get(route('journal.show', $journal->slug, ['son' => $issue->id]))
+        ->assertOk()
+        ->assertDontSee('JINV-SECRET-1')
+        ->assertDontSee('01.01.2020');
+});
+
 it('falls back to the placeholder when an issue has no cover image', function () {
     $journal = Journal::factory()->create(['name' => 'Muqovasiz jurnal']);
     JournalIssue::factory()->for($journal)->create(['cover_image' => null]);

@@ -30,7 +30,7 @@ class PeriodicalRepository implements PeriodicalRepositoryInterface
                 'type',
                 'language',
                 'publicationPlace',
-                'issues' => fn ($q) => $q->withCount('articles'),
+                'issues' => fn ($q) => $q->withCount(['articles', 'copies']),
             ])
             ->where('slug', $slug)
             ->first();

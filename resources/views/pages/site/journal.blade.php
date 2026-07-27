@@ -119,7 +119,15 @@
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-bold text-gray-900">{{ $issue->year }} · №{{ $issue->issue_number }}</p>
-                                <p class="mt-0.5 text-xs text-gray-500">{{ __(':n bet', ['n' => $issue->pages]) }}</p>
+                                @if ($issue->issue_date)
+                                    <p class="mt-0.5 text-xs text-gray-400">{{ $issue->issue_date->format('d.m.Y') }}</p>
+                                @endif
+                                <p class="mt-0.5 text-xs text-gray-500">
+                                    {{ __(':n bet', ['n' => $issue->pages]) }}
+                                    @if ($issue->copies_count)
+                                        · {{ __(':n nusxa', ['n' => $issue->copies_count]) }}
+                                    @endif
+                                </p>
                                 <p class="mt-0.5 text-xs font-medium text-blue-700">{{ __(':n maqola', ['n' => $issue->articles_count]) }}</p>
                             </div>
                             @if ($isActive)
