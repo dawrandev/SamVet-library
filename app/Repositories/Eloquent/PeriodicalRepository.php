@@ -36,6 +36,11 @@ class PeriodicalRepository implements PeriodicalRepositoryInterface
             ->first();
     }
 
+    public function findIssueById(int $id): ?JournalIssue
+    {
+        return JournalIssue::query()->with('journal')->find($id);
+    }
+
     public function issueArticles(JournalIssue $issue): Collection
     {
         return Article::query()

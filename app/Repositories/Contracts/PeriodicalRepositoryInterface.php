@@ -20,6 +20,9 @@ interface PeriodicalRepositoryInterface
     /** A single public journal (by slug) with issues (article counts) eager-loaded. */
     public function findJournalBySlug(string $slug): ?Journal;
 
+    /** A single issue, for the protected online-reading flow. */
+    public function findIssueById(int $id): ?JournalIssue;
+
     /**
      * Articles of one issue, ordered by starting page.
      *

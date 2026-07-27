@@ -104,38 +104,46 @@
                 <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($issues as $issue)
                         @php $isActive = $selected && $issue->id === $selected->id; @endphp
-                        <a href="{{ route('journal.show', $journal->slug) }}?son={{ $issue->id }}#maqolalar"
-                           @class([
-                               'flex items-center gap-4 rounded-2xl border bg-white p-4 transition hover:shadow-md',
-                               'border-blue-500 ring-1 ring-blue-500' => $isActive,
-                               'border-gray-200' => ! $isActive,
-                           ])>
-                            <div class="relative h-16 w-14 flex-none overflow-hidden rounded-md border-t-2 border-blue-500 bg-blue-50">
-                                @if ($issue->cover_image)
-                                    <img src="{{ asset('storage/' . $issue->cover_image) }}" alt="" class="h-full w-full object-cover" />
-                                @else
-                                    <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 8px, #dbeafe 8px 16px);"></div>
-                                @endif
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-bold text-gray-900">{{ $issue->year }} · №{{ $issue->issue_number }}</p>
-                                @if ($issue->issue_date)
-                                    <p class="mt-0.5 text-xs text-gray-400">{{ $issue->issue_date->format('d.m.Y') }}</p>
-                                @endif
-                                <p class="mt-0.5 text-xs text-gray-500">
-                                    {{ __(':n bet', ['n' => $issue->pages]) }}
-                                    @if ($issue->copies_count)
-                                        · {{ __(':n nusxa', ['n' => $issue->copies_count]) }}
+                        <div @class([
+                                 'flex items-center gap-4 rounded-2xl border bg-white p-4 transition hover:shadow-md',
+                                 'border-blue-500 ring-1 ring-blue-500' => $isActive,
+                                 'border-gray-200' => ! $isActive,
+                             ])>
+                            <a href="{{ route('journal.show', $journal->slug) }}?son={{ $issue->id }}#maqolalar" class="flex min-w-0 flex-1 items-center gap-4">
+                                <div class="relative h-16 w-14 flex-none overflow-hidden rounded-md border-t-2 border-blue-500 bg-blue-50">
+                                    @if ($issue->cover_image)
+                                        <img src="{{ asset('storage/' . $issue->cover_image) }}" alt="" class="h-full w-full object-cover" />
+                                    @else
+                                        <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 8px, #dbeafe 8px 16px);"></div>
                                     @endif
-                                </p>
-                                <p class="mt-0.5 text-xs font-medium text-blue-700">{{ __(':n maqola', ['n' => $issue->articles_count]) }}</p>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-bold text-gray-900">{{ $issue->year }} · №{{ $issue->issue_number }}</p>
+                                    @if ($issue->issue_date)
+                                        <p class="mt-0.5 text-xs text-gray-400">{{ $issue->issue_date->format('d.m.Y') }}</p>
+                                    @endif
+                                    <p class="mt-0.5 text-xs text-gray-500">
+                                        {{ __(':n bet', ['n' => $issue->pages]) }}
+                                        @if ($issue->copies_count)
+                                            · {{ __(':n nusxa', ['n' => $issue->copies_count]) }}
+                                        @endif
+                                    </p>
+                                    <p class="mt-0.5 text-xs font-medium text-blue-700">{{ __(':n maqola', ['n' => $issue->articles_count]) }}</p>
+                                </div>
+                            </a>
+                            <div class="flex flex-none flex-col items-end gap-2">
+                                @if ($isActive)
+                                    <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+                                    </span>
+                                @endif
+                                @if ($issue->electronic_file)
+                                    <a href="{{ route('read.journal-issue', $issue->id) }}" class="whitespace-nowrap rounded-lg border border-blue-200 px-2.5 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-50">
+                                        {{ __('Sonni o‘qish') }}
+                                    </a>
+                                @endif
                             </div>
-                            @if ($isActive)
-                                <span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-blue-600 text-white">
-                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
-                                </span>
-                            @endif
-                        </a>
+                        </div>
                     @endforeach
                 </div>
             </section>

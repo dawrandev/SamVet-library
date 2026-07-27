@@ -93,6 +93,23 @@ class OnlineReaderController extends Controller
         return $this->stream($this->reader->avtoreferat($slug)->electronic_file);
     }
 
+    public function journalIssue(int $id): View
+    {
+        $issue = $this->reader->journalIssue($id);
+
+        return view('pages.site.reader', [
+            'title' => $issue->journal->name,
+            'subtitle' => __(':y yil, №:n', ['y' => $issue->year, 'n' => $issue->issue_number]),
+            'backUrl' => route('journal.show', $issue->journal->slug, ['son' => $issue->id]),
+            'fileUrl' => route('read.journal-issue.file', $issue->id),
+        ]);
+    }
+
+    public function journalIssueFile(int $id): StreamedResponse
+    {
+        return $this->stream($this->reader->journalIssue($id)->electronic_file);
+    }
+
     /**
      * Stream a private PDF for in-browser rendering. `inline` plus a private,
      * no-store cache keeps it out of the browser's download flow and disk cache.

@@ -125,6 +125,8 @@ Route::middleware('reader.auth')->prefix('oqish')->group(function () {
     Route::get('dissertatsiya/{slug}/fayl', [OnlineReaderController::class, 'dissertationFile'])->name('read.dissertation.file');
     Route::get('avtoreferat/{slug}', [OnlineReaderController::class, 'avtoreferat'])->name('read.avtoreferat');
     Route::get('avtoreferat/{slug}/fayl', [OnlineReaderController::class, 'avtoreferatFile'])->name('read.avtoreferat.file');
+    Route::get('son/{id}', [OnlineReaderController::class, 'journalIssue'])->whereNumber('id')->name('read.journal-issue');
+    Route::get('son/{id}/fayl', [OnlineReaderController::class, 'journalIssueFile'])->whereNumber('id')->name('read.journal-issue.file');
 });
 
 /*

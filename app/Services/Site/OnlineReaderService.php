@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Avtoreferat;
 use App\Models\Book;
 use App\Models\Dissertation;
+use App\Models\JournalIssue;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
@@ -71,5 +72,22 @@ class OnlineReaderService
         }
 
         return $avtoreferat;
+    }
+
+    /**
+     * The whole-issue PDF (separate from each article's own file) — identified
+     * by id, not slug: an issue has no slug of its own.
+     *
+     * @throws NotFoundHttpException
+     */
+    public function journalIssue(int $id): JournalIssue
+    {
+        $issue = $this->periodicals->findIssueById($id);
+
+        if ($issue === null || blank($issue->electronic_file)) {
+            throw new NotFoundHttpException();
+        }
+
+        return $issue;
     }
 }
