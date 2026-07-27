@@ -72,6 +72,37 @@ function uploadEditorImage(blobInfo) {
 }
 
 /**
+ * Uploads one file attached via the editor's "Fayl biriktirish" button and
+ * resolves with { url, name } — a downloadable attachment, distinct from
+ * inline images (uploadEditorImage above).
+ */
+function uploadEditorFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return fetch('/admin/editor/files', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData,
+    })
+        .then((response) => {
+            if (! response.ok) {
+                throw new Error(`Serverda xatolik (${response.status}).`);
+            }
+            return response.json();
+        })
+        .then((json) => {
+            if (! json.url) {
+                throw new Error('Server javobida fayl manzili topilmadi.');
+            }
+            return json;
+        });
+}
+
+/**
  * Binds TinyMCE to a single textarea (or DOM element).
  * Content is written back to the textarea on every change (for form submit).
  */
@@ -88,7 +119,7 @@ export function initTinyEditor(el) {
         content_css: false,   // content CSS provided via content_style
         content_style: CONTENT_STYLE,
         plugins: 'advlist autolink lists link image table media charmap anchor searchreplace visualblocks insertdatetime wordcount emoticons fullscreen preview nonbreaking help code',
-        toolbar: 'undo redo | blocks fontsizeinput | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | blockquote hr charmap emoticons | removeformat | searchreplace visualblocks | code preview fullscreen | help',
+        toolbar: 'undo redo | blocks fontsizeinput | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table attachfile | blockquote hr charmap emoticons | removeformat | searchreplace visualblocks | code preview fullscreen | help',
         toolbar_mode: 'wrap',
         menubar: 'edit insert view format table tools',
         branding: false,
@@ -104,6 +135,35 @@ export function initTinyEditor(el) {
         setup(editor) {
             // Sync to textarea on every change (so HTML is sent on form submit)
             editor.on('change input undo redo keyup SetContent', () => editor.save());
+
+            // Custom toolbar button: attach a downloadable file (PDF/DOC/XLS/...),
+            // inserted as a link — TinyMCE's bundled plugins have no file-attachment
+            // button of their own (image/media only handle images and embeds).
+            editor.ui.registry.addButton('attachfile', {
+                icon: 'add-file',
+                tooltip: 'Fayl biriktirish',
+                onAction: () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar';
+                    input.onchange = () => {
+                        const file = input.files[0];
+                        if (! file) return;
+
+                        uploadEditorFile(file)
+                            .then(({ url, name }) => {
+                                editor.insertContent(`<a href="${url}" target="_blank" rel="noopener">${name}</a>`);
+                            })
+                            .catch((error) => {
+                                editor.notificationManager.open({
+                                    text: error instanceof Error ? error.message : 'Faylni yuklashda xatolik yuz berdi.',
+                                    type: 'error',
+                                });
+                            });
+                    };
+                    input.click();
+                },
+            });
         },
     });
 }

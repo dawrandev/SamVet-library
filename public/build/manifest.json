@@ -8,7 +8,7 @@
     "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dpn0R6ZF.css",
+    "file": "assets/app-DVtsRyTM.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/js/admin/editor.js": {
-    "file": "assets/editor-DoOclJKx.js",
+    "file": "assets/editor-DMDk1Iyr.js",
     "name": "editor",
     "src": "resources/js/admin/editor.js",
     "isDynamicEntry": true,
@@ -28,7 +28,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DRQixIc1.js",
+    "file": "assets/app-CSaYQuAy.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

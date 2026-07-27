@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DissertationController;
 use App\Http\Controllers\Admin\DistrictLookupController;
+use App\Http\Controllers\Admin\EditorFileController;
 use App\Http\Controllers\Admin\EditorImageController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
@@ -311,6 +312,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Inline image upload for the TinyMCE rich-text editor (news/page body)
     Route::post('editor/images', [EditorImageController::class, 'store'])->name('editor-images.store');
+
+    // File attachment upload for the TinyMCE rich-text editor (news/page body)
+    Route::post('editor/files', [EditorFileController::class, 'store'])->name('editor-files.store');
 
     // Lookups management (CRUD)
     Route::prefix('lookups')->name('lookups.')->group(function () {
