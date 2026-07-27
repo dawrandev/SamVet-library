@@ -6,6 +6,7 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Category;
 use App\Models\Journal;
+use App\Models\JournalIssue;
 use App\Models\News;
 use App\Models\PublicationPlace;
 use App\Models\Video;
@@ -108,6 +109,24 @@ it('shows a journal detail page but hides library-internal fields', function () 
     $res->assertDontSee('IDX-SECRET')
         ->assertDontSee('Maxfiy muassis')
         ->assertDontSee('Maxfiy shahar');
+});
+
+it('shows the selected issue’s cover image, both as the page hero and its own thumbnail', function () {
+    $journal = Journal::factory()->create(['name' => 'Muqovali jurnal']);
+    $issue = JournalIssue::factory()->for($journal)->create(['cover_image' => 'journal-covers/sinov.jpg']);
+
+    $this->get(route('journal.show', $journal->slug, ['son' => $issue->id]))
+        ->assertOk()
+        ->assertSee('storage/journal-covers/sinov.jpg', false);
+});
+
+it('falls back to the placeholder when an issue has no cover image', function () {
+    $journal = Journal::factory()->create(['name' => 'Muqovasiz jurnal']);
+    JournalIssue::factory()->for($journal)->create(['cover_image' => null]);
+
+    $this->get(route('journal.show', $journal->slug))
+        ->assertOk()
+        ->assertSee(__('muqova'));
 });
 
 it('shows a newspaper detail page with its fixed newspaper_type label', function () {

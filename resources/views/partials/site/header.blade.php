@@ -18,13 +18,21 @@
 
         {{-- Desktop nav --}}
         <nav class="hidden items-center gap-1 lg:flex">
-            {{-- Fixed anchors: the core app is always reachable. --}}
+            {{-- Fixed anchor: the core app is always reachable. --}}
             <a href="{{ route('home') }}"
                @class([
                    'rounded-lg px-3.5 py-2 text-sm font-medium transition',
                    'text-blue-700' => request()->routeIs('home'),
                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('home'),
                ])>{{ __('Bosh sahifa') }}</a>
+
+            {{-- Admin-built menu tree (recursive: dropdowns + nested flyouts). --}}
+            @foreach ($navMenu as $item)
+                <x-site.nav-item :item="$item" />
+            @endforeach
+
+            {{-- Fixed anchors whose position can't be managed from the admin menu
+                 builder — kept last, after everything the admin controls. --}}
             <a href="{{ route('catalog') }}"
                @class([
                    'rounded-lg px-3.5 py-2 text-sm font-medium transition',
@@ -39,11 +47,6 @@
                        'text-gray-600 hover:bg-gray-50 hover:text-gray-900' => ! request()->routeIs('computers.index'),
                    ])>{{ __('Kompyuterlar') }}</a>
             @endauth
-
-            {{-- Admin-built menu tree (recursive: dropdowns + nested flyouts). --}}
-            @foreach ($navMenu as $item)
-                <x-site.nav-item :item="$item" />
-            @endforeach
         </nav>
 
         <div class="flex items-center gap-2">
@@ -90,6 +93,14 @@
                    'bg-blue-50 text-blue-700' => request()->routeIs('home'),
                    'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('home'),
                ])>{{ __('Bosh sahifa') }}</a>
+
+            {{-- Admin-built menu tree as nested accordions. --}}
+            @foreach ($navMenu as $item)
+                <x-site.nav-item-mobile :item="$item" />
+            @endforeach
+
+            {{-- Fixed anchors whose position can't be managed from the admin menu
+                 builder — kept last, after everything the admin controls. --}}
             <a href="{{ route('catalog') }}"
                @class([
                    'rounded-lg px-3 py-2.5 text-sm font-medium',
@@ -104,11 +115,6 @@
                        'text-gray-700 hover:bg-gray-50' => ! request()->routeIs('computers.index'),
                    ])>{{ __('Kompyuterlar') }}</a>
             @endauth
-
-            {{-- Admin-built menu tree as nested accordions. --}}
-            @foreach ($navMenu as $item)
-                <x-site.nav-item-mobile :item="$item" />
-            @endforeach
 
             @auth('reader')
                 <div class="mt-2 border-t border-gray-100 pt-2">

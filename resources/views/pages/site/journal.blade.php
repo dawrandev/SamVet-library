@@ -38,12 +38,18 @@
             {{-- Left: cover + summary --}}
             <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
                 <div class="relative flex h-80 items-end justify-center overflow-hidden rounded-2xl border-t-2 border-blue-600 bg-blue-50">
-                    <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 12px, #dbeafe 12px 24px);"></div>
+                    @if ($selected?->cover_image)
+                        <img src="{{ asset('storage/' . $selected->cover_image) }}" alt="" class="absolute inset-0 h-full w-full object-cover" />
+                    @else
+                        <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 12px, #dbeafe 12px 24px);"></div>
+                    @endif
                     <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/90 px-2.5 py-1 text-xs font-semibold text-blue-700">
                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292" /></svg>
                         {{ $kind->label() }}
                     </span>
-                    <span class="relative mb-3 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
+                    @unless ($selected?->cover_image)
+                        <span class="relative mb-3 text-[10px] uppercase tracking-wide text-blue-300">{{ __('muqova') }}</span>
+                    @endunless
                 </div>
 
                 <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center text-sm font-medium {{ $issues->isNotEmpty() ? 'text-green-700' : 'text-gray-500' }}">
@@ -105,7 +111,11 @@
                                'border-gray-200' => ! $isActive,
                            ])>
                             <div class="relative h-16 w-14 flex-none overflow-hidden rounded-md border-t-2 border-blue-500 bg-blue-50">
-                                <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 8px, #dbeafe 8px 16px);"></div>
+                                @if ($issue->cover_image)
+                                    <img src="{{ asset('storage/' . $issue->cover_image) }}" alt="" class="h-full w-full object-cover" />
+                                @else
+                                    <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 8px, #dbeafe 8px 16px);"></div>
+                                @endif
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-bold text-gray-900">{{ $issue->year }} · №{{ $issue->issue_number }}</p>

@@ -69,6 +69,21 @@ it('renders a childless module-type menu item as a direct link, not an empty dro
         ->assertSee(route('news.index'), false);
 });
 
+it('places the fixed Elektron katalog anchor after the admin-built menu items, not before them', function () {
+    // Position in the navbar isn't admin-editable for this anchor — it must
+    // always render last, after whatever the librarian has configured.
+    MenuItem::factory()->create(['title' => ['uz' => 'ARM haqida'], 'sort_order' => 1]);
+
+    $body = $this->get(route('home'))->getContent();
+
+    $armPos = strpos($body, 'ARM haqida');
+    $catalogPos = strpos($body, 'Elektron katalog');
+
+    expect($armPos)->not->toBeFalse()
+        ->and($catalogPos)->not->toBeFalse()
+        ->and($armPos)->toBeLessThan($catalogPos);
+});
+
 it('follows the Yangilik navbar link to the real news catalog, not an empty content-page placeholder', function () {
     MenuItem::factory()->create([
         'title' => ['uz' => 'Yangilik'],
