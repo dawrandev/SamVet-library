@@ -23,4 +23,9 @@ class DissertationFactory extends Factory
             // slug is set by the observer
         ];
     }
+
+    public function withPdf(string $path = 'dissertations/electronic/test.pdf'): static
+    {
+        return $this->state(fn () => ['electronic_file' => $path]);
+    }
 }

@@ -3,8 +3,12 @@
 namespace App\Services\Site;
 
 use App\Models\Article;
+use App\Models\Avtoreferat;
 use App\Models\Book;
+use App\Models\Dissertation;
+use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
+use App\Repositories\Contracts\DissertationRepositoryInterface;
 use App\Repositories\Contracts\PeriodicalRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -17,6 +21,8 @@ class OnlineReaderService
     public function __construct(
         private readonly CatalogRepositoryInterface $catalog,
         private readonly PeriodicalRepositoryInterface $periodicals,
+        private readonly DissertationRepositoryInterface $dissertations,
+        private readonly AvtoreferatRepositoryInterface $avtoreferats,
     ) {}
 
     /** @throws NotFoundHttpException */
@@ -41,5 +47,29 @@ class OnlineReaderService
         }
 
         return $article;
+    }
+
+    /** @throws NotFoundHttpException */
+    public function dissertation(string $slug): Dissertation
+    {
+        $dissertation = $this->dissertations->findBySlug($slug);
+
+        if ($dissertation === null || blank($dissertation->electronic_file)) {
+            throw new NotFoundHttpException();
+        }
+
+        return $dissertation;
+    }
+
+    /** @throws NotFoundHttpException */
+    public function avtoreferat(string $slug): Avtoreferat
+    {
+        $avtoreferat = $this->avtoreferats->findBySlug($slug);
+
+        if ($avtoreferat === null || blank($avtoreferat->electronic_file)) {
+            throw new NotFoundHttpException();
+        }
+
+        return $avtoreferat;
     }
 }

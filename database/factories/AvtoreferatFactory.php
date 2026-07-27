@@ -37,4 +37,9 @@ class AvtoreferatFactory extends Factory
             // slug is set by the observer
         ];
     }
+
+    public function withPdf(string $path = 'avtoreferats/electronic/test.pdf'): static
+    {
+        return $this->state(fn () => ['electronic_file' => $path]);
+    }
 }

@@ -25,6 +25,13 @@ interface DissertationRepositoryInterface
     public function find(int $id): ?Dissertation;
 
     /**
+     * Public detail lookup, with the relations the public detail page needs.
+     */
+    public function findBySlug(string $slug): ?Dissertation;
+
+    public function incrementViews(Dissertation $dissertation): void;
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): Dissertation;

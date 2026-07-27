@@ -44,6 +44,19 @@ class AvtoreferatRepository implements AvtoreferatRepositoryInterface
         return Avtoreferat::with(self::RELATIONS)->find($id);
     }
 
+    public function findBySlug(string $slug): ?Avtoreferat
+    {
+        return Avtoreferat::query()
+            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole', 'languages'])
+            ->where('slug', $slug)
+            ->first();
+    }
+
+    public function incrementViews(Avtoreferat $avtoreferat): void
+    {
+        $avtoreferat->increment('views_count');
+    }
+
     public function create(array $data): Avtoreferat
     {
         return Avtoreferat::create($data);

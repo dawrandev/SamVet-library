@@ -45,6 +45,22 @@ class DissertationRepository implements DissertationRepositoryInterface
         return Dissertation::with(self::RELATIONS)->find($id);
     }
 
+    public function findBySlug(string $slug): ?Dissertation
+    {
+        return Dissertation::query()
+            ->with([
+                'scienceField', 'doctoralSpecialty', 'masterSpecialty',
+                'language', 'publicationPlace', 'contributors.contributorRole',
+            ])
+            ->where('slug', $slug)
+            ->first();
+    }
+
+    public function incrementViews(Dissertation $dissertation): void
+    {
+        $dissertation->increment('views_count');
+    }
+
     public function create(array $data): Dissertation
     {
         return Dissertation::create($data);

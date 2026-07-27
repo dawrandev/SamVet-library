@@ -25,6 +25,13 @@ interface AvtoreferatRepositoryInterface
     public function find(int $id): ?Avtoreferat;
 
     /**
+     * Public detail lookup, with the relations the public detail page needs.
+     */
+    public function findBySlug(string $slug): ?Avtoreferat;
+
+    public function incrementViews(Avtoreferat $avtoreferat): void;
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): Avtoreferat;

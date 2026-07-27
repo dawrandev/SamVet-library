@@ -58,8 +58,10 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Site\ArticleController as SiteArticleController;
 use App\Http\Controllers\Site\AudiobookController as SiteAudiobookController;
 use App\Http\Controllers\Site\AudioReaderController;
+use App\Http\Controllers\Site\AvtoreferatController as SiteAvtoreferatController;
 use App\Http\Controllers\Site\BookController as SiteBookController;
 use App\Http\Controllers\Site\CatalogController;
+use App\Http\Controllers\Site\DissertationController as SiteDissertationController;
 use App\Http\Controllers\Site\ComputerAvailabilityController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\JournalController as SiteJournalController;
@@ -91,6 +93,10 @@ Route::get('/audiokitoblar', [SiteAudiobookController::class, 'index'])->name('a
 Route::get('/audiokitob/{slug}', [SiteAudiobookController::class, 'show'])->name('audiobook.show');
 Route::get('/videolar', [SiteVideoController::class, 'index'])->name('videos.index');
 Route::get('/video/{slug}', [SiteVideoController::class, 'show'])->name('video.show');
+Route::get('/dissertatsiyalar', [SiteDissertationController::class, 'index'])->name('dissertations.index');
+Route::get('/dissertatsiya/{slug}', [SiteDissertationController::class, 'show'])->name('dissertation.show');
+Route::get('/avtoreferatlar', [SiteAvtoreferatController::class, 'index'])->name('avtoreferats.index');
+Route::get('/avtoreferat/{slug}', [SiteAvtoreferatController::class, 'show'])->name('avtoreferat.show');
 Route::get('/yangiliklar', [SiteNewsController::class, 'index'])->name('news.index');
 Route::get('/yangiliklar/{slug}', [SiteNewsController::class, 'show'])->name('news.show');
 Route::get('/sahifa/{id}', [SitePageController::class, 'show'])->whereNumber('id')->name('page.show');
@@ -115,6 +121,10 @@ Route::middleware('reader.auth')->prefix('oqish')->group(function () {
     Route::get('kitob/{slug}/fayl', [OnlineReaderController::class, 'bookFile'])->name('read.book.file');
     Route::get('maqola/{slug}', [OnlineReaderController::class, 'article'])->name('read.article');
     Route::get('maqola/{slug}/fayl', [OnlineReaderController::class, 'articleFile'])->name('read.article.file');
+    Route::get('dissertatsiya/{slug}', [OnlineReaderController::class, 'dissertation'])->name('read.dissertation');
+    Route::get('dissertatsiya/{slug}/fayl', [OnlineReaderController::class, 'dissertationFile'])->name('read.dissertation.file');
+    Route::get('avtoreferat/{slug}', [OnlineReaderController::class, 'avtoreferat'])->name('read.avtoreferat');
+    Route::get('avtoreferat/{slug}/fayl', [OnlineReaderController::class, 'avtoreferatFile'])->name('read.avtoreferat.file');
 });
 
 /*

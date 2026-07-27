@@ -59,6 +59,40 @@ class OnlineReaderController extends Controller
         return $this->stream($this->reader->article($slug)->electronic_file);
     }
 
+    public function dissertation(string $slug): View
+    {
+        $dissertation = $this->reader->dissertation($slug);
+
+        return view('pages.site.reader', [
+            'title' => $dissertation->title,
+            'subtitle' => $dissertation->author,
+            'backUrl' => route('dissertation.show', $dissertation->slug),
+            'fileUrl' => route('read.dissertation.file', $dissertation->slug),
+        ]);
+    }
+
+    public function dissertationFile(string $slug): StreamedResponse
+    {
+        return $this->stream($this->reader->dissertation($slug)->electronic_file);
+    }
+
+    public function avtoreferat(string $slug): View
+    {
+        $avtoreferat = $this->reader->avtoreferat($slug);
+
+        return view('pages.site.reader', [
+            'title' => $avtoreferat->title,
+            'subtitle' => $avtoreferat->author,
+            'backUrl' => route('avtoreferat.show', $avtoreferat->slug),
+            'fileUrl' => route('read.avtoreferat.file', $avtoreferat->slug),
+        ]);
+    }
+
+    public function avtoreferatFile(string $slug): StreamedResponse
+    {
+        return $this->stream($this->reader->avtoreferat($slug)->electronic_file);
+    }
+
     /**
      * Stream a private PDF for in-browser rendering. `inline` plus a private,
      * no-store cache keeps it out of the browser's download flow and disk cache.
