@@ -8,7 +8,7 @@ class StoreBookRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Marshrut `auth` middleware ostida. Rollar qo'shilса — BookPolicy.
+        // Marshrut `auth` middleware ostida. Rollar qo'shilsa — BookPolicy.
         return true;
     }
 
