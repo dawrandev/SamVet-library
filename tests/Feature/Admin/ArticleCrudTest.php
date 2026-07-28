@@ -189,7 +189,6 @@ it('creates a library-external article with a free-text journal name (no journal
     $this->post(route('admin.articles.store'), [
         'external_journal_name' => 'Journal of Veterinary Science',
         'external_journal_issue' => '2025, №3',
-        'external_journal_year' => 2025,
         'title' => 'Xalqaro maqola',
         'author' => 'Prof. A. Aliyev',
         'resource_field_id' => $field->id,
@@ -200,7 +199,6 @@ it('creates a library-external article with a free-text journal name (no journal
         ->and($article->journal_issue_id)->toBeNull()
         ->and($article->external_journal_name)->toBe('Journal of Veterinary Science')
         ->and($article->external_journal_issue)->toBe('2025, №3')
-        ->and($article->external_journal_year)->toBe(2025)
         ->and($article->isExternal())->toBeTrue();
 });
 
@@ -224,18 +222,16 @@ it('lists an external article under Maqolalar, never under Gazeta maqolalari', f
         ->assertDontSee('Xalqaro maqola');
 });
 
-it('shows the external journal name/issue/year on the article show page instead of an empty panel', function () {
+it('shows the external journal name/issue on the article show page instead of an empty panel', function () {
     $article = Article::factory()->external()->create([
         'external_journal_name' => 'Journal of Veterinary Science',
         'external_journal_issue' => '2025, №3',
-        'external_journal_year' => 2025,
     ]);
 
     $this->get(route('admin.articles.show', $article))
         ->assertSee('Tashqi jurnal haqida ma’lumot')
         ->assertSee('Journal of Veterinary Science')
         ->assertSee('2025, №3')
-        ->assertSee('2025')
         ->assertDontSee('Ma’lumot yo‘q');
 });
 

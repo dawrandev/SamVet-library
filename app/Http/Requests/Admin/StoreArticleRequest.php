@@ -19,15 +19,12 @@ class StoreArticleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $maxYear = (int) date('Y') + 1;
-
         return [
             // Either a library-held journal issue, or a free-text external
             // journal name (e.g. an international journal the library
             // doesn't hold) — exactly one of the two is required.
             'journal_issue_id' => ['nullable', 'required_without:external_journal_name', 'integer', 'exists:journal_issues,id'],
             'external_journal_name' => ['nullable', 'required_without:journal_issue_id', 'string', 'max:255'],
-            'external_journal_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
             'external_journal_issue' => ['nullable', 'string', 'max:100'],
             'title' => ['required', 'string', 'max:500'],
             'author' => ['nullable', 'string', 'max:500'],
@@ -54,7 +51,6 @@ class StoreArticleRequest extends FormRequest
         return [
             'journal_issue_id' => __('Jurnal soni'),
             'external_journal_name' => __('Jurnal nomi'),
-            'external_journal_year' => __('Nashr yili'),
             'external_journal_issue' => __('Soni'),
             'title' => __('Sarlavha'),
             'author' => __('Muallif(lar)'),

@@ -20,7 +20,7 @@
         ...($isNewspaper ? [] : [[__('DOI kodi'), $article->doi]]),
         [__('Tili'), $article->language?->name],
         [__('Beti'), $article->pages],
-        [__('Yili'), $issue?->year ?? $article->external_journal_year],
+        [__('Yili'), $issue?->year],
     ], fn ($row) => filled($row[1]));
 @endphp
 

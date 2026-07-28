@@ -39,7 +39,6 @@ class ArticleFactory extends Factory
             'journal_issue_id' => null,
             'resource_field_id' => null,
             'external_journal_name' => $this->faker->company().' Journal',
-            'external_journal_year' => $this->faker->numberBetween(2015, 2026),
         ]);
     }
 }

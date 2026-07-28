@@ -15,7 +15,6 @@ class ArticleData
     public function __construct(
         public readonly ?int $journal_issue_id,
         public readonly ?string $external_journal_name,
-        public readonly ?int $external_journal_year,
         public readonly ?string $external_journal_issue,
         public readonly string $title,
         public readonly ?string $author,
@@ -35,7 +34,6 @@ class ArticleData
         return new self(
             journal_issue_id: $request->integer('journal_issue_id') ?: null,
             external_journal_name: $request->input('external_journal_name') ?: null,
-            external_journal_year: $request->integer('external_journal_year') ?: null,
             external_journal_issue: $request->input('external_journal_issue') ?: null,
             title: $request->string('title')->toString(),
             author: $request->input('author') ?: null,
@@ -60,7 +58,6 @@ class ArticleData
         return [
             'journal_issue_id' => $this->journal_issue_id,
             'external_journal_name' => $this->external_journal_name,
-            'external_journal_year' => $this->external_journal_year,
             'external_journal_issue' => $this->external_journal_issue,
             'title' => $this->title,
             'author' => $this->author,
