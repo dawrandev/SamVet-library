@@ -82,9 +82,10 @@
             $catColors[] = $catPalette[$i % count($catPalette)];
         }
 
-        // --- Line: daily usage (5 series, one shared count axis) ---
+        // --- Line: daily usage (6 series, one shared count axis) ---
         $dailySeries = [
             ['name' => __('Berilgan kitoblar'), 'data' => $dailyUsage['loans'], 'color' => '#465fff'],
+            ['name' => __('Qaytarilgan kitoblar'), 'data' => $dailyUsage['returns'], 'color' => '#7a5af8'],
             ['name' => __('Onlayn o‘qishlar'), 'data' => $dailyUsage['onlineReadings'], 'color' => '#12b76a'],
             ['name' => __('Kompyuterdan foydalanish'), 'data' => $dailyUsage['computerSessions'], 'color' => '#f79009', 'dashed' => true],
             ['name' => __('Tadbirlarda qatnashish'), 'data' => $dailyUsage['eventParticipations'], 'color' => '#f04438'],

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\Gender;
 use App\Enums\SubscriptionSource;
 use App\Models\Article;
 use App\Models\Audiobook;
@@ -28,6 +27,10 @@ use Illuminate\Support\Carbon;
  */
 class DashboardService
 {
+    public function __construct(
+        private readonly ReaderStatsService $readerStats,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -135,9 +138,9 @@ class DashboardService
             'categoriesTotal' => Category::count(),
 
             // Reader demographics
-            'readersByGender' => $this->readersByGender(),
+            'readersByGender' => $this->readerStats->byGender(),
             'readersByNationality' => $this->readersByNationality(),
-            'readersByAgeGroup' => $this->readersByAgeGroup(),
+            'readersByAgeGroup' => $this->readerStats->byAgeGroup(),
 
             // Fund composition, nomi/nusxa toggles
             'titlesByFormat' => $titlesByFormat,
@@ -200,10 +203,12 @@ class DashboardService
 
     /**
      * Day-bucketed counts for the "Kunlik statistika" line chart: books
-     * issued, online reads, computer sessions, event participations, and
-     * their daily sum — every day in the range present, zero-filled.
+     * issued, books returned, online reads, computer sessions, event
+     * participations, and their daily sum — every day in the range present,
+     * zero-filled. Returns are excluded from the "total" sum — a return is a
+     * librarian-side closing action, not reader-initiated usage.
      *
-     * @return array{dates: array<int, string>, loans: array<int, int>, onlineReadings: array<int, int>, computerSessions: array<int, int>, eventParticipations: array<int, int>, total: array<int, int>}
+     * @return array{dates: array<int, string>, loans: array<int, int>, returns: array<int, int>, onlineReadings: array<int, int>, computerSessions: array<int, int>, eventParticipations: array<int, int>, total: array<int, int>}
      */
     private function dailyUsage(Carbon $from, Carbon $to): array
     {
@@ -215,6 +220,11 @@ class DashboardService
         $loans = Loan::query()
             ->whereBetween('issued_at', [$from, $to])
             ->selectRaw('DATE(issued_at) as d, COUNT(*) as c')
+            ->groupBy('d')->pluck('c', 'd');
+
+        $returns = Loan::query()
+            ->whereBetween('returned_at', [$from, $to])
+            ->selectRaw('DATE(returned_at) as d, COUNT(*) as c')
             ->groupBy('d')->pluck('c', 'd');
 
         $readings = BookReading::query()
@@ -233,15 +243,17 @@ class DashboardService
             ->selectRaw('events.date as d, COUNT(*) as c')
             ->groupBy('d')->pluck('c', 'd');
 
-        $series = ['loans' => [], 'onlineReadings' => [], 'computerSessions' => [], 'eventParticipations' => [], 'total' => []];
+        $series = ['loans' => [], 'returns' => [], 'onlineReadings' => [], 'computerSessions' => [], 'eventParticipations' => [], 'total' => []];
 
         foreach ($dates as $d) {
             $l = (int) ($loans[$d] ?? 0);
+            $ret = (int) ($returns[$d] ?? 0);
             $r = (int) ($readings[$d] ?? 0);
             $s = (int) ($sessions[$d] ?? 0);
             $p = (int) ($participations[$d] ?? 0);
 
             $series['loans'][] = $l;
+            $series['returns'][] = $ret;
             $series['onlineReadings'][] = $r;
             $series['computerSessions'][] = $s;
             $series['eventParticipations'][] = $p;
@@ -249,27 +261,6 @@ class DashboardService
         }
 
         return ['dates' => $dates, ...$series];
-    }
-
-    /**
-     * Reader count per gender, label => count. Only Erkak/Ayol — readers with
-     * no gender on file are simply excluded, not bucketed as "Noma'lum".
-     *
-     * @return array<string, int>
-     */
-    private function readersByGender(): array
-    {
-        $counts = Reader::query()->selectRaw('gender, COUNT(*) as c')->groupBy('gender')->pluck('c', 'gender');
-
-        $result = [];
-        foreach (Gender::cases() as $gender) {
-            $c = (int) ($counts[$gender->value] ?? 0);
-            if ($c > 0) {
-                $result[$gender->label()] = $c;
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -299,46 +290,6 @@ class DashboardService
         }
 
         return $top;
-    }
-
-    /** Age buckets in display order — internal to this chart, not a shared domain concept. */
-    private const AGE_BUCKETS = [
-        ['max' => 17, 'label' => '<18'],
-        ['max' => 25, 'label' => '18-25'],
-        ['max' => 35, 'label' => '26-35'],
-        ['max' => 45, 'label' => '36-45'],
-        ['max' => 60, 'label' => '46-60'],
-        ['max' => null, 'label' => '60+'],
-    ];
-
-    /**
-     * Reader count per age bucket, label => count, in bucket order. Readers
-     * without a birth date are bucketed under "Noma'lum" at the end.
-     *
-     * @return array<string, int>
-     */
-    private function readersByAgeGroup(): array
-    {
-        $result = array_fill_keys(array_column(self::AGE_BUCKETS, 'label'), 0);
-
-        Reader::query()->whereNotNull('birth_date')->pluck('birth_date')->each(function ($birthDate) use (&$result): void {
-            $age = Carbon::parse($birthDate)->age;
-            foreach (self::AGE_BUCKETS as $bucket) {
-                if ($bucket['max'] === null || $age <= $bucket['max']) {
-                    $result[$bucket['label']]++;
-                    break;
-                }
-            }
-        });
-
-        $result = array_filter($result);
-
-        $unknown = Reader::query()->whereNull('birth_date')->count();
-        if ($unknown > 0) {
-            $result[__('Noma’lum')] = $unknown;
-        }
-
-        return $result;
     }
 
     /**
