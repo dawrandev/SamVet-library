@@ -23,10 +23,17 @@
         [__('O‘qish zali o‘rni'), $n($facts['reading_room_seats'])],
     ];
 
-    $breakdowns = [
+    $fundBreakdowns = [
+        [__('Kategoriyalar bo‘yicha'), $byCategory],
+        [__('Shakli bo‘yicha'), $byFormat],
         [__('Kitoblar turi bo‘yicha'), $byType],
         [__('Kitoblar tili bo‘yicha'), $byLanguage],
-        [__('Kategoriyalar bo‘yicha'), $byCategory],
+    ];
+
+    $readerBreakdowns = [
+        [__('Turi bo‘yicha'), $readersByType],
+        [__('Jinsi bo‘yicha'), $readersByGender],
+        [__('Yoshi bo‘yicha'), $readersByAgeGroup],
     ];
 @endphp
 
@@ -62,30 +69,19 @@
             @endforeach
         </div>
 
-        {{-- Breakdowns --}}
-        <div class="mt-10 grid gap-6 lg:grid-cols-3">
-            @foreach ($breakdowns as [$heading, $rows])
-                <section class="rounded-2xl border border-gray-200 bg-white p-6">
-                    <h2 class="text-sm font-bold text-gray-900">{{ $heading }}</h2>
+        {{-- Fund breakdowns (kategoriya / shakli / turi / til) --}}
+        <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Fond statistikasi') }}</h2>
+        <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($fundBreakdowns as [$heading, $rows])
+                <x-site.stat-breakdown-card :heading="$heading" :rows="$rows" />
+            @endforeach
+        </div>
 
-                    @if ($rows->isEmpty())
-                        <p class="mt-4 text-sm text-gray-400">{{ __('Ma‘lumot yo‘q') }}</p>
-                    @else
-                        <div class="mt-5 space-y-4">
-                            @foreach ($rows as $row)
-                                <div>
-                                    <div class="flex items-center justify-between gap-3 text-sm">
-                                        <span class="line-clamp-1 text-gray-700">{{ $row['label'] }}</span>
-                                        <span class="flex-none tabular-nums text-gray-400">{{ $n($row['count']) }}</span>
-                                    </div>
-                                    <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                                        <div class="h-full rounded-full bg-blue-600" style="width: {{ $row['share'] }}%"></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </section>
+        {{-- Reader demographics (turi / jinsi / yoshi) --}}
+        <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Foydalanuvchilar statistikasi') }}</h2>
+        <div class="mt-5 grid gap-6 lg:grid-cols-3">
+            @foreach ($readerBreakdowns as [$heading, $rows])
+                <x-site.stat-breakdown-card :heading="$heading" :rows="$rows" />
             @endforeach
         </div>
     </div>

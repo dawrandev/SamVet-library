@@ -20,7 +20,13 @@ class MenuSeeder extends Seeder
                     ['title' => ['uz' => 'ARM nizomi', 'ru' => 'Устав ИРЦ', 'kk' => 'ARM nızamı']],
                     ['title' => ['uz' => 'Foydalanish qoidasi', 'ru' => 'Правила пользования', 'kk' => 'Paydalanıw qaǵıydası']],
                     ['title' => ['uz' => 'Tuzilma', 'ru' => 'Структура', 'kk' => 'Dúzilis']],
-                    ['title' => ['uz' => 'Statistika', 'ru' => 'Статистика', 'kk' => 'Statistika']],
+                    [
+                        // Links straight to the real Statistics module (fund +
+                        // reader breakdowns) — not a blank content page.
+                        'title' => ['uz' => 'Statistika', 'ru' => 'Статистика', 'kk' => 'Statistika'],
+                        'type' => 'module',
+                        'url' => 'statistics',
+                    ],
                     ['title' => ['uz' => 'Me‘yoriy huquqiy hujjatlar', 'ru' => 'Нормативно-правовые документы', 'kk' => 'Normativ-huqıqıy hújjetler']],
                     ['title' => ['uz' => 'Rejalar', 'ru' => 'Планы', 'kk' => 'Rejeler']],
                 ],
