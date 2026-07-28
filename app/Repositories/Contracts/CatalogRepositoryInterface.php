@@ -3,17 +3,25 @@
 namespace App\Repositories\Contracts;
 
 use App\Data\CatalogFilters;
+use App\Data\CatalogItem;
 use App\Models\Book;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
- * Read-only data access for the public catalog (books visible to visitors).
- * Separate from the admin BookRepository: only public-safe fields/relations.
+ * Read-only data access for the public catalog. `paginate()` spans all five
+ * public resource types (books, audiobooks, videos, dissertations,
+ * avtoreferats) — the other methods stay book-only, matching the facets
+ * (Kategoriya/Turi/Til/Yil) that only ever apply to books.
  */
 interface CatalogRepositoryInterface
 {
-    /** Filtered, ordered, paginated list of books. */
+    /**
+     * Filtered, ordered, paginated list of catalog items across all five
+     * resource types, merged into one page.
+     *
+     * @return LengthAwarePaginator<int, CatalogItem>
+     */
     public function paginate(CatalogFilters $filters, int $perPage): LengthAwarePaginator;
 
     /**
@@ -32,8 +40,10 @@ interface CatalogRepositoryInterface
     public function languageFacets(): Collection;
 
     /**
-     * Sidebar facets for physical/electronic/braille copy format. `id` is the
-     * BookFormat enum's string value (print/electronic/braille).
+     * Sidebar facets for the unified "Shakli" filter. `id` is the
+     * CatalogFormat enum's string value (print/electronic/braille/audio/video).
+     * Electronic folds in every dissertation and avtoreferat, since neither
+     * has a format of its own — they're PDF-only.
      *
      * @return Collection<int, array{id: string, label: string, count: int}>
      */

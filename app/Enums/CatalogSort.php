@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 /**
  * Ordering options for the public catalog listing.
@@ -26,14 +26,24 @@ enum CatalogSort: string
         };
     }
 
-    /** Apply this ordering to a book query. */
-    public function apply(Builder $query): Builder
+    /**
+     * Order a merged, heterogeneous result set. Sorting happens in PHP, not
+     * SQL — the catalog spans 5 tables, so ids aren't comparable across them
+     * and "newest" keys off created_at instead, with a [type, id] tiebreak
+     * so ordering stays deterministic across repeated requests.
+     *
+     * @param  Collection<int, array{type: string, id: int, title: string, views: int, created_at: ?\Illuminate\Support\Carbon}>  $rows
+     * @return Collection<int, array{type: string, id: int, title: string, views: int, created_at: ?\Illuminate\Support\Carbon}>
+     */
+    public function sortRows(Collection $rows): Collection
     {
+        $tieBreak = fn (array $r) => [$r['type'], $r['id']];
+
         return match ($this) {
-            self::Newest => $query->latest('id'),
-            self::Oldest => $query->oldest('id'),
-            self::Popular => $query->orderByDesc('views_count'),
-            self::Title => $query->orderBy('title'),
+            self::Newest => $rows->sortByDesc(fn (array $r) => [$r['created_at']?->getTimestamp() ?? 0, ...$tieBreak($r)])->values(),
+            self::Oldest => $rows->sortBy(fn (array $r) => [$r['created_at']?->getTimestamp() ?? 0, ...$tieBreak($r)])->values(),
+            self::Popular => $rows->sortByDesc(fn (array $r) => [$r['views'], $r['created_at']?->getTimestamp() ?? 0, ...$tieBreak($r)])->values(),
+            self::Title => $rows->sortBy(fn (array $r) => mb_strtolower($r['title']), SORT_NATURAL)->values(),
         };
     }
 }

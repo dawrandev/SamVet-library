@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Site;
 
 use App\Data\CatalogFilters;
-use App\Enums\BookFormat;
+use App\Enums\CatalogFormat;
 use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,7 +34,7 @@ class CatalogFilterRequest extends FormRequest
             'languages' => ['nullable', 'array'],
             'languages.*' => ['integer'],
             'formats' => ['nullable', 'array'],
-            'formats.*' => ['string', Rule::enum(BookFormat::class)],
+            'formats.*' => ['string', Rule::enum(CatalogFormat::class)],
             'year_from' => ['nullable', 'integer', 'min:1000', 'max:2100'],
             'year_to' => ['nullable', 'integer', 'min:1000', 'max:2100'],
             'author' => ['nullable', 'string', 'max:255'],

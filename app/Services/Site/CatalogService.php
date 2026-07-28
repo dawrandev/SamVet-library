@@ -23,12 +23,12 @@ class CatalogService
      */
     public function catalogData(CatalogFilters $filters): array
     {
-        $books = $this->catalog->paginate($filters, self::PER_PAGE);
+        $items = $this->catalog->paginate($filters, self::PER_PAGE);
 
         return [
             'filters' => $filters,
-            'books' => $books,
-            'total' => $books->total(),
+            'items' => $items,
+            'total' => $items->total(),
             'categories' => $this->catalog->categoryFacets(),
             'types' => $this->catalog->typeFacets(),
             'languages' => $this->catalog->languageFacets(),

@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\CatalogFormat;
 use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 
@@ -41,5 +42,34 @@ final class CatalogFilters
             || $this->yearFrom !== null
             || $this->yearTo !== null
             || $this->author !== null;
+    }
+
+    /**
+     * Selected "Shakli" options as enum cases (invalid/unknown values dropped).
+     *
+     * @return array<int, CatalogFormat>
+     */
+    public function formatCases(): array
+    {
+        return array_values(array_filter(array_map(
+            fn (string $value) => CatalogFormat::tryFrom($value),
+            $this->formats,
+        )));
+    }
+
+    /**
+     * True when a book-only facet is in play. Kategoriya/Turi/Til/Yil and the
+     * ISBN search scope have no counterpart on audiobooks, videos,
+     * dissertations or avtoreferats — using one narrows the whole catalog
+     * down to books. Intentional, not a gap.
+     */
+    public function booksOnly(): bool
+    {
+        return $this->categories !== []
+            || $this->types !== []
+            || $this->languages !== []
+            || $this->yearFrom !== null
+            || $this->yearTo !== null
+            || $this->scope === CatalogSearchScope::Isbn;
     }
 }

@@ -128,7 +128,7 @@
                     <span class="text-sm tabular-nums text-gray-400">{{ __(':n ta', ['n' => number_format($total, 0, '.', ' ')]) }}</span>
                 </div>
 
-                @if ($books->isEmpty())
+                @if ($items->isEmpty())
                     {{-- Empty state --}}
                     <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
                         <svg class="mx-auto h-10 w-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
@@ -142,13 +142,13 @@
                     </div>
                 @else
                     <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                        @foreach ($books as $book)
-                            <x-site.book-card :book="$book" />
+                        @foreach ($items as $item)
+                            <x-site.catalog-card :item="$item" />
                         @endforeach
                     </div>
 
                     <div class="mt-8">
-                        {{ $books->onEachSide(1)->links() }}
+                        {{ $items->onEachSide(1)->links() }}
                     </div>
                 @endif
             </div>

@@ -41,6 +41,7 @@
     @if ($categoryTree->isNotEmpty())
         <fieldset class="mt-6 border-t border-gray-100 pt-5">
             <legend class="text-sm font-semibold text-gray-900">{{ __('Kategoriya') }}</legend>
+            <p class="mt-0.5 text-xs text-gray-400">{{ __('Faqat kitoblar uchun') }}</p>
             <div class="mt-3 space-y-1">
                 @foreach ($categoryTree as $parent)
                     @php
@@ -88,18 +89,21 @@
     @endif
 
     @php
-        // Reusable facet groups: [legend, request key, facet collection, selected ids].
+        // Reusable facet groups: [legend, request key, facet collection, selected ids, book-only?].
         $groups = [
-            [__('Shakli'), 'formats', $formats, $filters->formats],
-            [__('Turi'), 'types', $types, $filters->types],
-            [__('Tili'), 'languages', $languages, $filters->languages],
+            [__('Shakli'), 'formats', $formats, $filters->formats, false],
+            [__('Turi'), 'types', $types, $filters->types, true],
+            [__('Tili'), 'languages', $languages, $filters->languages, true],
         ];
     @endphp
 
-    @foreach ($groups as [$legend, $key, $facets, $selected])
+    @foreach ($groups as [$legend, $key, $facets, $selected, $bookOnly])
         @if ($facets->isNotEmpty())
             <fieldset class="mt-6 border-t border-gray-100 pt-5">
                 <legend class="text-sm font-semibold text-gray-900">{{ $legend }}</legend>
+                @if ($bookOnly)
+                    <p class="mt-0.5 text-xs text-gray-400">{{ __('Faqat kitoblar uchun') }}</p>
+                @endif
                 <div class="mt-3 space-y-2.5">
                     @foreach ($facets as $facet)
                         <label class="flex cursor-pointer items-center justify-between gap-2 text-sm">
@@ -120,6 +124,7 @@
     {{-- Publication year range --}}
     <fieldset class="mt-6 border-t border-gray-100 pt-5">
         <legend class="text-sm font-semibold text-gray-900">{{ __('Nashr yili') }}</legend>
+        <p class="mt-0.5 text-xs text-gray-400">{{ __('Faqat kitoblar uchun') }}</p>
         <div class="mt-3 grid grid-cols-2 gap-3">
             <input type="number" name="year_from" value="{{ $filters->yearFrom }}" inputmode="numeric"
                    min="{{ $yearBounds['min'] ?? 1900 }}" max="{{ $yearBounds['max'] ?? 2100 }}"

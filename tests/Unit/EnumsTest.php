@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\BookFormat;
+use App\Enums\CatalogFormat;
+use App\Enums\CatalogResourceType;
 use App\Enums\CatalogSort;
 use App\Enums\CopyStatus;
 use App\Enums\MenuItemType;
@@ -14,6 +16,8 @@ $labelled = [
     MenuItemType::class,
     PublicationKind::class,
     CatalogSort::class,
+    CatalogFormat::class,
+    CatalogResourceType::class,
 ];
 
 it('gives every case a non-empty label', function (string $enum) {
