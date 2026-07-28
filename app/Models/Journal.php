@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[ObservedBy([JournalObserver::class])]
 class Journal extends Model
@@ -82,6 +83,20 @@ class Journal extends Model
 
     public function issues(): HasMany
     {
-        return $this->hasMany(JournalIssue::class)->latest('year');
+        // Same-year issues need a tiebreak — issue_date, then id — otherwise
+        // "the newest issue" is whatever order the DB happens to return.
+        return $this->hasMany(JournalIssue::class)
+            ->orderByDesc('year')->orderByDesc('issue_date')->orderByDesc('id');
+    }
+
+    /**
+     * The single most recent issue — used as a stand-in cover image on the
+     * journal listing/card, since a Journal itself has no cover of its own
+     * (only its issues do).
+     */
+    public function latestIssue(): HasOne
+    {
+        return $this->hasOne(JournalIssue::class)
+            ->orderByDesc('year')->orderByDesc('issue_date')->orderByDesc('id');
     }
 }

@@ -15,7 +15,7 @@ class PeriodicalRepository implements PeriodicalRepositoryInterface
     public function paginateJournals(?string $kind, int $perPage): LengthAwarePaginator
     {
         return Journal::query()
-            ->with(['type', 'language'])
+            ->with(['type', 'language', 'latestIssue:id,journal_id,cover_image,year,issue_date'])
             ->withCount('issues')
             ->when($kind, fn (Builder $q, string $k) => $q->where('kind', $k))
             ->orderBy('name')

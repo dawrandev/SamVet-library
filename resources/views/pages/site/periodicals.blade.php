@@ -67,7 +67,11 @@
                     <a href="{{ route('journal.show', $periodical->slug) }}"
                        class="group flex gap-4 rounded-2xl border border-gray-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
                         <div class="relative h-24 w-20 flex-none overflow-hidden rounded-lg border-t-2 border-blue-600 bg-blue-50">
-                            <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 10px, #dbeafe 10px 20px);"></div>
+                            @if ($periodical->latestIssue?->cover_image)
+                                <img src="{{ asset('storage/' . $periodical->latestIssue->cover_image) }}" alt="" class="absolute inset-0 h-full w-full object-cover" />
+                            @else
+                                <div class="absolute inset-0 opacity-40" style="background-image: repeating-linear-gradient(135deg, #ffffff 0 10px, #dbeafe 10px 20px);"></div>
+                            @endif
                         </div>
                         <div class="min-w-0 flex-1">
                             <span class="text-[11px] font-semibold text-blue-700">{{ $periodical->kind->label() }}</span>

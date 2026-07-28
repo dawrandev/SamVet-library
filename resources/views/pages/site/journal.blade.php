@@ -9,6 +9,7 @@
     // Muassis/Nashr joyi/Indeks are library-internal (kutubxona ichki
     // ma'lumoti) — shown only in the admin panel, not on the public site.
     $periodicity = $journal->periodicityLabel();
+    $anyIssueReadable = $issues->contains(fn ($issue) => filled($issue->electronic_file));
 
     // Newspapers use the fixed NewspaperType enum; journals keep the journal_type_id lookup.
     $type = $isNewspaper ? $journal->newspaper_type?->label() : $journal->type?->name;
@@ -61,10 +62,15 @@
                     @endif
                 </div>
 
-                <div class="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
-                    <svg class="h-5 w-5 flex-none text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                    <p class="text-xs leading-relaxed text-gray-600">{{ __('Sonlar Axborot resurs markazi o‘qish zalida online tarzda o‘qiladi.') }}</p>
-                </div>
+                @unless ($anyIssueReadable)
+                    {{-- Only shown when NOT ONE issue has an online-readable PDF —
+                         otherwise this would contradict the per-issue "Sonni o'qish"
+                         buttons below, which already say the opposite. --}}
+                    <div class="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                        <svg class="h-5 w-5 flex-none text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                        <p class="text-xs leading-relaxed text-gray-600">{{ __('Sonlar Axborot resurs markazi o‘qish zalida online tarzda o‘qiladi.') }}</p>
+                    </div>
+                @endunless
             </aside>
 
             {{-- Right: masthead info --}}
@@ -156,7 +162,7 @@
                 </div>
 
                 @if ($articles->isEmpty())
-                    <p class="px-5 py-8 text-center text-sm text-gray-500">{{ __('Bu sonда maqolalar yo‘q.') }}</p>
+                    <p class="px-5 py-8 text-center text-sm text-gray-500">{{ __('Bu sonda maqolalar yo‘q.') }}</p>
                 @else
                     <div class="divide-y divide-gray-100">
                         @foreach ($articles as $article)
