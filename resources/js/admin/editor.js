@@ -54,13 +54,13 @@ function uploadEditorImage(blobInfo) {
         body: formData,
     })
         .then((response) => {
-            if (! response.ok) {
+            if (!response.ok) {
                 throw new Error(`Serverda xatolik (${response.status}).`);
             }
             return response.json();
         })
         .then((json) => {
-            if (! json.location) {
+            if (!json.location) {
                 throw new Error('Server javobida rasm manzili topilmadi.');
             }
             return json.location;
@@ -72,7 +72,7 @@ function uploadEditorImage(blobInfo) {
 }
 
 /**
- * Uploads one file attached via the editor's "Fayl biriktirish" button and
+ * Uploads one file attached via the editor's "Upload file" button and
  * resolves with { url, name } — a downloadable attachment, distinct from
  * inline images (uploadEditorImage above).
  */
@@ -89,13 +89,13 @@ function uploadEditorFile(file) {
         body: formData,
     })
         .then((response) => {
-            if (! response.ok) {
+            if (!response.ok) {
                 throw new Error(`Serverda xatolik (${response.status}).`);
             }
             return response.json();
         })
         .then((json) => {
-            if (! json.url) {
+            if (!json.url) {
                 throw new Error('Server javobida fayl manzili topilmadi.');
             }
             return json;
@@ -107,7 +107,7 @@ function uploadEditorFile(file) {
  * Content is written back to the textarea on every change (for form submit).
  */
 export function initTinyEditor(el) {
-    if (! el || el.dataset.tinyInited) {
+    if (!el || el.dataset.tinyInited) {
         return;
     }
     el.dataset.tinyInited = '1';
@@ -141,14 +141,14 @@ export function initTinyEditor(el) {
             // button of their own (image/media only handle images and embeds).
             editor.ui.registry.addButton('attachfile', {
                 icon: 'attachment',
-                tooltip: 'Fayl biriktirish',
+                tooltip: 'Upload file',
                 onAction: () => {
                     const input = document.createElement('input');
                     input.type = 'file';
                     input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar';
                     input.onchange = () => {
                         const file = input.files[0];
-                        if (! file) return;
+                        if (!file) return;
 
                         uploadEditorFile(file)
                             .then(({ url, name }) => {
@@ -185,7 +185,7 @@ window.initTinyEditor = initTinyEditor;
  */
 document.addEventListener('submit', (event) => {
     const form = event.target;
-    if (! (form instanceof HTMLFormElement) || form.dataset.tinyFlushed) {
+    if (!(form instanceof HTMLFormElement) || form.dataset.tinyFlushed) {
         return;
     }
 
@@ -198,7 +198,7 @@ document.addEventListener('submit', (event) => {
     event.stopImmediatePropagation();
 
     Promise.all(editors.map((ed) => ed.uploadImages()))
-        .catch(() => {}) // a failed upload still leaves valid content (blob removed); let the server-side validation catch anything missing
+        .catch(() => { }) // a failed upload still leaves valid content (blob removed); let the server-side validation catch anything missing
         .then(() => {
             form.dataset.tinyFlushed = '1';
             form.requestSubmit();
