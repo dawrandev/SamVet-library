@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Enums\CopyStatus;
 use App\Models\Book;
+use App\Models\Category;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +23,14 @@ class BookRepository implements BookRepositoryInterface
                 });
             })
             ->when($filters['category_id'] ?? null, function ($query, int $categoryId) {
-                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
+                // A parent category id must also surface books tagged only with
+                // one of its children — mirrors the public catalog's own
+                // category expansion (CatalogRepository::bookQuery()).
+                $expandedIds = Category::query()->where(
+                    fn ($q) => $q->whereIn('id', [$categoryId])->orWhere('parent_id', $categoryId)
+                )->pluck('id');
+
+                $query->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $expandedIds));
             })
             ->when($filters['language_id'] ?? null, function ($query, int $languageId) {
                 $query->where('language_id', $languageId);

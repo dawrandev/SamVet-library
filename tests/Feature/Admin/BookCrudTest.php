@@ -214,6 +214,18 @@ it('downloads an Excel export of the book list', function () {
     expect($response->headers->get('content-type'))->toContain('spreadsheet');
 });
 
+it('filtering by a parent category surfaces books tagged only with its child (admin index)', function () {
+    $parent = \App\Models\Category::factory()->create();
+    $child = \App\Models\Category::factory()->create(['parent_id' => $parent->id]);
+    $book = Book::factory()->create();
+    $book->categories()->attach($child->id);
+    Book::factory()->create(); // unrelated book, must not match
+
+    $res = $this->get(route('admin.books.index', ['category_id' => $parent->id]));
+
+    $res->assertOk()->assertSee($book->title);
+});
+
 it('respects the current filters when exporting books', function () {
     $type = BookType::factory()->create();
     Book::factory()->create(['book_type_id' => $type->id, 'title' => 'Filtrlangan kitob']);
