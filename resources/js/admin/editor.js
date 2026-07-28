@@ -140,7 +140,7 @@ export function initTinyEditor(el) {
             // inserted as a link — TinyMCE's bundled plugins have no file-attachment
             // button of their own (image/media only handle images and embeds).
             editor.ui.registry.addButton('attachfile', {
-                icon: 'add-file',
+                icon: 'attachment',
                 tooltip: 'Fayl biriktirish',
                 onAction: () => {
                     const input = document.createElement('input');
