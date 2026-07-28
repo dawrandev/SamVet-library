@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
  */
 class SectionService
 {
+    /** The catch-all category — always shown last, after every other tile. */
+    private const MISC_CATEGORY_NAME = 'Boshqa';
+
     public function __construct(
         private readonly CatalogRepositoryInterface $catalog,
     ) {}
@@ -30,7 +33,7 @@ class SectionService
         // (e.g. "Iqtisodiyot nazariyasi") stays reachable via the catalog's
         // own category filter, not as a section tile of its own. The facet
         // count already rolls each parent's children up into it.
-        $tiles = $this->catalog->categoryFacets()
+        $categoryTiles = $this->catalog->categoryFacets()
             ->filter(fn (array $facet) => $facet['parentId'] === null)
             ->map(fn (array $facet): array => [
                 'key' => 'category-'.$facet['id'],
@@ -39,6 +42,12 @@ class SectionService
                 'url' => route('catalog', ['categories' => [$facet['id']]]),
             ])
             ->values();
+
+        // "Boshqa" is a catch-all bucket, not a real subject — it belongs at
+        // the very end of the whole grid, after every other tile below, not
+        // just after the other categories.
+        $misc = $categoryTiles->firstWhere('label', self::MISC_CATEGORY_NAME);
+        $tiles = $categoryTiles->reject(fn (array $tile) => $tile === $misc)->values();
 
         $periodicalCounts = Journal::query()
             ->selectRaw('kind, COUNT(*) as c')
@@ -82,6 +91,7 @@ class SectionService
                 'count' => Avtoreferat::count(),
                 'url' => route('avtoreferats.index'),
             ])
+            ->when($misc, fn (Collection $tiles) => $tiles->push($misc))
             ->values();
     }
 }

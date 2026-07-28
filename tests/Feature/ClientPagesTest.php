@@ -90,6 +90,20 @@ it('shows only top-level categories as section tiles on the Bo‘limlar page, ne
         ->assertSee(route('catalog', ['categories' => [$parent->id]]), false);
 });
 
+it('shows the "Boshqa" catch-all category tile last, after every other section tile', function () {
+    Category::factory()->create(['name' => 'Ilmiy adabiyotlar']);
+    Category::factory()->create(['name' => 'Boshqa']);
+    \App\Models\Audiobook::factory()->create();
+
+    $res = $this->get(route('sections'));
+
+    $labels = $res->viewData('tiles')->pluck('label')->all();
+    $boshqaIndex = array_search('Boshqa', $labels, true);
+
+    expect($boshqaIndex)->not->toBeFalse()
+        ->and($boshqaIndex)->toBe(count($labels) - 1);
+});
+
 it('includes Dissertatsiyalar and Avtoreferatlar as their own section tiles', function () {
     \App\Models\Dissertation::factory()->count(2)->create();
     \App\Models\Avtoreferat::factory()->create();
