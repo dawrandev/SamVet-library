@@ -4,6 +4,8 @@ namespace App\Services\Site;
 
 use App\Enums\PublicationKind;
 use App\Models\Audiobook;
+use App\Models\Avtoreferat;
+use App\Models\Dissertation;
 use App\Models\Journal;
 use App\Models\Video;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
@@ -67,6 +69,18 @@ class SectionService
                 'label' => __('Videolar'),
                 'count' => Video::count(),
                 'url' => route('videos.index'),
+            ])
+            ->push([
+                'key' => 'dissertations',
+                'label' => __('Dissertatsiyalar'),
+                'count' => Dissertation::count(),
+                'url' => route('dissertations.index'),
+            ])
+            ->push([
+                'key' => 'avtoreferats',
+                'label' => __('Avtoreferatlar'),
+                'count' => Avtoreferat::count(),
+                'url' => route('avtoreferats.index'),
             ])
             ->values();
     }

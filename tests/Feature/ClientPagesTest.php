@@ -90,6 +90,19 @@ it('shows only top-level categories as section tiles on the Bo‘limlar page, ne
         ->assertSee(route('catalog', ['categories' => [$parent->id]]), false);
 });
 
+it('includes Dissertatsiyalar and Avtoreferatlar as their own section tiles', function () {
+    \App\Models\Dissertation::factory()->count(2)->create();
+    \App\Models\Avtoreferat::factory()->create();
+
+    $res = $this->get(route('sections'));
+
+    $res->assertOk()
+        ->assertSee('Dissertatsiyalar')
+        ->assertSee('Avtoreferatlar')
+        ->assertSee(route('dissertations.index'), false)
+        ->assertSee(route('avtoreferats.index'), false);
+});
+
 it('shows a journal detail page but hides library-internal fields', function () {
     $place = PublicationPlace::factory()->create(['name' => ['uz' => 'Maxfiy shahar']]);
     $journal = Journal::factory()->create([
