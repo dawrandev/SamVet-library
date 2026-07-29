@@ -208,3 +208,13 @@ jobs:
             php artisan config:clear
             php artisan view:clear
             php artisan config:cache
+            # git pull only updates file mtimes; PHP's OPcache can keep serving
+            # the old compiled bytecode for already-cached files until the
+            # FPM workers are reloaded (this bit us once before — a category
+            # reorder didn't show up on the public site until a manual
+            # reload). Try the common Ubuntu/Debian unit names; harmless if
+            # none match or sudo isn't permitted — never fails the deploy.
+            sudo systemctl reload php8.3-fpm 2>/dev/null && echo "Reloaded php8.3-fpm" || \
+            sudo systemctl reload php8.2-fpm 2>/dev/null && echo "Reloaded php8.2-fpm" || \
+            sudo systemctl reload php-fpm 2>/dev/null && echo "Reloaded php-fpm" || \
+            echo "No matching php-fpm service reloaded — verify the unit name/sudo rights on the server if stale code is seen after deploy."
