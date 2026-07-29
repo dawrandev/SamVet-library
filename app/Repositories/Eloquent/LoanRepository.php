@@ -32,16 +32,22 @@ class LoanRepository implements LoanRepositoryInterface
         $search = trim((string) ($filters['search'] ?? ''));
         $today = now()->startOfDay();
 
-        $query = Loan::query()
-            ->with($this->eagerLoanable())
-            ->where('status', LoanStatus::OnLoan->value);
+        $query = Loan::query()->with($this->eagerLoanable());
 
         match ($scope) {
             'due_soon' => $query
+                ->where('status', LoanStatus::OnLoan->value)
                 ->whereBetween('due_at', [$today, $today->copy()->addDays(3)->endOfDay()])
                 ->orderBy('due_at'),
-            'active' => $query->orderBy('due_at'),
+            'active' => $query
+                ->where('status', LoanStatus::OnLoan->value)
+                ->orderBy('due_at'),
+            'returned' => $query
+                ->where('status', LoanStatus::Returned->value)
+                ->latest('returned_at'),
+            'all' => $query->latest('issued_at'),
             default => $query // overdue
+                ->where('status', LoanStatus::OnLoan->value)
                 ->where('due_at', '<', $today)
                 ->orderBy('due_at'),
         };
@@ -50,6 +56,14 @@ class LoanRepository implements LoanRepositoryInterface
 
         if ($search !== '') {
             $this->applySearch($query, $search, includeReader: true);
+        }
+
+        if (! empty($filters['returned_from'])) {
+            $query->where('returned_at', '>=', $filters['returned_from']);
+        }
+
+        if (! empty($filters['returned_to'])) {
+            $query->where('returned_at', '<=', $filters['returned_to']);
         }
 
         return $query->paginate($perPage)->withQueryString();

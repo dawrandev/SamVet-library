@@ -18,7 +18,9 @@ interface LoanRepositoryInterface
     public function update(Loan $loan, array $data): Loan;
 
     /**
-     * List of loaned-out materials, across all readers (filters: scope, search, material_type).
+     * List of loaned-out materials, across all readers. Filters: scope
+     * (overdue|due_soon|active|returned|all), search, material_type, and —
+     * only meaningful for the returned/all scopes — returned_from/returned_to.
      *
      * @param  array<string, mixed>  $filters
      */

@@ -28,7 +28,7 @@ class LoanController extends Controller
     {
         $scope = $request->input('scope', 'overdue');
 
-        if (! in_array($scope, ['overdue', 'due_soon', 'active'], true)) {
+        if (! in_array($scope, ['overdue', 'due_soon', 'active', 'returned', 'all'], true)) {
             $scope = 'overdue';
         }
 
@@ -42,6 +42,9 @@ class LoanController extends Controller
             'scope' => $scope,
             'search' => $request->input('search'),
             'material_type' => $materialType,
+            // Only meaningful for scope=returned/all — when was it handed back.
+            'returned_from' => $request->input('returned_from'),
+            'returned_to' => $request->input('returned_to'),
         ];
 
         return view('pages.admin.loans.index', [

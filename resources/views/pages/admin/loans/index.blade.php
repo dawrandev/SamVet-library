@@ -10,7 +10,11 @@
         'overdue' => __('Muddati o‘tgan'),
         'due_soon' => __('Yaqin (3 kun)'),
         'active' => __('Barcha faol'),
+        'returned' => __('Qaytarilgan'),
+        'all' => __('Barchasi'),
     ];
+
+    $showReturnedFilters = in_array($scope, ['returned', 'all'], true);
 @endphp
 
 @section('content')
@@ -35,7 +39,11 @@
         {{-- Scope tabs --}}
         <div class="inline-flex w-fit items-center gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900">
             @foreach ($tabs as $key => $label)
-                <a href="{{ route('admin.loans.index', ['scope' => $key, 'search' => $filters['search'] ?? null]) }}"
+                <a href="{{ route('admin.loans.index', [
+                        'scope' => $key,
+                        'search' => $filters['search'] ?? null,
+                        'material_type' => $filters['material_type'] ?? null,
+                    ]) }}"
                    @class([
                        'text-theme-sm rounded-md px-3 py-2 font-medium transition',
                        'shadow-theme-xs bg-white text-gray-900 dark:bg-gray-800 dark:text-white' => $scope === $key,
@@ -59,8 +67,16 @@
             <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                    placeholder="{{ __('Foydalanuvchi yoki inventar raqami...') }}"
                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 lg:w-72" />
+            @if ($showReturnedFilters)
+                <input type="date" name="returned_from" value="{{ $filters['returned_from'] ?? '' }}"
+                       title="{{ __('Qaytarilgan sana — dan') }}"
+                       class="shadow-theme-xs h-11 rounded-lg border border-gray-200 bg-transparent px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+                <input type="date" name="returned_to" value="{{ $filters['returned_to'] ?? '' }}"
+                       title="{{ __('Qaytarilgan sana — gacha') }}"
+                       class="shadow-theme-xs h-11 rounded-lg border border-gray-200 bg-transparent px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" />
+            @endif
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 h-11 rounded-lg px-5 text-sm font-medium text-white transition">{{ __('Qidirish') }}</button>
-            @if (! empty($filters['search']) || ! empty($filters['material_type']))
+            @if (! empty($filters['search']) || ! empty($filters['material_type']) || ! empty($filters['returned_from']) || ! empty($filters['returned_to']))
                 <a href="{{ route('admin.loans.index', ['scope' => $scope]) }}" class="flex h-11 items-center rounded-lg border border-gray-200 px-4 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400">{{ __('Tozalash') }}</a>
             @endif
         </form>
@@ -77,7 +93,7 @@
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Material') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Berilgan sana') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Muddat') }}</th>
-                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kechikkan') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ $showReturnedFilters ? __('Holati') : __('Kechikkan') }}</th>
                         <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                     </tr>
                 </thead>
@@ -113,9 +129,17 @@
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->issued_at?->format('d.m.Y') ?? '—' }}</td>
                             {{-- Due date --}}
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $loan->due_at?->format('d.m.Y') ?? '—' }}</td>
-                            {{-- Overdue --}}
+                            {{-- Overdue / status --}}
                             <td class="px-5 py-4">
-                                @if ($isOverdue)
+                                @if ($loan->status === \App\Enums\LoanStatus::Returned)
+                                    <span class="text-theme-xs inline-flex rounded-full bg-success-50 px-2.5 py-0.5 font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        {{ __('Qaytarildi') }}: {{ $loan->returned_at?->format('d.m.Y') ?? '—' }}
+                                    </span>
+                                @elseif ($loan->status === \App\Enums\LoanStatus::Lost)
+                                    <span class="text-theme-xs inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                        {{ __('Yo‘qotilgan') }}
+                                    </span>
+                                @elseif ($isOverdue)
                                     <span class="text-theme-xs inline-flex rounded-full bg-error-50 px-2.5 py-0.5 font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
                                         {{ $daysLate }} {{ __('kun') }}
                                     </span>
@@ -128,11 +152,15 @@
                             {{-- Actions --}}
                             <td class="px-5 py-4">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button type="button"
-                                            @click="$store.confirm.ask('{{ route('admin.loans.return', $loan) }}', '{{ __('Kitob qaytarilganini tasdiqlaysizmi?') }}', 'PATCH')"
-                                            class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">
-                                        {{ __('Qaytardi') }}
-                                    </button>
+                                    @if ($loan->status === \App\Enums\LoanStatus::OnLoan)
+                                        <button type="button"
+                                                @click="$store.confirm.ask('{{ route('admin.loans.return', $loan) }}', '{{ __('Kitob qaytarilganini tasdiqlaysizmi?') }}', 'PATCH')"
+                                                class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">
+                                            {{ __('Qaytardi') }}
+                                        </button>
+                                    @else
+                                        <span class="text-theme-xs text-gray-300 dark:text-gray-700">—</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
