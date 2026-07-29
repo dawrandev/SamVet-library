@@ -122,8 +122,16 @@
             <div>
                 <label for="journal_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr') }}<span class="text-error-500">*</span></label>
 
+                {{--
+                    Only the currently-visible select carries name="journal_id" (via :name,
+                    not a static attribute) — two same-named selects in the DOM at once is
+                    ambiguous for anything that resolves fields by name (browser devtools,
+                    Dusk, screen readers), and previously caused the hidden one to silently
+                    receive form interactions meant for the visible, required one. Both stay
+                    in sync regardless, since they share x-model="journalId".
+                --}}
                 {{-- Catalog-driven years: only the library's own shortlist for that year. --}}
-                <select x-show="isCatalogDriven" name="journal_id" x-model="journalId" :required="isCatalogDriven"
+                <select x-show="isCatalogDriven" :name="isCatalogDriven ? 'journal_id' : null" x-model="journalId" :required="isCatalogDriven"
                         class="{{ $base }} @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                     <option value="">{{ __('Tanlang') }}</option>
                     <template x-for="c in catalogOptions" :key="c.journal_id">
@@ -136,7 +144,7 @@
                 </p>
 
                 {{-- Legacy years — free choice, as before. --}}
-                <select x-show="!isCatalogDriven" id="journal_id" name="journal_id" x-model="journalId" :required="!isCatalogDriven"
+                <select x-show="!isCatalogDriven" id="journal_id" :name="!isCatalogDriven ? 'journal_id' : null" x-model="journalId" :required="!isCatalogDriven"
                         class="{{ $base }} @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                     <option value="">{{ __('Tanlang') }}</option>
                     @foreach (\App\Enums\PublicationKind::cases() as $kind)
