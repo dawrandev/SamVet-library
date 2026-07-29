@@ -22,21 +22,21 @@
     ];
 
     $fundBreakdowns = [
-        [__('Kategoriyalar bo‘yicha'), $byCategory],
-        [__('Shakli bo‘yicha'), $byFormat],
-        [__('Kitoblar turi bo‘yicha'), $byType],
-        [__('Kitoblar tili bo‘yicha'), $byLanguage],
+        [__('Kategoriyalar bo‘yicha'), $byCategory, 'bar'],
+        [__('Shakli bo‘yicha'), $byFormat, 'bar'],
+        [__('Kitoblar turi bo‘yicha'), $byType, 'bar'],
+        [__('Kitoblar tili bo‘yicha'), $byLanguage, 'donut'],
     ];
 
     $readerBreakdowns = [
-        [__('Turi bo‘yicha'), $readersByType],
-        [__('Jinsi bo‘yicha'), $readersByGender],
-        [__('Yoshi bo‘yicha'), $readersByAgeGroup],
+        [__('Turi bo‘yicha'), $readersByType, 'donut'],
+        [__('Jinsi bo‘yicha'), $readersByGender, 'donut'],
+        [__('Yoshi bo‘yicha'), $readersByAgeGroup, 'bar'],
     ];
 @endphp
 
 @section('content')
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div data-statistics-charts class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {{-- Breadcrumb --}}
         <nav class="text-sm text-gray-500">
             <a href="{{ route('home') }}" class="hover:text-blue-700">{{ __('Bosh sahifa') }}</a>
@@ -70,16 +70,16 @@
         {{-- Fund breakdowns (kategoriya / shakli / turi / til) --}}
         <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Fond statistikasi') }}</h2>
         <div class="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach ($fundBreakdowns as [$heading, $rows])
-                <x-site.stat-breakdown-card :heading="$heading" :rows="$rows" />
+            @foreach ($fundBreakdowns as [$heading, $rows, $type])
+                <x-site.stat-chart-card :heading="$heading" :rows="$rows" :type="$type" />
             @endforeach
         </div>
 
         {{-- Reader demographics (turi / jinsi / yoshi) --}}
         <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Foydalanuvchilar statistikasi') }}</h2>
         <div class="mt-5 grid gap-6 lg:grid-cols-3">
-            @foreach ($readerBreakdowns as [$heading, $rows])
-                <x-site.stat-breakdown-card :heading="$heading" :rows="$rows" />
+            @foreach ($readerBreakdowns as [$heading, $rows, $type])
+                <x-site.stat-chart-card :heading="$heading" :rows="$rows" :type="$type" :center-label="__('Kishi')" />
             @endforeach
         </div>
 

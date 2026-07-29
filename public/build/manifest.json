@@ -1,4 +1,8 @@
 {
+  "_apexcharts.esm-Bff1He7V.js": {
+    "file": "assets/apexcharts.esm-Bff1He7V.js",
+    "name": "apexcharts.esm"
+  },
   "node_modules/@fontsource-variable/outfit/files/outfit-latin-ext-wght-normal.woff2": {
     "file": "assets/outfit-latin-ext-wght-normal-DdQaqQDo.woff2",
     "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-ext-wght-normal.woff2"
@@ -13,10 +17,13 @@
     "isEntry": true
   },
   "resources/js/admin/charts.js": {
-    "file": "assets/charts-DrLtvrql.js",
+    "file": "assets/charts-BGQT1uZO.js",
     "name": "charts",
     "src": "resources/js/admin/charts.js",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "_apexcharts.esm-Bff1He7V.js"
+    ]
   },
   "resources/js/admin/editor.js": {
     "file": "assets/editor-DZ8VuokR.js",
@@ -28,12 +35,13 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BARcN4o_.js",
+    "file": "assets/app-D3sHosh-.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
       "resources/js/admin/charts.js",
+      "resources/js/site/statistics-charts.js",
       "resources/js/site/reader.js",
       "resources/js/admin/editor.js"
     ],
@@ -46,5 +54,14 @@
     "name": "reader",
     "src": "resources/js/site/reader.js",
     "isDynamicEntry": true
+  },
+  "resources/js/site/statistics-charts.js": {
+    "file": "assets/statistics-charts-0gs0QoAP.js",
+    "name": "statistics-charts",
+    "src": "resources/js/site/statistics-charts.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_apexcharts.esm-Bff1He7V.js"
+    ]
   }
 }

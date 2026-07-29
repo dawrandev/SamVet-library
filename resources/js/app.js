@@ -102,6 +102,11 @@ if (document.querySelector('[data-dashboard]')) {
     import('./admin/charts.js').then((m) => m.initDashboardCharts());
 }
 
+// Public Statistika page charts — same idea, its own code-split bundle.
+if (document.querySelector('[data-statistics-charts]')) {
+    import('./site/statistics-charts.js').then((m) => m.initStatisticsCharts());
+}
+
 // Tick the shared clock only on pages that render a computer-session countdown.
 if (document.querySelector('[data-computer-session-countdown]')) {
     setInterval(() => { Alpine.store('clock').now = Date.now(); }, 1000);
