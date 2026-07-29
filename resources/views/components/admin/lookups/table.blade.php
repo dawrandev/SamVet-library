@@ -2,6 +2,7 @@
     'translatable' => false,
     'hasParent' => false,
     'parentLabel' => null,
+    'hasPercentage' => false,
 ])
 
 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
@@ -12,6 +13,9 @@
                     <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Nomi') }}</th>
                     @if ($hasParent)
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ $parentLabel ?? __('Ota kategoriya') }}</th>
+                    @endif
+                    @if ($hasPercentage)
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Ta’minganlik darajasi') }}</th>
                     @endif
                     @if ($translatable)
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Tarjima holati') }}</th>

@@ -1,6 +1,7 @@
 @props([
     'title' => null,          // Modal title ("Book type")
     'parents' => null,        // Parent select for category (Collection|null)
+    'hasPercentage' => false, // Percentage (0-100) input for department coverage
 ])
 
 {{-- Modal (inside Alpine `lookupTable` state) --}}
@@ -70,6 +71,17 @@
                        class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('name.kk') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                 @error('name.kk')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
             </div>
+
+            @if ($hasPercentage)
+                <div>
+                    <label for="percentage" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        {{ __('Ta’minganlik darajasi (%)') }}<span class="text-error-500">*</span>
+                    </label>
+                    <input type="number" name="percentage" id="percentage" x-model="form.percentage" required min="0" max="100"
+                           class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:bg-gray-900 dark:text-white/90 @error('percentage') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
+                    @error('percentage')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
+                </div>
+            @endif
 
             <div class="flex justify-end gap-3 pt-2">
                 <button type="button" @click="close()"

@@ -2,6 +2,7 @@
     'row',          // ['id','uz','ru','kk','incomplete','update_url','destroy_url', ...]
     'hasParent' => false,
     'sortable' => false,   // expects 'move_up_url'/'move_down_url' (null at a sibling-group boundary) in $row
+    'hasPercentage' => false, // expects 'percentage' (int 0-100) in $row
 ])
 
 <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/[0.02]">
@@ -13,6 +14,11 @@
     {{-- Parent category (only for category) --}}
     @if ($hasParent)
         <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $row['parent'] ?? '—' }}</td>
+    @endif
+
+    {{-- Percentage (only for department coverage) --}}
+    @if ($hasPercentage)
+        <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $row['percentage'] }}%</td>
     @endif
 
     {{-- Translation status --}}

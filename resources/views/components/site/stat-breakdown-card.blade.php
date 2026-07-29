@@ -1,6 +1,7 @@
 @props([
     'heading',
     'rows', // Collection<{label, count, share}>
+    'unit' => null, // optional suffix after the count, e.g. '%'
 ])
 
 @php
@@ -18,7 +19,7 @@
                 <div>
                     <div class="flex items-center justify-between gap-3 text-sm">
                         <span class="line-clamp-1 text-gray-700">{{ $row['label'] }}</span>
-                        <span class="flex-none tabular-nums text-gray-400">{{ $n($row['count']) }}</span>
+                        <span class="flex-none tabular-nums text-gray-400">{{ $n($row['count']) }}{{ $unit }}</span>
                     </div>
                     <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                         <div class="h-full rounded-full bg-blue-600" style="width: {{ $row['share'] }}%"></div>

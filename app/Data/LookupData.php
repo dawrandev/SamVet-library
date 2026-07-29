@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  *  - Translatable (category, book_type, language, location): name = ['uz'=>,'ru'=>,'kk'=>]
  *  - Plain (publisher, author): name = string
  *
- * Category additionally accepts `parent_id`.
+ * Category additionally accepts `parent_id`; department coverage accepts `percentage`.
  */
 class LookupData
 {
@@ -21,6 +21,7 @@ class LookupData
     public function __construct(
         public readonly string|array $name,
         public readonly ?int $parent_id = null,
+        public readonly ?int $percentage = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -41,6 +42,7 @@ class LookupData
         return new self(
             name: $name,
             parent_id: $request->integer('parent_id') ?: null,
+            percentage: $request->filled('percentage') ? $request->integer('percentage') : null,
         );
     }
 }

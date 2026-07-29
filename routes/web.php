@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\Lookups\AffiliationGroupController;
 use App\Http\Controllers\Admin\Lookups\AffiliationPlaceController;
 use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
 use App\Http\Controllers\Admin\Lookups\BookTypeController;
+use App\Http\Controllers\Admin\Lookups\DepartmentCoverageController;
 use App\Http\Controllers\Admin\Lookups\CategoryController;
 use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
 use App\Http\Controllers\Admin\Lookups\ReaderTypeController;
@@ -323,6 +324,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::patch('categories/{category}/move-down', [CategoryController::class, 'moveDown'])->name('categories.move-down');
         Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('book-types', BookTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['book-types' => 'bookType']);
+        Route::resource('department-coverages', DepartmentCoverageController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['department-coverages' => 'departmentCoverage']);
         Route::resource('journal-types', JournalTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['journal-types' => 'journalType']);
         Route::resource('languages', LanguageController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('locations', LocationController::class)->only(['index', 'store', 'update', 'destroy']);

@@ -13,14 +13,12 @@
         [__('Maqolalar'), $n($totals['articles'])],
     ];
 
-    // Secondary figures: live counts + the two config-driven facts.
+    // Secondary figures: live counts only.
     $secondary = [
         [__('Jurnallar'), $n($totals['journals'])],
         [__('Gazetalar'), $n($totals['newspapers'])],
         [__('Jurnal sonlari'), $n($totals['issues'])],
         [__('Yangiliklar'), $n($totals['news'])],
-        [__('Tashkil etilgan'), (string) $facts['founded_year']],
-        [__('O‘qish zali o‘rni'), $n($facts['reading_room_seats'])],
     ];
 
     $fundBreakdowns = [
@@ -83,6 +81,12 @@
             @foreach ($readerBreakdowns as [$heading, $rows])
                 <x-site.stat-breakdown-card :heading="$heading" :rows="$rows" />
             @endforeach
+        </div>
+
+        {{-- Kafedralar kesimida ta'minganlik darajasi --}}
+        <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Kafedralar kesimida ta’minganlik darajasi') }}</h2>
+        <div class="mt-5 grid gap-6">
+            <x-site.stat-breakdown-card :heading="__('Kafedralar bo‘yicha')" :rows="$byDepartment" unit="%" />
         </div>
     </div>
 @endsection

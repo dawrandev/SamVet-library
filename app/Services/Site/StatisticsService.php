@@ -4,12 +4,12 @@ namespace App\Services\Site;
 
 use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\StatisticsRepositoryInterface;
+use App\Repositories\Eloquent\DepartmentCoverageRepository;
 use App\Services\ReaderStatsService;
 use Illuminate\Support\Collection;
 
 /**
- * Public statistics page: live totals from the database plus the few facts
- * (founding year, reading-room seats) that live in config.
+ * Public statistics page: live totals and breakdowns from the database.
  */
 class StatisticsService
 {
@@ -19,6 +19,7 @@ class StatisticsService
         private readonly StatisticsRepositoryInterface $statistics,
         private readonly CatalogRepositoryInterface $catalog,
         private readonly ReaderStatsService $readerStats,
+        private readonly DepartmentCoverageRepository $departmentCoverages,
     ) {}
 
     /**
@@ -28,10 +29,6 @@ class StatisticsService
     {
         return [
             'totals' => $this->statistics->totals(),
-            'facts' => [
-                'founded_year' => config('arm.founded_year'),
-                'reading_room_seats' => config('arm.reading_room_seats'),
-            ],
             // Fund breakdowns — kategoriya, shakli (format), til.
             'byType' => $this->breakdown($this->catalog->typeFacets()),
             'byFormat' => $this->breakdown($this->catalog->formatFacets()),
@@ -41,7 +38,27 @@ class StatisticsService
             'readersByType' => $this->labelledBreakdown($this->readerStats->byType()),
             'readersByGender' => $this->labelledBreakdown($this->readerStats->byGender()),
             'readersByAgeGroup' => $this->labelledBreakdown($this->readerStats->byAgeGroup()),
+            // Kafedralar kesimida ta'minganlik darajasi — admin-managed, not derived from counts.
+            'byDepartment' => $this->departmentBreakdown(),
         ];
+    }
+
+    /**
+     * Each department's own percentage IS its bar share — unlike the other
+     * breakdowns, not relative to the largest value in the set.
+     *
+     * @return Collection<int, array{label: string, count: int, share: float}>
+     */
+    private function departmentBreakdown(): Collection
+    {
+        $locale = app()->getLocale();
+
+        return $this->departmentCoverages->all()->map(fn ($department): array => [
+            'label' => $department->getTranslation('name', $locale, false)
+                ?: $department->getTranslation('name', 'uz', false),
+            'count' => $department->percentage,
+            'share' => $department->percentage,
+        ])->values();
     }
 
     /**

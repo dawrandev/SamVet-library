@@ -223,6 +223,7 @@
                                         'regions' => __('Viloyatlar'),
                                         'districts' => __('Tumanlar'),
                                         'reader-types' => __('Foydalanuvchi turlari'),
+                                        'department-coverages' => __('Kafedralar ta’minganligi'),
                                     ];
                                 @endphp
                                 @foreach ($lookupLinks as $slug => $label)

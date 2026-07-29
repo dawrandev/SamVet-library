@@ -4,6 +4,7 @@ use App\Enums\BookFormat;
 use App\Enums\Gender;
 use App\Models\Book;
 use App\Models\BookCopy;
+use App\Models\DepartmentCoverage;
 use App\Models\Reader;
 use App\Models\ReaderType;
 
@@ -50,4 +51,17 @@ it('shows the fund and reader statistics section headings', function () {
         ->assertOk()
         ->assertSee(__('Fond statistikasi'))
         ->assertSee(__('Foydalanuvchilar statistikasi'));
+});
+
+it('shows each department\'s own percentage as its bar share, not relative to the largest one', function () {
+    DepartmentCoverage::factory()->create(['name' => ['uz' => 'Kichik kafedra', 'ru' => 'x', 'kk' => 'x'], 'percentage' => 20]);
+    DepartmentCoverage::factory()->create(['name' => ['uz' => 'Katta kafedra', 'ru' => 'x', 'kk' => 'x'], 'percentage' => 80]);
+
+    $res = $this->get(route('statistics'));
+
+    $res->assertOk()->assertSee(__('Kafedralar kesimida ta’minganlik darajasi'));
+
+    $byDepartment = $res->viewData('byDepartment');
+    expect($byDepartment->firstWhere('label', 'Kichik kafedra')['share'])->toBe(20)
+        ->and($byDepartment->firstWhere('label', 'Katta kafedra')['share'])->toBe(80);
 });
