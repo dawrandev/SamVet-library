@@ -172,7 +172,16 @@ class CatalogRepository implements CatalogRepositoryInterface
             ->when($filters->types, fn (Builder $query, array $ids) => $query->whereIn('book_type_id', $ids))
             ->when($filters->languages, fn (Builder $query, array $ids) => $query->whereIn('language_id', $ids))
             ->when($bookFormatValues, function (Builder $query, array $formats): void {
-                $query->whereHas('copies', fn (Builder $q) => $q->whereIn('format', $formats));
+                // Electronic has a second signal beyond a cataloged copy row —
+                // books.electronic_file (see BookFormat's own docblock) — so a
+                // book that's only online-readable still matches Shakli=Elektron.
+                $query->where(function (Builder $q) use ($formats): void {
+                    $q->whereHas('copies', fn (Builder $q2) => $q2->whereIn('format', $formats));
+
+                    if (in_array(BookFormat::Electronic->value, $formats, true)) {
+                        $q->orWhereNotNull('electronic_file');
+                    }
+                });
             })
             ->when($filters->yearFrom, fn (Builder $query, int $year) => $query->where('publication_year', '>=', $year))
             ->when($filters->yearTo, fn (Builder $query, int $year) => $query->where('publication_year', '<=', $year))
@@ -302,13 +311,20 @@ class CatalogRepository implements CatalogRepositoryInterface
             'copies', fn (Builder $q) => $q->where('format', $format->value)
         )->count();
 
-        // Dissertations/avtoreferats have no format of their own — they're
-        // PDF-only, so they fold into the Electronic count alongside books
-        // that happen to have an electronic copy.
+        // A book counts as Electronic via either signal: a cataloged
+        // electronic BookCopy row, or a real online-readable PDF in
+        // electronic_file with no copy record at all (see BookFormat's own
+        // docblock). Dissertations/avtoreferats have no format of their
+        // own — they're PDF-only, so they fold into Electronic too.
+        $electronicBookCount = Book::where(function (Builder $q): void {
+            $q->whereHas('copies', fn (Builder $q2) => $q2->where('format', BookFormat::Electronic->value))
+                ->orWhereNotNull('electronic_file');
+        })->count();
+
         $counts = [
             CatalogFormat::Print->value => $bookCopyCount(BookFormat::Print),
             CatalogFormat::Braille->value => $bookCopyCount(BookFormat::Braille),
-            CatalogFormat::Electronic->value => $bookCopyCount(BookFormat::Electronic)
+            CatalogFormat::Electronic->value => $electronicBookCount
                 + Dissertation::count()
                 + Avtoreferat::count(),
             CatalogFormat::Audio->value => Audiobook::count(),

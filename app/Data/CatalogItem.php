@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\BookFormat;
 use App\Enums\CatalogResourceType;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
@@ -49,6 +50,17 @@ final class CatalogItem
 
     public static function fromBook(Book $book): self
     {
+        $formats = $book->relationLoaded('copies')
+            ? $book->copies->pluck('format')->filter()->unique()->values()->all()
+            : [];
+
+        // A book can be online-readable via books.electronic_file with no
+        // cataloged electronic BookCopy row at all (see BookFormat's own
+        // docblock) — that still counts as "Elektron" to a visitor.
+        if (filled($book->electronic_file) && ! in_array(BookFormat::Electronic, $formats, true)) {
+            $formats[] = BookFormat::Electronic;
+        }
+
         return new self(
             type: CatalogResourceType::Book,
             id: $book->id,
@@ -59,9 +71,7 @@ final class CatalogItem
             viewsCount: (int) $book->views_count,
             year: $book->publication_year,
             typeLabel: $book->type?->name,
-            formats: $book->relationLoaded('copies')
-                ? $book->copies->pluck('format')->filter()->unique()->values()->all()
-                : [],
+            formats: $formats,
             availableCopies: $book->available_copies ?? null,
         );
     }

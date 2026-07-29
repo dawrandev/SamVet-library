@@ -73,9 +73,13 @@
 
         @auth('reader')
             @if (! is_null($item->availableCopies))
-                <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                    <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                    {{ __('ARMda :n nusxa mavjud', ['n' => $item->availableCopies]) }}
+                <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $item->availableCopies > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500' }}">
+                    @if ($item->availableCopies > 0)
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                        {{ __('ARMda :n nusxa mavjud', ['n' => $item->availableCopies]) }}
+                    @else
+                        {{ __('Hozircha ARMda mavjud emas') }}
+                    @endif
                 </span>
             @endif
         @endauth

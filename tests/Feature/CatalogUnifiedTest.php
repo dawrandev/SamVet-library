@@ -8,6 +8,54 @@ use App\Models\Category;
 use App\Models\Dissertation;
 use App\Models\Video;
 
+it('shows both Bosma and Elektron on a card when a book has a print copy and an online-readable PDF, with no electronic copy row', function () {
+    $book = Book::factory()->withPdf()->create();
+    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'print']);
+
+    $res = $this->get(route('catalog'));
+
+    $item = $res->viewData('items')->getCollection()->first();
+    expect($item->formats)->toContain(\App\Enums\BookFormat::Print, \App\Enums\BookFormat::Electronic);
+});
+
+it('matches Shakli=Elektron for a book with only electronic_file and no electronic copy row', function () {
+    $book = Book::factory()->withPdf()->create();
+    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'print']);
+    Book::factory()->create(); // print-only, no PDF — must not match
+
+    $res = $this->get(route('catalog', ['formats' => ['electronic']]));
+
+    expect($res->viewData('total'))->toBe(1);
+});
+
+it('counts a book with only electronic_file (no electronic copy row) in the Elektron facet', function () {
+    Book::factory()->withPdf()->create();
+
+    $res = $this->get(route('catalog'));
+
+    $facet = collect($res->viewData('formats'))->firstWhere('id', 'electronic');
+    expect($facet['count'])->toBe(1);
+});
+
+it('shows "not available" instead of "0 nusxa mavjud" when a book has zero available copies', function () {
+    $book = Book::factory()->create();
+    BookCopy::factory()->borrowed()->create(['book_id' => $book->id, 'format' => 'print']);
+    actingAsReader();
+
+    $res = $this->get(route('catalog'));
+
+    $res->assertSee(__('Hozircha ARMda mavjud emas'))
+        ->assertDontSee('0 '.__('nusxa mavjud'), false);
+});
+
+it('still shows the green "N nusxa mavjud" pill when copies are available', function () {
+    $book = Book::factory()->create();
+    BookCopy::factory()->create(['book_id' => $book->id, 'format' => 'print']);
+    actingAsReader();
+
+    $this->get(route('catalog'))->assertSee(__('ARMda :n nusxa mavjud', ['n' => 1]));
+});
+
 it('includes one of each of the 5 resource types by default, each linking to its own show route', function () {
     $book = Book::factory()->create();
     $audiobook = Audiobook::factory()->create();

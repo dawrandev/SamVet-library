@@ -7,6 +7,13 @@
     $authors = $book->authors;
     $available = $book->available_copies ?? null;
     $formats = $book->relationLoaded('copies') ? $book->copies->pluck('format')->unique() : collect();
+
+    // A book can be online-readable via electronic_file with no cataloged
+    // electronic BookCopy row at all (see BookFormat's own docblock) — that
+    // still counts as "Elektron" to a visitor.
+    if (filled($book->electronic_file) && ! $formats->contains(\App\Enums\BookFormat::Electronic)) {
+        $formats->push(\App\Enums\BookFormat::Electronic);
+    }
 @endphp
 
 <a href="{{ route('book.show', $book->slug) }}" {{ $attributes->merge(['class' => 'group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg']) }}>
@@ -46,9 +53,13 @@
 
         @auth('reader')
             @if (! is_null($available))
-                <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                    <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                    {{ __('ARMda :n nusxa mavjud', ['n' => $available]) }}
+                <span class="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $available > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500' }}">
+                    @if ($available > 0)
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                        {{ __('ARMda :n nusxa mavjud', ['n' => $available]) }}
+                    @else
+                        {{ __('Hozircha ARMda mavjud emas') }}
+                    @endif
                 </span>
             @endif
         @endauth
