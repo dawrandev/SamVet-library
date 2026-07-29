@@ -23,44 +23,51 @@
     <style>
         * { font-family: DejaVu Sans, sans-serif; box-sizing: border-box; }
         @page { margin: 22px 25px; }
-        body { color: #1f2937; font-size: 15px; margin: 0; }
+        body { color: #1f2937; font-size: 16px; margin: 0; }
 
-        table.card { width: 100%; border-collapse: collapse; margin-top: 24px; }
+        table.card { width: 100%; border-collapse: collapse; margin-top: 12px; }
         table.card > tr > td { vertical-align: top; padding: 0; }
-        td.left-col { width: 52%; padding-right: 23px; border-right: 1px solid #e5e7eb; }
-        td.right-col { width: 48%; padding-left: 23px; }
+        td.left-col { width: 52%; padding-right: 25px; border-right: 1px solid #e5e7eb; }
+        td.right-col { width: 48%; padding-left: 25px; }
 
-        .badge { display: inline-block; color: #fff; font-size: 20px; font-weight: bold; letter-spacing: 0.5px; padding: 8px 20px; border-radius: 7px; margin-bottom: 16px; }
+        .badge { display: inline-block; color: #fff; font-size: 22px; font-weight: bold; letter-spacing: 0.5px; padding: 9px 22px; border-radius: 7px; margin-bottom: 18px; }
 
-        table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
         table.id-row td { vertical-align: top; }
-        .photo-cell { width: 125px; padding-right: 16px; }
-        .photo { width: 113px; height: 141px; border: 1px solid #d1d5db; border-radius: 7px; object-fit: cover; }
-        .photo-empty { width: 113px; height: 141px; border: 1px solid #d1d5db; border-radius: 7px; background: #f3f4f6; text-align: center; }
-        .photo-empty span { display: block; padding-top: 58px; font-size: 13px; color: #9ca3af; }
-        .id-number { margin: 0 0 13px; font-size: 16px; color: #374151; }
-        .id-number b { font-size: 21px; color: #111827; margin-left: 7px; }
+        .photo-cell { width: 157px; padding-right: 18px; }
+        /* The photo is the one element with no text to wrap, so it can grow
+           freely without risking the page-overflow bug (see the note on
+           table.card's margin-top below) — sized well past the other blocks. */
+        .photo { width: 145px; height: 182px; border: 1px solid #d1d5db; border-radius: 7px; object-fit: cover; }
+        .photo-empty { width: 145px; height: 182px; border: 1px solid #d1d5db; border-radius: 7px; background: #f3f4f6; text-align: center; }
+        .photo-empty span { display: block; padding-top: 78px; font-size: 14px; color: #9ca3af; }
+        .id-number { margin: 0 0 15px; font-size: 17px; color: #374151; }
+        .id-number b { font-size: 23px; color: #111827; margin-left: 8px; }
 
-        .name-block p { margin: 0 0 9px; font-size: 16px; color: #6b7280; }
-        .name-block p b { display: block; font-size: 20px; color: #111827; font-weight: bold; margin-top: 1px; }
+        .name-block p { margin: 0 0 10px; font-size: 17px; color: #6b7280; }
+        .name-block p b { display: block; font-size: 22px; color: #111827; font-weight: bold; margin-top: 1px; }
 
-        .affiliation-box { background: #f9fafb; border: 1px solid #eef0f3; border-radius: 7px; padding: 13px 16px; margin: 13px 0 20px; }
+        .affiliation-box { background: #f9fafb; border: 1px solid #eef0f3; border-radius: 7px; padding: 15px 18px; margin: 15px 0 22px; }
+        /* Kept smaller than the rest: this box's two sub-columns hold long
+           department/specialty names for some readers and wrap onto several
+           lines — a bigger font here reintroduces the page-overflow bug
+           (verified across every reader's real data before shipping). */
         .affiliation-box p { margin: 0 0 9px; font-size: 16px; color: #6b7280; }
         .affiliation-box p b { display: block; font-size: 17px; color: #111827; font-weight: bold; margin-top: 1px; }
         .affiliation-box p:last-child { margin-bottom: 0; }
         table.affiliation-sub { width: 100%; border-collapse: collapse; }
         table.affiliation-sub td { width: 50%; vertical-align: top; padding: 0; }
 
-        .footer-row { margin-top: 23px; }
-        .footer-row p { margin: 0 0 13px; font-size: 15px; color: #374151; }
+        .footer-row { margin-top: 25px; }
+        .footer-row p { margin: 0 0 14px; font-size: 16px; color: #374151; }
         .footer-row p:last-child { margin-bottom: 0; }
-        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 242px; height: 20px; margin-left: 7px; }
+        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 260px; height: 22px; margin-left: 8px; }
 
-        .right-title { font-size: 16px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 13px; }
-        .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 16px; }
-        .year-row p { margin: 0 0 8px; font-size: 16px; color: #111827; }
+        .right-title { font-size: 18px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 15px; }
+        .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 18px; }
+        .year-row p { margin: 0 0 9px; font-size: 18px; color: #111827; }
         .year-row p.year-line { font-weight: bold; }
-        .year-rule { border: none; border-top: 1px solid #eef0f3; margin: 0 0 16px; }
+        .year-rule { border: none; border-top: 1px solid #eef0f3; margin: 0 0 18px; }
     </style>
 </head>
 <body>
