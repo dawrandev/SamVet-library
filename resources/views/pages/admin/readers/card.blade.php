@@ -22,45 +22,45 @@
     <meta charset="utf-8">
     <style>
         * { font-family: DejaVu Sans, sans-serif; box-sizing: border-box; }
-        @page { margin: 20px 22px; }
-        body { color: #1f2937; font-size: 13px; margin: 0; }
+        @page { margin: 22px 25px; }
+        body { color: #1f2937; font-size: 15px; margin: 0; }
 
-        table.card { width: 100%; border-collapse: collapse; }
+        table.card { width: 100%; border-collapse: collapse; margin-top: 24px; }
         table.card > tr > td { vertical-align: top; padding: 0; }
-        td.left-col { width: 52%; padding-right: 20px; border-right: 1px solid #e5e7eb; }
-        td.right-col { width: 48%; padding-left: 20px; }
+        td.left-col { width: 52%; padding-right: 23px; border-right: 1px solid #e5e7eb; }
+        td.right-col { width: 48%; padding-left: 23px; }
 
-        .badge { display: inline-block; color: #fff; font-size: 17px; font-weight: bold; letter-spacing: 0.5px; padding: 7px 17px; border-radius: 6px; margin-bottom: 14px; }
+        .badge { display: inline-block; color: #fff; font-size: 20px; font-weight: bold; letter-spacing: 0.5px; padding: 8px 20px; border-radius: 7px; margin-bottom: 16px; }
 
-        table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
         table.id-row td { vertical-align: top; }
-        .photo-cell { width: 109px; padding-right: 14px; }
-        .photo { width: 98px; height: 123px; border: 1px solid #d1d5db; border-radius: 6px; object-fit: cover; }
-        .photo-empty { width: 98px; height: 123px; border: 1px solid #d1d5db; border-radius: 6px; background: #f3f4f6; text-align: center; }
-        .photo-empty span { display: block; padding-top: 50px; font-size: 11px; color: #9ca3af; }
-        .id-number { margin: 0 0 11px; font-size: 14px; color: #374151; }
-        .id-number b { font-size: 18px; color: #111827; margin-left: 6px; }
+        .photo-cell { width: 125px; padding-right: 16px; }
+        .photo { width: 113px; height: 141px; border: 1px solid #d1d5db; border-radius: 7px; object-fit: cover; }
+        .photo-empty { width: 113px; height: 141px; border: 1px solid #d1d5db; border-radius: 7px; background: #f3f4f6; text-align: center; }
+        .photo-empty span { display: block; padding-top: 58px; font-size: 13px; color: #9ca3af; }
+        .id-number { margin: 0 0 13px; font-size: 16px; color: #374151; }
+        .id-number b { font-size: 21px; color: #111827; margin-left: 7px; }
 
-        .name-block p { margin: 0 0 8px; font-size: 14px; color: #6b7280; }
-        .name-block p b { display: block; font-size: 17px; color: #111827; font-weight: bold; margin-top: 1px; }
+        .name-block p { margin: 0 0 9px; font-size: 16px; color: #6b7280; }
+        .name-block p b { display: block; font-size: 20px; color: #111827; font-weight: bold; margin-top: 1px; }
 
-        .affiliation-box { background: #f9fafb; border: 1px solid #eef0f3; border-radius: 6px; padding: 11px 14px; margin: 11px 0 17px; }
-        .affiliation-box p { margin: 0 0 8px; font-size: 14px; color: #6b7280; }
-        .affiliation-box p b { display: block; font-size: 15px; color: #111827; font-weight: bold; margin-top: 1px; }
+        .affiliation-box { background: #f9fafb; border: 1px solid #eef0f3; border-radius: 7px; padding: 13px 16px; margin: 13px 0 20px; }
+        .affiliation-box p { margin: 0 0 9px; font-size: 16px; color: #6b7280; }
+        .affiliation-box p b { display: block; font-size: 17px; color: #111827; font-weight: bold; margin-top: 1px; }
         .affiliation-box p:last-child { margin-bottom: 0; }
         table.affiliation-sub { width: 100%; border-collapse: collapse; }
         table.affiliation-sub td { width: 50%; vertical-align: top; padding: 0; }
 
-        .footer-row { margin-top: 20px; }
-        .footer-row p { margin: 0 0 11px; font-size: 13px; color: #374151; }
+        .footer-row { margin-top: 23px; }
+        .footer-row p { margin: 0 0 13px; font-size: 15px; color: #374151; }
         .footer-row p:last-child { margin-bottom: 0; }
-        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 210px; height: 17px; margin-left: 6px; }
+        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 242px; height: 20px; margin-left: 7px; }
 
-        .right-title { font-size: 14px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 11px; }
-        .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 14px; }
-        .year-row p { margin: 0 0 7px; font-size: 14px; color: #111827; }
+        .right-title { font-size: 16px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 13px; }
+        .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 16px; }
+        .year-row p { margin: 0 0 8px; font-size: 16px; color: #111827; }
         .year-row p.year-line { font-weight: bold; }
-        .year-rule { border: none; border-top: 1px solid #eef0f3; margin: 0 0 14px; }
+        .year-rule { border: none; border-top: 1px solid #eef0f3; margin: 0 0 16px; }
     </style>
 </head>
 <body>

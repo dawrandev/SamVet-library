@@ -115,6 +115,21 @@ it('renders the card without a photo file present on disk (stale DB value)', fun
     $res->assertOk();
 });
 
+it('always fits the card on a single PDF page, even with long wrapping affiliation text', function () {
+    $reader = Reader::factory()->create([
+        'affiliation_unit_id' => AffiliationUnit::factory()->create([
+            'name' => '70840302 - Veterinariya mikrobiologiyasi, virusologiyasi, epizootologiyasi, mikologiyasi va immunologiyasi',
+        ])->id,
+    ]);
+
+    $res = $this->get(route('admin.readers.card', $reader));
+
+    preg_match_all('/\/Count (\d+)/', $res->getContent(), $matches);
+    $pageCount = max(array_map('intval', $matches[1] ?? [0]));
+
+    expect($pageCount)->toBe(1);
+});
+
 it('streams the famulyar cover page as a PDF', function () {
     $reader = Reader::factory()->create();
 
