@@ -10,6 +10,14 @@
             <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">{{ __('Jami') }}: {{ $subscriptions->total() }}</p>
         </div>
         <div class="flex items-center gap-2">
+            <a href="{{ route('admin.subscription-catalog.index') }}"
+               class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
+                {{ __('Katalog') }}
+            </a>
+            <a href="{{ route('admin.subscriptions.dashboard') }}"
+               class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">
+                {{ __('Tahlil') }}
+            </a>
             <a href="{{ route('admin.subscriptions.create') }}"
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
                 <span class="text-lg leading-none">+</span> {{ __('Yangi obuna') }}

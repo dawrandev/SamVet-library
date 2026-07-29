@@ -24,11 +24,34 @@
             'group' => $r->affiliationGroup?->name,
         ])->values()),
         journalsData: @js($journals->map(fn ($j) => ['id' => (string) $j->id, 'index' => $j->index])->values()),
+        year: @js((string) old('year', $subscription?->year ?? date('Y'))),
+        startMonth: @js((string) old('start_month', $subscription?->start_month?->value ?? 1)),
+        endMonth: @js((string) old('end_month', $subscription?->end_month?->value ?? 12)),
+        amount: @js((string) old('amount', $subscription?->amount ?? '')),
+        // Shortlisted catalog entries by year — drives the year-aware journal
+        // picker + auto price calculation from {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }} on.
+        catalogByYear: @js($catalogByYear),
+        catalogEnforcedFromYear: {{ \App\Models\Subscription::CATALOG_ENFORCED_FROM_YEAR }},
         get selectedReader() {
             return this.readersData.find(r => r.id === this.readerId) || null;
         },
         get selectedJournal() {
             return this.journalsData.find(j => j.id === this.journalId) || null;
+        },
+        get isCatalogDriven() {
+            return Number(this.year) >= this.catalogEnforcedFromYear;
+        },
+        get catalogOptions() {
+            return this.catalogByYear[this.year] || [];
+        },
+        get selectedCatalogEntry() {
+            return this.catalogOptions.find(c => c.journal_id === this.journalId) || null;
+        },
+        get monthCount() {
+            return Number(this.endMonth) - Number(this.startMonth) + 1;
+        },
+        get computedAmount() {
+            return this.selectedCatalogEntry ? Math.round(this.selectedCatalogEntry.annual_price / 12 * this.monthCount) : null;
         },
     }"
 >
@@ -99,7 +122,21 @@
             <div>
                 <label for="journal_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Nashr') }}<span class="text-error-500">*</span></label>
 
-                <select id="journal_id" name="journal_id" x-model="journalId" required
+                {{-- Catalog-driven years: only the library's own shortlist for that year. --}}
+                <select x-show="isCatalogDriven" name="journal_id" x-model="journalId" :required="isCatalogDriven"
+                        class="{{ $base }} @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
+                    <option value="">{{ __('Tanlang') }}</option>
+                    <template x-for="c in catalogOptions" :key="c.journal_id">
+                        <option :value="c.journal_id" x-text="c.journal_name"></option>
+                    </template>
+                </select>
+                <p x-show="isCatalogDriven && catalogOptions.length === 0" x-cloak class="mt-1.5 text-theme-xs text-warning-600 dark:text-warning-500">
+                    {{ __('Bu yil uchun katalogda hech narsa yo‘q — avval qo‘shing:') }}
+                    <a href="{{ route('admin.subscription-catalog.index') }}" class="font-medium underline">{{ __('Katalog') }}</a>
+                </p>
+
+                {{-- Legacy years — free choice, as before. --}}
+                <select x-show="!isCatalogDriven" id="journal_id" name="journal_id" x-model="journalId" :required="!isCatalogDriven"
                         class="{{ $base }} @error('journal_id') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                     <option value="">{{ __('Tanlang') }}</option>
                     @foreach (\App\Enums\PublicationKind::cases() as $kind)
@@ -114,7 +151,7 @@
                 </select>
                 @error('journal_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
 
-                <p x-show="selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                <p x-show="!isCatalogDriven && selectedJournal?.index" x-cloak class="mt-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
                     {{ __('Indeks') }}: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="selectedJournal?.index"></span>
                 </p>
             </div>
@@ -147,37 +184,44 @@
             <div class="grid gap-4 sm:grid-cols-3">
                 <div>
                     <label for="year" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Yil') }}<span class="text-error-500">*</span></label>
-                    <input type="number" name="year" id="year" required min="2000" max="2100"
-                           value="{{ old('year', $subscription?->year ?? date('Y')) }}"
+                    <input type="number" name="year" id="year" x-model="year" required min="2000" max="2100"
                            class="{{ $base }} @error('year') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                     @error('year')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label for="start_month" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Boshlanish oyi') }}<span class="text-error-500">*</span></label>
-                    <select name="start_month" id="start_month" required
+                    <select name="start_month" id="start_month" x-model="startMonth" required
                             class="{{ $base }} @error('start_month') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                         @foreach (\App\Enums\Month::cases() as $m)
-                            <option value="{{ $m->value }}" @selected((int) old('start_month', $subscription?->start_month?->value ?? 1) === $m->value)>{{ $m->label() }}</option>
+                            <option value="{{ $m->value }}">{{ $m->label() }}</option>
                         @endforeach
                     </select>
                     @error('start_month')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label for="end_month" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Tugash oyi') }}<span class="text-error-500">*</span></label>
-                    <select name="end_month" id="end_month" required
+                    <select name="end_month" id="end_month" x-model="endMonth" required
                             class="{{ $base }} @error('end_month') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror">
                         @foreach (\App\Enums\Month::cases() as $m)
-                            <option value="{{ $m->value }}" @selected((int) old('end_month', $subscription?->end_month?->value ?? 12) === $m->value)>{{ $m->label() }}</option>
+                            <option value="{{ $m->value }}">{{ $m->label() }}</option>
                         @endforeach
                     </select>
                     @error('end_month')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                 </div>
             </div>
 
-            <div>
+            {{-- Catalog-driven years: amount is always computed from the catalog, never typed. --}}
+            <div x-show="isCatalogDriven" x-cloak>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}</label>
+                <p class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300"
+                   x-text="selectedCatalogEntry ? (computedAmount.toLocaleString('ru-RU') + ' {{ __('so‘m') }} (' + monthCount + ' {{ __('oy') }})') : '{{ __('Avval nashrni tanlang') }}'"></p>
+                <p class="mt-1.5 text-theme-xs text-gray-400">{{ __('Katalogdagi yillik summadan avtomat hisoblanadi — qo‘lda o‘zgartirilmaydi.') }}</p>
+            </div>
+
+            {{-- Legacy years — manual amount, as before. --}}
+            <div x-show="!isCatalogDriven">
                 <label for="amount" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Obuna summasi (so‘m)') }}<span class="text-error-500">*</span></label>
-                <input type="number" name="amount" id="amount" required min="0" step="1"
-                       value="{{ old('amount', $subscription?->amount) }}"
+                <input type="number" name="amount" id="amount" x-model="amount" :required="!isCatalogDriven" min="0" step="1"
                        placeholder="{{ __('masalan: 150000') }}"
                        class="{{ $base }} @error('amount') border-error-500 @else border-gray-300 dark:border-gray-700 @enderror" />
                 @error('amount')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror

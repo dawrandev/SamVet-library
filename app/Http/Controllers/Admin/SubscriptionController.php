@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubscriptionController extends Controller
@@ -44,9 +45,26 @@ class SubscriptionController extends Controller
         ]);
     }
 
+    public function dashboard(Request $request): View
+    {
+        $year = $request->integer('year') ?: (int) date('Y');
+
+        return view('pages.admin.subscriptions.dashboard', [
+            'year' => $year,
+            'coverage' => $this->subscriptionService->journalCoverage($year),
+        ]);
+    }
+
     public function store(StoreSubscriptionRequest $request): RedirectResponse
     {
-        $this->subscriptionService->create(SubscriptionData::fromRequest($request));
+        try {
+            $this->subscriptionService->create(SubscriptionData::fromRequest($request));
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('admin.subscriptions.create')
+                ->withInput()
+                ->withErrors(['journal_id' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.subscriptions.index')
@@ -64,7 +82,14 @@ class SubscriptionController extends Controller
 
     public function update(UpdateSubscriptionRequest $request, Subscription $subscription): RedirectResponse
     {
-        $this->subscriptionService->update($subscription, SubscriptionData::fromRequest($request));
+        try {
+            $this->subscriptionService->update($subscription, SubscriptionData::fromRequest($request));
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('admin.subscriptions.edit', $subscription)
+                ->withInput()
+                ->withErrors(['journal_id' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.subscriptions.index')
