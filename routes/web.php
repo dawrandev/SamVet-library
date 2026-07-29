@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PasswordController;
 use App\Http\Controllers\Admin\ReaderCardController;
 use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
@@ -342,6 +343,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('districts', DistrictController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('reader-types', ReaderTypeController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['reader-types' => 'readerType']);
     });
+
+    Route::get('parolni-ozgartirish', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('parolni-ozgartirish', [PasswordController::class, 'update'])->name('password.update');
 
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 });
