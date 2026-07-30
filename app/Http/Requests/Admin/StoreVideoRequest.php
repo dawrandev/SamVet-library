@@ -20,6 +20,7 @@ class StoreVideoRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'author' => ['nullable', 'string', 'max:255'],
+            'published_at' => ['nullable', 'date'],
             'annotation' => ['nullable', 'string'],
             'cover' => ['nullable', 'image', 'max:2048'], // 2 MB
         ];
@@ -33,6 +34,7 @@ class StoreVideoRequest extends FormRequest
         return [
             'name' => __('Video nomi'),
             'author' => __('Muallifi'),
+            'published_at' => __('Joylangan sana'),
             'annotation' => __('Annotatsiyasi'),
             'cover' => __('Muqova rasmi'),
         ];

@@ -13,6 +13,7 @@ class VideoData
     public function __construct(
         public readonly string $name,
         public readonly ?string $author,
+        public readonly ?string $published_at,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $cover,
     ) {}
@@ -22,6 +23,7 @@ class VideoData
         return new self(
             name: $request->string('name')->toString(),
             author: $request->input('author') ?: null,
+            published_at: $request->input('published_at') ?: null,
             annotation: $request->input('annotation'),
             cover: $request->file('cover'),
         );
@@ -37,6 +39,7 @@ class VideoData
         return [
             'name' => $this->name,
             'author' => $this->author,
+            'published_at' => $this->published_at,
             'annotation' => $this->annotation,
         ];
     }

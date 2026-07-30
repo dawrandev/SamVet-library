@@ -14,13 +14,14 @@ class Video extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'author', 'annotation', 'cover_image', 'views_count',
+        'name', 'slug', 'author', 'published_at', 'annotation', 'cover_image', 'views_count',
     ];
 
     protected function casts(): array
     {
         return [
             'views_count' => 'integer',
+            'published_at' => 'date',
         ];
     }
 

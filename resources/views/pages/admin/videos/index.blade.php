@@ -51,6 +51,7 @@
                     <tr class="border-b border-gray-200 dark:border-gray-800">
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Video') }}</th>
                         <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Videolar soni') }}</th>
+                        <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Joylangan sana') }}</th>
                         <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                     </tr>
                 </thead>
@@ -73,6 +74,7 @@
                                 </div>
                             </td>
                             <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $video->tracks_count }}</td>
+                            <td class="px-5 py-4 text-theme-sm text-gray-600 dark:text-gray-400">{{ $video->published_at?->format('d.m.Y') ?? '—' }}</td>
                             <td class="px-5 py-4">
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('admin.videos.show', $video) }}"
@@ -87,7 +89,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-5 py-12 text-center">
+                            <td colspan="4" class="px-5 py-12 text-center">
                                 <x-admin.icon name="video-camera" class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
                                 <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Videolar topilmadi.') }}</p>
                             </td>

@@ -24,6 +24,43 @@ it('creates a video', function () {
         ->and($video->slug)->not->toBeEmpty();
 });
 
+it('creates a video with a published_at date', function () {
+    Storage::fake('public');
+
+    $this->post(route('admin.videos.store'), [
+        'name' => 'Fiziologiya darsligi',
+        'published_at' => '2026-05-10',
+    ])->assertRedirect();
+
+    $video = Video::firstWhere('name', 'Fiziologiya darsligi');
+    expect($video)->not->toBeNull()
+        ->and($video->published_at->format('Y-m-d'))->toBe('2026-05-10');
+});
+
+it('creates a video without published_at (nullable)', function () {
+    $this->post(route('admin.videos.store'), [
+        'name' => 'Sanasiz video',
+    ])->assertRedirect()->assertSessionDoesntHaveErrors('published_at');
+
+    $video = Video::firstWhere('name', 'Sanasiz video');
+    expect($video)->not->toBeNull()
+        ->and($video->published_at)->toBeNull();
+});
+
+it('renders the published_at field on the create form', function () {
+    $this->get(route('admin.videos.create'))
+        ->assertOk()
+        ->assertSee('published_at', false);
+});
+
+it('displays the published_at date on the show page', function () {
+    $video = Video::factory()->create(['published_at' => '2026-03-15']);
+
+    $this->get(route('admin.videos.show', $video))
+        ->assertOk()
+        ->assertSee('15.03.2026');
+});
+
 it('requires a name', function () {
     $this->from(route('admin.videos.create'))
         ->post(route('admin.videos.store'), [])
