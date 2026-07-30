@@ -18,7 +18,7 @@ class DissertationController extends Controller
      */
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'resource_field_id']);
+        $filters = $request->only(['search']);
 
         return view('pages.site.dissertations', [
             'dissertations' => $this->dissertationPageService->index($filters),

@@ -16,7 +16,7 @@ class DissertationPageService
     ) {}
 
     /**
-     * @param  array{search?: string, resource_field_id?: int}  $filters
+     * @param  array{search?: string}  $filters
      */
     public function index(array $filters, int $perPage = 12): LengthAwarePaginator
     {

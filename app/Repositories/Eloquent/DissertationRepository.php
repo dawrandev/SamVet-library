@@ -14,7 +14,7 @@ class DissertationRepository implements DissertationRepositoryInterface
      *
      * @var array<int, string>
      */
-    private const RELATIONS = ['resourceField'];
+    private const RELATIONS = [];
 
     public function filtered(array $filters = []): Builder
     {
@@ -25,9 +25,6 @@ class DissertationRepository implements DissertationRepositoryInterface
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('author', 'like', "%{$search}%");
                 });
-            })
-            ->when($filters['resource_field_id'] ?? null, function ($query, int $fieldId) {
-                $query->where('resource_field_id', $fieldId);
             });
     }
 

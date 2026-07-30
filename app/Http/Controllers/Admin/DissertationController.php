@@ -22,18 +22,17 @@ class DissertationController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'resource_field_id']);
+        $filters = $request->only(['search']);
 
         return view('pages.admin.dissertations.index', [
             'dissertations' => $this->dissertationService->paginate($filters),
             'filters' => $filters,
-            ...$this->dissertationService->filterOptions(),
         ]);
     }
 
     public function export(Request $request): BinaryFileResponse
     {
-        $filters = array_filter($request->only(['search', 'resource_field_id']), fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($request->only(['search']), fn ($v) => $v !== null && $v !== '');
 
         return Excel::download(new DissertationsExport($filters), 'dissertatsiyalar-'.now()->format('Y-m-d').'.xlsx');
     }
@@ -54,8 +53,6 @@ class DissertationController extends Controller
 
     public function show(Dissertation $dissertation): View
     {
-        $dissertation->load('resourceField');
-
         return view('pages.admin.dissertations.show', ['dissertation' => $dissertation]);
     }
 

@@ -11,7 +11,6 @@ use App\Models\DoctoralSpecialty;
 use App\Models\Language;
 use App\Models\MasterSpecialty;
 use App\Models\PublicationPlace;
-use App\Models\ResourceField;
 use App\Models\ScienceField;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -40,18 +39,6 @@ class DissertationService
     }
 
     /**
-     * For the filter dropdowns on the list page.
-     *
-     * @return array<string, mixed>
-     */
-    public function filterOptions(): array
-    {
-        return [
-            'resourceFields' => ResourceField::orderBy('id')->get(),
-        ];
-    }
-
-    /**
      * Lookups for the create/edit form selects.
      *
      * @return array<string, mixed>
@@ -59,7 +46,6 @@ class DissertationService
     public function formOptions(): array
     {
         return [
-            'resourceFields' => ResourceField::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
             'scienceFields' => ScienceField::orderBy('name')->get(),
             'doctoralSpecialties' => DoctoralSpecialty::orderBy('name')->get(),

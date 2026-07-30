@@ -21,7 +21,7 @@ class Dissertation extends Model
     // NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
         'title', 'author', 'degree',
-        'resource_field_id', 'science_field_id', 'doctoral_specialty_id', 'master_specialty_id',
+        'science_field_id', 'doctoral_specialty_id', 'master_specialty_id',
         'advisor', 'institution', 'language_id', 'publication_place_id',
         'defense_year', 'pages', 'udc', 'inventory_number', 'condition',
         'annotation', 'electronic_file',
@@ -39,11 +39,6 @@ class Dissertation extends Model
     }
 
     // --- Relationships ---
-
-    public function resourceField(): BelongsTo
-    {
-        return $this->belongsTo(ResourceField::class);
-    }
 
     /** "Fan nomi" — PhD/DSc only. */
     public function scienceField(): BelongsTo

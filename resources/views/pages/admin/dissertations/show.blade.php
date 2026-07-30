@@ -18,7 +18,6 @@
             __('Himoya yili') => $dissertation->defense_year,
             __('Beti') => $dissertation->pages,
             __('UO‘K') => $dissertation->udc,
-            __('Resurs sohasi') => $dissertation->resourceField?->name,
         ], fn ($v) => filled($v));
 
         // Admin-only fields — never surfaced on the client site.

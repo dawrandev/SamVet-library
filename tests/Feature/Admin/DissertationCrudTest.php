@@ -36,6 +36,25 @@ it('does not show journal information on the dissertation show page', function (
         ->assertDontSee(__('Jurnal ma’lumotlari'));
 });
 
+it('does not show a resurs sohasi field anywhere — never in the librarian’s mockup', function () {
+    $dissertation = Dissertation::factory()->create();
+
+    $this->get(route('admin.dissertations.create'))
+        ->assertDontSee('resource_field_id', false)
+        ->assertDontSee(__('Resurs sohasi'));
+
+    $this->get(route('admin.dissertations.edit', $dissertation))
+        ->assertDontSee('resource_field_id', false)
+        ->assertDontSee(__('Resurs sohasi'));
+
+    $this->get(route('admin.dissertations.index'))
+        ->assertDontSee('resource_field_id', false)
+        ->assertDontSee(__('Resurs sohasi'));
+
+    $this->get(route('admin.dissertations.show', $dissertation))
+        ->assertDontSee(__('Resurs sohasi'));
+});
+
 it('rejects a non-pdf file', function () {
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [

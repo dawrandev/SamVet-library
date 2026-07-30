@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Dissertation;
-use App\Models\ResourceField;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +17,6 @@ class DissertationFactory extends Factory
         return [
             'title' => $this->faker->unique()->sentence(5),
             'author' => $this->faker->name(),
-            'resource_field_id' => ResourceField::factory(),
             'annotation' => $this->faker->paragraph(),
             // slug is set by the observer
         ];

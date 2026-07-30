@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Dissertation;
-use App\Models\ResourceField;
 use App\Models\ScienceField;
 use Illuminate\Support\Facades\Storage;
 
@@ -38,17 +37,21 @@ it('shows the dissertation detail page with its public bibliographic fields', fu
         ->assertSee('Ochiq rahbar');
 });
 
-it('never shows a dissertation’s inventory number or condition or resurs sohasi on the client page', function () {
-    $resourceField = ResourceField::factory()->create(['name' => 'Maxfiy resurs sohasi']);
+it('never shows a dissertation’s inventory number or condition on the client page', function () {
     $dissertation = Dissertation::factory()->create([
         'inventory_number' => 'INV-SECRET-99',
-        'resource_field_id' => $resourceField->id,
     ]);
 
     $this->get(route('dissertation.show', $dissertation->slug))
         ->assertOk()
-        ->assertDontSee('INV-SECRET-99')
-        ->assertDontSee('Maxfiy resurs sohasi')
+        ->assertDontSee('INV-SECRET-99');
+});
+
+it('has no resurs sohasi field at all — it was never in the librarian’s mockup', function () {
+    $dissertation = Dissertation::factory()->create();
+
+    $this->get(route('dissertation.show', $dissertation->slug))
+        ->assertOk()
         ->assertDontSee(__('Resurs sohasi'));
 });
 
