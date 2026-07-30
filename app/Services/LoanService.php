@@ -87,10 +87,9 @@ class LoanService
                 'due_at' => $dueAt,
                 'status' => LoanStatus::OnLoan,
                 'note' => $note,
-                // Loan's own condition fields are single-value snapshots — the
-                // copy's live condition can be multiple, so just the first tag
-                // is recorded here (matches what "the" condition was at issue).
-                'issued_condition' => $copy->condition?->first(),
+                // Snapshot the copy's full (possibly multi-tag) condition as it
+                // stood at issue time.
+                'issued_condition' => $copy->condition,
             ]);
 
             $copy->update(['status' => CopyStatus::Borrowed]);
@@ -105,29 +104,34 @@ class LoanService
 
     /**
      * Return an issued material. The copy becomes "available" again, and its
-     * live condition is updated when the librarian records one on return.
+     * live condition is replaced with whatever the librarian picked on return
+     * (matches the multi-select "holati" used everywhere else — an empty set
+     * means the librarian didn't record a condition, so the copy's own
+     * existing condition is left untouched).
+     *
+     * @param  list<CopyCondition>  $returnedConditions
      */
-    public function returnLoan(Loan $loan, ?CopyCondition $returnedCondition = null): Loan
+    public function returnLoan(Loan $loan, array $returnedConditions = []): Loan
     {
         // If it has already been returned — do nothing.
         if ($loan->status !== LoanStatus::OnLoan) {
             return $loan;
         }
 
-        $loan = DB::transaction(function () use ($loan, $returnedCondition) {
+        $loan = DB::transaction(function () use ($loan, $returnedConditions) {
             $this->loans->update($loan, [
                 'returned_at' => now(),
                 'status' => LoanStatus::Returned,
-                'returned_condition' => $returnedCondition,
+                'returned_condition' => $returnedConditions,
             ]);
 
-            // The copy's condition is multi-value; a recorded return condition
-            // replaces the whole set with that one tag (the librarian can add
-            // more via the copy's own edit form afterward if needed).
-            $loan->loanable?->update(array_filter([
-                'status' => CopyStatus::Available,
-                'condition' => $returnedCondition ? [$returnedCondition] : null,
-            ], fn ($v) => $v !== null));
+            $copyUpdates = ['status' => CopyStatus::Available];
+
+            if ($returnedConditions !== []) {
+                $copyUpdates['condition'] = $returnedConditions;
+            }
+
+            $loan->loanable?->update($copyUpdates);
 
             return $loan;
         });

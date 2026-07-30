@@ -66,3 +66,12 @@ it('shows the "Qaytardi" action only for a still-on-loan row, not an already-ret
     $res->assertSee(route('admin.loans.return', $onLoan), false)
         ->assertDontSee(route('admin.loans.return', $returned), false);
 });
+
+it('renders the "Qaytardi" button as an Alpine modal trigger, not the generic confirm store', function () {
+    $onLoan = Loan::factory()->create();
+
+    $res = $this->get(route('admin.loans.index', ['scope' => 'all']));
+
+    $res->assertSee('openReturn(', false)
+        ->assertDontSee("\$store.confirm.ask('".route('admin.loans.return', $onLoan)."'", false);
+});

@@ -20,7 +20,8 @@ class ReturnLoanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'returned_condition' => ['nullable', Rule::enum(CopyCondition::class)],
+            'returned_condition' => ['nullable', 'array'],
+            'returned_condition.*' => [Rule::enum(CopyCondition::class)],
         ];
     }
 

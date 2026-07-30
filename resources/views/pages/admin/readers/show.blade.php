@@ -445,7 +445,7 @@
         lookup: {},
         returnOpen: false,
         returnUrl: '',
-        returnCondition: '',
+        returnConditions: [],
         init() {
             @if (old('inventory_number'))
                 this.check(@js(old('inventory_number')));
@@ -465,9 +465,9 @@
                 this.lookup = {}; this.lookupState = 'missing';
             }
         },
-        openReturn(url, issuedCondition) {
+        openReturn(url, issuedConditions) {
             this.returnUrl = url;
-            this.returnCondition = issuedCondition || '';
+            this.returnConditions = issuedConditions || [];
             this.returnOpen = true;
         },
     }">
@@ -541,9 +541,9 @@
                                     <td class="px-3 py-2 {{ $overdue ? 'font-medium text-error-600 dark:text-error-500' : 'text-gray-700 dark:text-gray-300' }}">{{ $loan->due_at?->format('d.m.Y') }}</td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $loan->returned_at?->format('d.m.Y H:i') ?: '—' }}</td>
                                     <td class="px-3 py-2 text-theme-xs text-gray-600 dark:text-gray-400">
-                                        <p>{{ __('Berilganda') }}: {{ $loan->issued_condition?->label() ?? '—' }}</p>
-                                        @if ($loan->returned_condition)
-                                            <p>{{ __('Qaytarilganda') }}: {{ $loan->returned_condition->label() }}</p>
+                                        <p>{{ __('Berilganda') }}: {{ $loan->issued_condition?->map(fn ($c) => $c->label())->join(', ') ?: '—' }}</p>
+                                        @if ($loan->returned_condition?->isNotEmpty())
+                                            <p>{{ __('Qaytarilganda') }}: {{ $loan->returned_condition->map(fn ($c) => $c->label())->join(', ') }}</p>
                                         @endif
                                     </td>
                                     <td class="px-3 py-2">
@@ -552,7 +552,7 @@
                                     <td class="px-3 py-2 text-right">
                                         @if ($loan->status === \App\Enums\LoanStatus::OnLoan)
                                             <button type="button"
-                                                    @click="openReturn('{{ route('admin.loans.return', $loan) }}', @js($loan->issued_condition?->value))"
+                                                    @click="openReturn('{{ route('admin.loans.return', $loan) }}', @js($loan->issued_condition?->map(fn ($c) => $c->value)->values()->all() ?? []))"
                                                     class="rounded-lg border border-gray-200 px-3 py-1.5 text-theme-xs font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Qaytardi') }}</button>
                                         @endif
                                     </td>
@@ -567,37 +567,8 @@
             @endif
         </div>
 
-        {{-- Return (with condition) modal --}}
-        <template x-teleport="body">
-            <div x-show="returnOpen" x-cloak class="fixed inset-0 z-99999 flex items-center justify-center p-4">
-                <div class="fixed inset-0 bg-gray-900/50" @click="returnOpen = false"></div>
-                <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900" @keydown.escape.window="returnOpen = false">
-                    <h4 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">{{ __('Materialni qaytarish') }}</h4>
-
-                    <form method="POST" :action="returnUrl" class="space-y-4">
-                        @csrf
-                        @method('PATCH')
-
-                        <div>
-                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Qaytarilgandagi holati') }}</label>
-                            <select name="returned_condition" x-model="returnCondition"
-                                    class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                                <option value="">{{ __('Belgilanmagan') }}</option>
-                                @foreach ($copyConditions as $condition)
-                                    <option value="{{ $condition->value }}">{{ $condition->label() }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-theme-xs text-gray-400">{{ __('Berilgandagi holati taklif sifatida tanlangan — kerak bo‘lsa o‘zgartiring.') }}</p>
-                        </div>
-
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button type="button" @click="returnOpen = false" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400">{{ __('Bekor qilish') }}</button>
-                            <button type="submit" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">{{ __('Tasdiqlash') }}</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </template>
+        {{-- Return (with condition) modal — shared component, kept in sync with the Loans page --}}
+        <x-admin.loans.return-modal :conditions="$copyConditions" />
 
         {{-- Give material modal --}}
         <template x-teleport="body">

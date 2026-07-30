@@ -83,7 +83,17 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
+         x-data="{
+             returnOpen: false,
+             returnUrl: '',
+             returnConditions: [],
+             openReturn(url, issuedConditions) {
+                 this.returnUrl = url;
+                 this.returnConditions = issuedConditions || [];
+                 this.returnOpen = true;
+             },
+         }">
         <div class="max-w-full overflow-x-auto">
             <table class="min-w-full">
                 <thead>
@@ -154,7 +164,7 @@
                                 <div class="flex items-center justify-end gap-2">
                                     @if ($loan->status === \App\Enums\LoanStatus::OnLoan)
                                         <button type="button"
-                                                @click="$store.confirm.ask('{{ route('admin.loans.return', $loan) }}', '{{ __('Kitob qaytarilganini tasdiqlaysizmi?') }}', 'PATCH')"
+                                                @click="openReturn('{{ route('admin.loans.return', $loan) }}', @js($loan->issued_condition?->map(fn ($c) => $c->value)->values()->all() ?? []))"
                                                 class="text-theme-xs rounded-lg border border-gray-200 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5">
                                             {{ __('Qaytardi') }}
                                         </button>
@@ -175,6 +185,9 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Return (with condition) modal — shared component, kept in sync with the reader page --}}
+        <x-admin.loans.return-modal :conditions="$copyConditions" />
     </div>
 
     {{-- Pagination --}}

@@ -6,6 +6,7 @@ use App\Enums\CopyCondition;
 use App\Enums\LoanMaterialType;
 use App\Enums\LoanStatus;
 use App\Enums\PublicationKind;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,8 +25,9 @@ class Loan extends Model
     {
         return [
             'status' => LoanStatus::class,
-            'issued_condition' => CopyCondition::class,
-            'returned_condition' => CopyCondition::class,
+            // Matches the copy's own live condition — multi-value (see BookCopy).
+            'issued_condition' => AsEnumCollection::of(CopyCondition::class),
+            'returned_condition' => AsEnumCollection::of(CopyCondition::class),
             'issued_at' => 'datetime',
             'due_at' => 'datetime',
             'returned_at' => 'datetime',

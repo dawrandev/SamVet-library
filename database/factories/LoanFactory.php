@@ -27,7 +27,7 @@ class LoanFactory extends Factory
             'due_at' => now()->addDays(15),
             'returned_at' => null,
             'status' => LoanStatus::OnLoan->value,
-            'issued_condition' => CopyCondition::New->value,
+            'issued_condition' => [CopyCondition::New->value],
         ];
     }
 

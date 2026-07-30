@@ -52,6 +52,7 @@ class LoanController extends Controller
             'filters' => $filters,
             'materialTypes' => LoanMaterialType::cases(),
             'overdueCount' => $this->loanService->overdueCount(),
+            'copyConditions' => CopyCondition::cases(),
         ]);
     }
 
@@ -80,11 +81,13 @@ class LoanController extends Controller
     {
         $reader = $loan->reader;
 
-        $condition = $request->filled('returned_condition')
-            ? CopyCondition::from($request->string('returned_condition')->toString())
-            : null;
+        $conditions = collect($request->input('returned_condition', []))
+            ->filter(fn ($value) => filled($value))
+            ->map(fn ($value) => CopyCondition::from($value))
+            ->values()
+            ->all();
 
-        $this->loanService->returnLoan($loan, $condition);
+        $this->loanService->returnLoan($loan, $conditions);
 
         return redirect()
             ->route('admin.readers.show', $reader)

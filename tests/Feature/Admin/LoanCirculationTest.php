@@ -21,7 +21,7 @@ it('issues a book copy and snapshots its condition', function () {
 
     expect($loan->loanable_type)->toBe('book_copy')
         ->and($loan->loanable_id)->toBe($copy->id)
-        ->and($loan->issued_condition)->toBe(CopyCondition::Old)
+        ->and($loan->issued_condition->all())->toBe([CopyCondition::Old])
         ->and($loan->materialType())->toBe(LoanMaterialType::Book);
 
     expect($copy->fresh()->status)->toBe(CopyStatus::Borrowed);
@@ -56,29 +56,29 @@ it('shows Gazeta as the material type for a newspaper-kind journal copy', functi
     expect($loan->materialType())->toBe(LoanMaterialType::Newspaper);
 });
 
-it('returns a loan with a recorded condition and updates the live copy condition', function () {
+it('returns a loan with recorded conditions and replaces the live copy condition', function () {
     $reader = Reader::factory()->create();
     $copy = BookCopy::factory()->borrowed()->create(['condition' => [CopyCondition::New->value]]);
     $loan = Loan::factory()->create([
         'reader_id' => $reader->id,
         'loanable_id' => $copy->id,
-        'issued_condition' => CopyCondition::New->value,
+        'issued_condition' => [CopyCondition::New->value],
     ]);
 
     $this->patch(route('admin.loans.return', $loan), [
-        'returned_condition' => CopyCondition::Torn->value,
+        'returned_condition' => [CopyCondition::Torn->value, CopyCondition::PagesIncomplete->value],
     ])->assertRedirect(route('admin.readers.show', $reader));
 
     $loan->refresh();
     expect($loan->status->value)->toBe('returned')
-        ->and($loan->returned_condition)->toBe(CopyCondition::Torn)
+        ->and($loan->returned_condition->all())->toBe([CopyCondition::Torn, CopyCondition::PagesIncomplete])
         ->and($loan->returned_at)->not->toBeNull();
 
-    expect($copy->fresh()->condition->first())->toBe(CopyCondition::Torn)
+    expect($copy->fresh()->condition->all())->toBe([CopyCondition::Torn, CopyCondition::PagesIncomplete])
         ->and($copy->fresh()->status)->toBe(CopyStatus::Available);
 });
 
-it('returns a loan without a condition without touching the copy condition', function () {
+it('returns a loan without any condition without touching the copy condition', function () {
     $reader = Reader::factory()->create();
     $copy = BookCopy::factory()->borrowed()->create(['condition' => [CopyCondition::New->value]]);
     $loan = Loan::factory()->create(['reader_id' => $reader->id, 'loanable_id' => $copy->id]);
@@ -125,4 +125,20 @@ it('shows the material type badge on the reader show page for each loan kind', f
     $this->get(route('admin.readers.show', $reader))
         ->assertSee('Kitob')
         ->assertSee('Jurnal');
+});
+
+it('shows every issued condition tag for a loan on the reader show page', function () {
+    $reader = Reader::factory()->create();
+    $copy = BookCopy::factory()->borrowed()->create([
+        'condition' => [CopyCondition::Old->value, CopyCondition::PagesIncomplete->value],
+    ]);
+    Loan::factory()->create([
+        'reader_id' => $reader->id,
+        'loanable_id' => $copy->id,
+        'issued_condition' => [CopyCondition::Old->value, CopyCondition::PagesIncomplete->value],
+    ]);
+
+    $this->get(route('admin.readers.show', $reader))
+        ->assertSee(CopyCondition::Old->label())
+        ->assertSee(CopyCondition::PagesIncomplete->label());
 });
