@@ -232,7 +232,6 @@
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Holati') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Mavjudligi') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Joylashuvi') }}</th>
-                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Narxi') }}</th>
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Aktlar') }}</th>
                                 <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Amallar') }}</th>
                             </tr>
@@ -247,7 +246,6 @@
                                         <span class="rounded-full px-2.5 py-0.5 text-theme-xs font-medium {{ $statusColor[$copy->status->value] ?? '' }}">{{ $copy->status->label() }}</span>
                                     </td>
                                     <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->location?->name ?? '—' }}</td>
-                                    <td class="px-5 py-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $copy->price ? number_format($copy->price, 0, '.', ' ') . ' ' . __('so‘m') : '—' }}</td>
                                     <td class="px-5 py-3 text-theme-xs">
                                         <div class="{{ $copy->acquisition_act_number ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400' }}">
                                             {{ __('Kirish') }}: {{ $copy->acquisition_act_number ?? '—' }}
@@ -274,7 +272,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-5 py-8 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Nusxa yo‘q') }}</td>
+                                    <td colspan="7" class="px-5 py-8 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Nusxa yo‘q') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -330,8 +328,6 @@
                                     @error('location_id')<p class="mt-1 text-theme-xs text-error-500">{{ $message }}</p>@enderror
                                 </div>
                             </div>
-
-                            <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')" />
 
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" />
@@ -471,9 +467,6 @@
                                         </select>
                                     </div>
                                 </div>
-
-                                <x-admin.form.input name="price" type="number" step="0.01" :label="__('Narxi (so‘m)')"
-                                    :value="$isEditing ? old('price') : $copy->price" />
 
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')"

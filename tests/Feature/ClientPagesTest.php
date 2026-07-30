@@ -31,15 +31,13 @@ it('shows a book detail page but hides admin-only data', function () {
     BookCopy::factory()->create([
         'book_id' => $book->id,
         'inventory_number' => 'INV-SECRET',
-        'price' => 88888,
     ]);
 
     $res = $this->get(route('book.show', $book->slug));
 
     $res->assertOk()->assertSee('Ochiq kitob');
-    // Inventory number, price and print run are librarian-only.
+    // Inventory number and print run are librarian-only.
     $res->assertDontSee('INV-SECRET')
-        ->assertDontSee('88888')
         ->assertDontSee('7777');
     // The raw protected file path must never leak into the public HTML.
     $res->assertDontSee('books/electronic');

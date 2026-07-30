@@ -16,7 +16,7 @@ class BookCopy extends Model
 
     protected $fillable = [
         'book_id', 'inventory_number', 'format', 'condition', 'status',
-        'location_id', 'price',
+        'location_id',
         'acquisition_act_number', 'acquisition_act_at',
         'disposal_act_number', 'disposal_act_at',
     ];
@@ -27,7 +27,6 @@ class BookCopy extends Model
             'format' => BookFormat::class,
             'condition' => AsEnumCollection::of(CopyCondition::class),
             'status' => CopyStatus::class,
-            'price' => 'decimal:2',
             'acquisition_act_at' => 'date',
             'disposal_act_at' => 'date',
         ];
