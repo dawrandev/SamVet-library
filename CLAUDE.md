@@ -14,7 +14,7 @@ ichida **admin panel** + **ochiq client sayt**. Kitoblar PDF formatida, onlayn o
 - **Blade + Tailwind CSS 4 + Alpine.js** (Vite orqali bundle, CDN EMAS).
 - **Livewire ISHLATILMAYDI** (tezlik talabi). Interaktivlik = Alpine.js + yengil JSON endpointlar.
 - **Filament ISHLATILMAYDI** (sekin). Admin UI = TailAdmin uslubidagi qo'lda Blade.
-- DB: MySQL. Qidiruv: full-text (boshda MySQL FULLTEXT, keyin Scout+Meilisearch bo'lishi mumkin).
+- DB: MySQL. Qidiruv: MySQL FULLTEXT (client saytda amalga oshirilgan — pastga qarang; production serverda root/sudo yo'q, shu sabab Meilisearch hozircha yo'q).
 
 ## Arxitektura: Controller → Service → Repository
 
@@ -135,7 +135,7 @@ Loyiha tez va uzluksiz ishlashi shart:
 - **JS/AJAX** — interaktiv joylarда (live search, filtr, autocomplete, "ko'proq yuklash") **yengil JSON endpoint + Alpine.js `fetch`** ishlatiladi. Butun sahifa qayta yuklanmaydi. Livewire YO'Q.
 - **N+1 oldini olish:** har doim `with()` (eager loading). Ro'yxatlarда `paginate()`.
 - **Indekslar:** qidiriladigan/filtrlanadigan ustunларга (masalan `title`, FK'lar, `status`) DB indeks.
-- **Aqilli qidiruv (HAM admin, HAM client):** real-time, imlo xatoni kechiradigan, relevantlik bo'yicha. **Laravel Scout + Meilisearch** (boshda MySQL FULLTEXT, Repository orqali oson o'tkaziladi). Admin=barcha kitob, client=ochiq katalog — bitta indeks, so'rov konteksti har xil. Real-time UI = Alpine `fetch` → JSON endpoint.
+- **Aqilli qidiruv (client sayt — katalog):** real-time, imlo xatoni kechiradigan, relevantlik bo'yicha — **MySQL FULLTEXT** asosida amalga oshirilgan (`CatalogRepository::applySmartSearch()`), server root/sudo huquqi yo'qligi sababli Meilisearch o'rniga: `BOOLEAN MODE` + prefiks so'rov (`so'z*`) — typo/qisqartirish tolerantligi; sarlavha uchun qo'shimcha boost (`CASE WHEN ... LIKE ... THEN 10`) — relevantlik; 3 belgidan qisqa so'zlar (`innodb_ft_min_token_size` server config talab qiladi, bizda kirish yo'q) — so'z chegarasi taxmin qilingan `LIKE` bilan; 0 natija — `SearchSuggestionService` (PHP Levenshtein) orqali "shuni nazarda tutdingizmi?" taklifi; tezkor (typeahead) natijalar — `catalog.quick-search` JSON endpoint + Alpine `fetch` (`resources/js/site/search-typeahead.js`). Qidiruv butunlay `CatalogRepository` qatlamida izolyatsiya qilingan — server imkoniyati kengaysa (root/sudo bo'lsa), Meilisearch'ga o'tish shu bitta qatlamni almashtirish bilan cheklanadi, Controller/Service/Blade/DTO'larga tegilmaydi. Admin panel qidiruvi va Jurnal/Maqola qidiruvi hali oddiy `LIKE` — bu qamrovga kirmagan.
 - **i18n DB darajasi:** lookup nomlari (kategoriya, tur, joylashuv, til) + nashriyot joyi → JSON tarjima (spatie/laravel-translatable); kitob title/annotation → bitta til (oddiy ustun, FULLTEXT); publisher/author → bitta qiymat. Translation jadval faqat katta jadvalда tarjima bo'yicha qidiruv/index kerak bo'lganда.
 - **Og'ir JS** faqat kerak sahifада (masalan ApexCharts dashboardда), umumiy bundle'ni shishirma.
 - **Keshlash** kerak bo'lganda (kategoriyalar daraxti kabi kam o'zgaradigan ma'lumot).

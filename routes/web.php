@@ -88,6 +88,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog');
+Route::get('/qidiruv/tezkor', [CatalogController::class, 'quickSearch'])->name('catalog.quick-search');
 Route::get('/kitob/{slug}', [SiteBookController::class, 'show'])->name('book.show');
 Route::get('/bolimlar', [SectionController::class, 'index'])->name('sections');
 Route::get('/jurnallar', [PeriodicalController::class, 'index'])->name('periodicals.index');

@@ -18,13 +18,27 @@
         @endif
     </div>
 
-    {{-- Search --}}
-    <div class="mt-5">
+    {{-- Search — live typeahead below; Enter/Filtrlash still submits the
+         whole filter form as before. --}}
+    <div class="mt-5"
+         x-data="searchTypeahead({ url: '{{ route('catalog.quick-search') }}', initialQuery: @js($filters->search ?? '') })"
+         @click.outside="open = false">
         <label for="filter-q" class="text-sm font-semibold text-gray-900">{{ __('Qidiruv') }}</label>
         <div class="relative mt-2">
             <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
-            <input type="text" id="filter-q" name="q" value="{{ $filters->search }}" placeholder="{{ __('Kitob yoki kalit so‘z...') }}"
+            <input type="text" id="filter-q" name="q" x-model="query" @input="search()" @focus="openIfHasResults()" autocomplete="off"
+                   placeholder="{{ __('Kitob yoki kalit so‘z...') }}"
                    class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none" />
+
+            <div x-show="open" x-cloak
+                 class="absolute inset-x-0 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-lg border border-gray-100 bg-white py-2 text-left shadow-xl">
+                <template x-for="item in results" :key="item.url">
+                    <a :href="item.url" class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50">
+                        <span class="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700" x-text="item.type_label"></span>
+                        <span class="min-w-0 flex-1 truncate text-sm text-gray-800" x-text="item.title"></span>
+                    </a>
+                </template>
+            </div>
         </div>
     </div>
 

@@ -12,6 +12,7 @@ import uploadForm from './admin/upload-form';
 import readerForm from './admin/reader-form';
 import computerSessionCountdown from './admin/computer-session-countdown';
 import computerSessionForm from './admin/computer-session-form';
+import searchTypeahead from './site/search-typeahead';
 
 // Alpine.js (persist plugin — remembers sidebar/dark mode state)
 Alpine.plugin(persist);
@@ -33,6 +34,9 @@ Alpine.data('readerForm', readerForm);
 // Computer checkout: live countdown + auto-filled location preview
 Alpine.data('computerSessionCountdown', computerSessionCountdown);
 Alpine.data('computerSessionForm', computerSessionForm);
+
+// Homepage/catalog live search dropdown
+Alpine.data('searchTypeahead', searchTypeahead);
 
 // Shared 1s clock — one interval total (not one per countdown row), only
 // ticking on pages that actually render a computer-session countdown.

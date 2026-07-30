@@ -25,6 +25,15 @@ interface CatalogRepositoryInterface
     public function paginate(CatalogFilters $filters, int $perPage): LengthAwarePaginator;
 
     /**
+     * Top matches for the live typeahead — same relevance-ranked smart
+     * search as paginate()'s default scope, across all five resource types,
+     * with no other filters. Returns an empty collection for a blank term.
+     *
+     * @return Collection<int, CatalogItem>
+     */
+    public function quickSearch(string $term, int $limit): Collection;
+
+    /**
      * Sidebar facets: every category, parent and child alike. `parentId` is
      * null for a top-level row, or its parent's id for a child row (so the
      * sidebar can indent it).
