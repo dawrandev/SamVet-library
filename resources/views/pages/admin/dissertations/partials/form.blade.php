@@ -112,6 +112,13 @@
                 <div class="space-y-5">
                     <x-admin.form.input name="inventory_number" :label="__('Inventari')" :value="$dissertation?->inventory_number" />
 
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" :value="$dissertation?->acquisition_act_number" />
+                        <x-admin.form.input name="acquisition_act_at" type="date" :label="__('Kirish akti sanasi')" :value="$dissertation?->acquisition_act_at?->format('Y-m-d')" />
+                        <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')" :value="$dissertation?->disposal_act_number" />
+                        <x-admin.form.input name="disposal_act_at" type="date" :label="__('Chiqish akti sanasi')" :value="$dissertation?->disposal_act_at?->format('Y-m-d')" />
+                    </div>
+
                     <div>
                         <x-admin.form.multiselect name="condition" :label="__('Holati')" :options="$conditionSelectOptions"
                             :selected="$dissertation?->condition?->map(fn ($c) => $c->value)->values()->all() ?? []" />

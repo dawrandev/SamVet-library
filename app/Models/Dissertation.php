@@ -24,6 +24,8 @@ class Dissertation extends Model
         'science_field_id', 'doctoral_specialty_id', 'master_specialty_id',
         'advisor', 'institution', 'language_id', 'publication_place_id',
         'defense_year', 'pages', 'udc', 'inventory_number', 'condition',
+        'acquisition_act_number', 'acquisition_act_at',
+        'disposal_act_number', 'disposal_act_at',
         'annotation', 'electronic_file',
     ];
 
@@ -35,6 +37,8 @@ class Dissertation extends Model
             'defense_year' => 'integer',
             'pages' => 'integer',
             'views_count' => 'integer',
+            'acquisition_act_at' => 'date',
+            'disposal_act_at' => 'date',
         ];
     }
 

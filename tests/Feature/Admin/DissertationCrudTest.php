@@ -55,6 +55,41 @@ it('does not show a resurs sohasi field anywhere — never in the librarian’s 
         ->assertDontSee(__('Resurs sohasi'));
 });
 
+it('saves the kirish/chiqish akti (acquisition/disposal act) number and date, like a book copy', function () {
+    $this->post(route('admin.dissertations.store'), [
+        'title' => 'Akt maydonlari sinovi',
+        'inventory_number' => 'DS-00456',
+        'acquisition_act_number' => 'KA-0012',
+        'acquisition_act_at' => '2024-03-10',
+        'disposal_act_number' => 'CHA-0003',
+        'disposal_act_at' => '2025-01-15',
+    ])->assertRedirect();
+
+    $dissertation = Dissertation::firstWhere('title', 'Akt maydonlari sinovi');
+    expect($dissertation->acquisition_act_number)->toBe('KA-0012')
+        ->and($dissertation->acquisition_act_at->format('Y-m-d'))->toBe('2024-03-10')
+        ->and($dissertation->disposal_act_number)->toBe('CHA-0003')
+        ->and($dissertation->disposal_act_at->format('Y-m-d'))->toBe('2025-01-15');
+
+    $this->get(route('admin.dissertations.show', $dissertation))
+        ->assertSee('KA-0012')
+        ->assertSee('10.03.2024')
+        ->assertSee('CHA-0003')
+        ->assertSee('15.01.2025');
+});
+
+it('leaves the acquisition/disposal act fields nullable', function () {
+    $this->post(route('admin.dissertations.store'), [
+        'title' => 'Aktsiz dissertatsiya',
+    ])->assertRedirect();
+
+    $dissertation = Dissertation::firstWhere('title', 'Aktsiz dissertatsiya');
+    expect($dissertation->acquisition_act_number)->toBeNull()
+        ->and($dissertation->acquisition_act_at)->toBeNull()
+        ->and($dissertation->disposal_act_number)->toBeNull()
+        ->and($dissertation->disposal_act_at)->toBeNull();
+});
+
 it('rejects a non-pdf file', function () {
     $this->from(route('admin.dissertations.create'))
         ->post(route('admin.dissertations.store'), [

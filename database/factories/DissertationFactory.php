@@ -17,6 +17,8 @@ class DissertationFactory extends Factory
         return [
             'title' => $this->faker->unique()->sentence(5),
             'author' => $this->faker->name(),
+            'acquisition_act_number' => $this->faker->optional()->numerify('KA-####'),
+            'acquisition_act_at' => $this->faker->optional()->date(),
             'annotation' => $this->faker->paragraph(),
             // slug is set by the observer
         ];

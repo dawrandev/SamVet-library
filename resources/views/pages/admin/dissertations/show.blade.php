@@ -23,6 +23,8 @@
         // Admin-only fields — never surfaced on the client site.
         $adminDetails = array_filter([
             __('Inventari') => $dissertation->inventory_number,
+            __('Kirish akti') => trim(($dissertation->acquisition_act_number ?? '').($dissertation->acquisition_act_at ? ' ('.$dissertation->acquisition_act_at->format('d.m.Y').')' : '')) ?: null,
+            __('Chiqish akti') => trim(($dissertation->disposal_act_number ?? '').($dissertation->disposal_act_at ? ' ('.$dissertation->disposal_act_at->format('d.m.Y').')' : '')) ?: null,
             __('Holati') => $dissertation->condition?->map(fn ($c) => $c->label())->join(', '),
         ], fn ($v) => filled($v));
     @endphp

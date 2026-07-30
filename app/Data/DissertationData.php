@@ -26,6 +26,10 @@ class DissertationData
         public readonly ?int $pages,
         public readonly ?string $udc,
         public readonly ?string $inventory_number,
+        public readonly ?string $acquisition_act_number,
+        public readonly ?string $acquisition_act_at,
+        public readonly ?string $disposal_act_number,
+        public readonly ?string $disposal_act_at,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
@@ -51,6 +55,10 @@ class DissertationData
             pages: $request->integer('pages') ?: null,
             udc: $request->input('udc') ?: null,
             inventory_number: $request->input('inventory_number') ?: null,
+            acquisition_act_number: $request->input('acquisition_act_number') ?: null,
+            acquisition_act_at: $request->input('acquisition_act_at') ?: null,
+            disposal_act_number: $request->input('disposal_act_number') ?: null,
+            disposal_act_at: $request->input('disposal_act_at') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
@@ -86,6 +94,10 @@ class DissertationData
             'udc' => $this->udc,
             'inventory_number' => $this->inventory_number,
             'condition' => $this->condition,
+            'acquisition_act_number' => $this->acquisition_act_number,
+            'acquisition_act_at' => $this->acquisition_act_at,
+            'disposal_act_number' => $this->disposal_act_number,
+            'disposal_act_at' => $this->disposal_act_at,
             'annotation' => $this->annotation,
         ];
     }
