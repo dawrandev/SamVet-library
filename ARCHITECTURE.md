@@ -508,6 +508,26 @@ public function deleted(Book $book): void { $this->activityLog->logChange($book,
 
 **Haqiqiy xato, testda topilgan** (bo'lim 8'dagi umumiy qoidaning aynan manba hodisasi): birinchi implementatsiya guard'siz `auth()->check()`/`auth()->id()` ishlatgan edi. Reader (mijoz)ga tegishli oqim `actingAs($reader, 'reader')` orqali ishlaganda, bu **standart guard'ni** `reader`ga almashtirib yuboradi — shuning uchun fon jarayonidagi Observer o'sha reader'ning ID'sini "admin_id" sifatida yozishga urinib, `users` jadvalida mavjud bo'lmagan FK'ga qarshi xato berdi. To'liq test to'plamini ishga tushirish shu xatoni **darhol** ushladi (bitta testda, standalone holatda ham takrorlangan) — tuzatish: har doim `auth('web')->check()`/`auth('web')->id()` aniq guard bilan.
 
+### 4.12 Chunked (bo'lakli) fayl yuklash — server konfiguratsiyasiga tegmasdan
+
+Katta fayl (bu loyihada PDF/video, 950MB'gacha) yagona `multipart/form-data` POST sifatida yuborilsa, ikkita real muammo bo'ladi: (a) server/proksi'ning `upload_max_filesize`/`post_max_size`/body-size limiti (root/sudo yo'qligi sababli o'zgartira olmasligimiz mumkin) uni jimgina kesib tashlashi mumkin, (b) aloqa uzilsa, boshidan boshlash kerak. Yechim: faylni kichik (masalan 5MB) bo'laklarga bo'lib, ketma-ket kichik POST so'rovlar bilan yuborish — bu ikkala muammoni ham **dastur qatlamida**, server konfiguratsiyasiga tegmasdan hal qiladi.
+
+**Tadqiqot xulosasi:** tayyor paket (`tus/tus-php` — 2+ yildan yangilanmagan, Laravel wrapper'lari o'lik; `pionl/laravel-chunk-upload` — faol, lekin integratsiya qilish baribir deyarli shuncha ish talab qiladi) o'rniga **o'z, kichik implementatsiya** yozildi — yangi bog'liqlik yo'q, mavjud Service/Repository/DTO/FormRequest arxitekturasiga tabiiy sig'adi.
+
+**Arxitektura — fayl yuklash forma maydonlaridan AJRATILGAN:**
+1. Fayl tanlanishi bilan JS (`resources/js/admin/upload-form.js`) darhol chunk-yuklashni boshlaydi (forma hali to'liq to'ldirilmagan bo'lsa ham), mavjud progress-bar/overlay UI'ni ishlatib.
+2. Server yig'ib, **haqiqiy kontent bo'yicha** qayta tekshirgach (mijoz aytgan MIME'ga emas — `Illuminate\Http\File` + Validator, real fayl formatini aniqlaydi), bir martalik `token` qaytaradi.
+3. Forma "Saqlash" bosilganda — asl fayl o'rniga shu token yashirin maydon sifatida yuboriladi (endi KICHIK so'rov).
+4. Entity Service (masalan `BookService`) token orqali faylni "claim" qiladi (`ChunkedUploadService::claim()` — egasi shu admin, turi mos, sessiya bir marta ishlatiladi), `Storage::move()` bilan (nusxalash emas, tez fayl-tizim darajasidagi ko'chirish) doimiy joyga o'tkazadi.
+
+**Qatlamlar:** `upload_sessions` jadvali (`token`, `admin_id`, `kind`, `total_chunks`, `next_chunk_index` — FAQAT ketma-ket qabul qilinadi, tartibsiz/parallel chunk qabul qilinmaydi — soddalik uchun ataylab) → `ChunkedUploadKind` enum (mimes/extensions + max hajm profili, mavjud FormRequest qoidalarining bir joyga jamlangan versiyasi) → `ChunkedUploadService` (`start`/`storeChunk`/`finish`/`claim`) → generic `ChunkedUploadController` (ikkita endpoint: `start`, `chunk` — hech qanday entity'ga bog'liq emas) → har bir entity Service'ida kichik `resolve*File()` metodi (token yoki oddiy fayl — ikkalasi ham bir xil natijaga olib keladi).
+
+**Xavfsizlik:** chunk fayl nomi HECH QACHON mijoz kiritgan ma'lumotdan yasalmaydi (bitta sessiya = bitta `assembling.part` fayl, chunk indeksi faqat "keyingi kutilgan raqammi" deb solishtiriladi — path traversal uchun umuman joy yo'q). Token egasi (`admin_id`) har safar tekshiriladi. Yig'ilgan fayl doimiy joyga ko'chirilishidan OLDIN real validatsiyadan o'tadi.
+
+**Tozalash — cron kerak emas:** tashlab ketilgan sessiyalar **lazy** tozalanadi — har safar shu admin yangi yuklashni boshlaganda, o'zining 24 soatdan eski sessiyalari avtomatik o'chiriladi. Hosting/crontab noaniq bo'lgan loyihalarda bu naqsh foydali — kelajakda cron qo'shilsa, xuddi shu tozalash logikasini chaqiruvchi bitta buyruq qo'shish arzon.
+
+**Testda topilgan nozik joy:** `mimes:pdf` qoidasi yig'ilgan faylga nisbatan ishlaydi (real kontent-sniffing, `UploadedFile`ning mijoz-e'lon qilgan MIME'iga emas) — test uchun `UploadedFile::fake()->create(...)` (bo'sh/tasodifiy kontent) YETARLI EMAS, chunk testlarida haqiqiy magic-byte header (`%PDF-`, MP4 `ftyp` box) bilan boshlanadigan test-fayl kerak bo'ldi.
+
 ---
 
 ## 5. DRY: bir xil shakldagi ko'p resurs uchun bazaviy klasslar

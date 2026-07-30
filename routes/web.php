@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AvtoreferatController;
 use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
+use App\Http\Controllers\Admin\ChunkedUploadController;
 use App\Http\Controllers\Admin\ComputerSessionController;
 use App\Http\Controllers\Admin\ComputerController;
 use App\Http\Controllers\Admin\CopyController;
@@ -287,6 +288,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Admin activity log (audit trail)
     Route::get('activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log.index');
+
+    // Chunked upload — generic, not tied to any entity (see App\Services\ChunkedUploadService)
+    Route::post('uploads/start', [ChunkedUploadController::class, 'start'])->name('uploads.start');
+    Route::post('uploads/{token}/chunk', [ChunkedUploadController::class, 'chunk'])->name('uploads.chunk');
 
     // User status (block / finish / restore)
     Route::patch('readers/{reader}/block', [ReaderStatusController::class, 'block'])->name('readers.block');

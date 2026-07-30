@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\BookData;
+use App\Enums\ChunkedUploadKind;
 use App\Models\Book;
 use App\Models\BookType;
 use App\Models\Category;
@@ -13,14 +14,18 @@ use App\Models\Work;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BookService
 {
+    private const ELECTRONIC_DIR = 'books/electronic';
+
     public function __construct(
         private readonly BookRepositoryInterface $books,
         private readonly ContributorService $contributors,
+        private readonly ChunkedUploadService $chunkedUploads,
     ) {}
 
     /**
@@ -71,8 +76,8 @@ class BookService
             if ($data->cover) {
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'covers');
             }
-            if ($data->electronic_file) {
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file, 'books/electronic');
+            if ($path = $this->resolveElectronicFile($data)) {
+                $attributes['electronic_file'] = $path;
             }
 
             // If it is a translation edition — link it to the same work group as the source
@@ -115,9 +120,9 @@ class BookService
                 $this->deleteFile('public', $book->cover_image);
                 $attributes['cover_image'] = $this->storePublic($data->cover, 'covers');
             }
-            if ($data->electronic_file) {
+            if ($path = $this->resolveElectronicFile($data)) {
                 $this->deleteFile('local', $book->electronic_file);
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file, 'books/electronic');
+                $attributes['electronic_file'] = $path;
             }
 
             $book = $this->books->update($book, $attributes);
@@ -148,6 +153,21 @@ class BookService
     private function storeProtected(UploadedFile $file, string $dir): string
     {
         return $file->store($dir, 'local');
+    }
+
+    /**
+     * Either a direct upload (electronic_file) or one assembled via chunked
+     * upload (electronic_file_token) — never both, FormRequest guards that.
+     * Returns null when neither was given (e.g. an update that didn't touch
+     * the file).
+     */
+    private function resolveElectronicFile(BookData $data): ?string
+    {
+        if ($data->electronic_file_token) {
+            return $this->chunkedUploads->claimAndMove($data->electronic_file_token, ChunkedUploadKind::Pdf, Auth::guard('web')->user(), self::ELECTRONIC_DIR);
+        }
+
+        return $data->electronic_file ? $this->storeProtected($data->electronic_file, self::ELECTRONIC_DIR) : null;
     }
 
     private function deleteFile(string $disk, ?string $path): void

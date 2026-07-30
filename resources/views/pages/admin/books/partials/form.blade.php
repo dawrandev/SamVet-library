@@ -31,7 +31,7 @@
     method="POST"
     action="{{ $editing ? route('admin.books.update', $book) : route('admin.books.store') }}"
     enctype="multipart/form-data"
-    x-data="uploadForm"
+    x-data="uploadForm({ chunked: { electronic_file: 'pdf' } })"
     @submit="submitUpload($event)"
 >
     @csrf

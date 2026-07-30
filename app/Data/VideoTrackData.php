@@ -16,6 +16,8 @@ class VideoTrackData
     public function __construct(
         public readonly string $title,
         public readonly ?UploadedFile $video_file,
+        /** Set instead of $video_file when the video was uploaded via chunked upload — see ChunkedUploadService. */
+        public readonly ?string $video_file_token = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -23,6 +25,7 @@ class VideoTrackData
         return new self(
             title: $request->string('title')->toString(),
             video_file: $request->file('video_file'),
+            video_file_token: $request->input('video_file_token') ?: null,
         );
     }
 

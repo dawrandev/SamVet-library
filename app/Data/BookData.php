@@ -36,6 +36,8 @@ class BookData
         public readonly array $category_ids,
         public readonly ?UploadedFile $cover,
         public readonly ?UploadedFile $electronic_file,
+        /** Set instead of $electronic_file when the PDF was uploaded via chunked upload — see ChunkedUploadService. */
+        public readonly ?string $electronic_file_token = null,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
     ) {}
@@ -82,6 +84,7 @@ class BookData
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
+            electronic_file_token: $request->input('electronic_file_token') ?: null,
             contributors: $request->input('contributors', []),
         );
     }

@@ -129,7 +129,7 @@
                             <button type="button" @click="showStore = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                         </div>
                         <form method="POST" action="{{ route('admin.videos.tracks.store', $video) }}" enctype="multipart/form-data" class="space-y-4"
-                              x-data="uploadForm" @submit="submitUpload($event)">
+                              x-data="uploadForm({ chunked: { video_file: 'video' } })" @submit="submitUpload($event)">
                             @csrf
                             <input type="hidden" name="_track_form" value="store" />
                             <x-admin.form.upload-errors />
@@ -161,7 +161,7 @@
                                 <button type="button" @click="editId = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                             </div>
                             <form method="POST" action="{{ route('admin.videos.tracks.update', [$video, $track]) }}" enctype="multipart/form-data" class="space-y-4"
-                                  x-data="uploadForm" @submit="submitUpload($event)">
+                                  x-data="uploadForm({ chunked: { video_file: 'video' } })" @submit="submitUpload($event)">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="_track_form" value="edit" />
                                 <input type="hidden" name="_track_id" value="{{ $track->id }}" />
