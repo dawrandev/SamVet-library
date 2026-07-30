@@ -45,6 +45,43 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         ->and($avtoreferat->getAttributes())->not->toHaveKey('journal_issue_id');
 });
 
+it('saves the kirish/chiqish akti (acquisition/disposal act) number and date, like a book copy', function () {
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Akt maydonlari sinovi',
+        'advisor' => 'Karimov K.',
+        'inventory_number' => 'AR-00456',
+        'acquisition_act_number' => 'KA-0012',
+        'acquisition_act_at' => '2024-03-10',
+        'disposal_act_number' => 'CHA-0003',
+        'disposal_act_at' => '2025-01-15',
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Akt maydonlari sinovi');
+    expect($avtoreferat->acquisition_act_number)->toBe('KA-0012')
+        ->and($avtoreferat->acquisition_act_at->format('Y-m-d'))->toBe('2024-03-10')
+        ->and($avtoreferat->disposal_act_number)->toBe('CHA-0003')
+        ->and($avtoreferat->disposal_act_at->format('Y-m-d'))->toBe('2025-01-15');
+
+    $this->get(route('admin.avtoreferats.show', $avtoreferat))
+        ->assertSee('KA-0012')
+        ->assertSee('10.03.2024')
+        ->assertSee('CHA-0003')
+        ->assertSee('15.01.2025');
+});
+
+it('leaves the acquisition/disposal act fields nullable', function () {
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Aktsiz avtoreferat',
+        'advisor' => 'Karimov K.',
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Aktsiz avtoreferat');
+    expect($avtoreferat->acquisition_act_number)->toBeNull()
+        ->and($avtoreferat->acquisition_act_at)->toBeNull()
+        ->and($avtoreferat->disposal_act_number)->toBeNull()
+        ->and($avtoreferat->disposal_act_at)->toBeNull();
+});
+
 it('requires title and advisor, but not an author', function () {
     $this->from(route('admin.avtoreferats.create'))
         ->post(route('admin.avtoreferats.store'), [])

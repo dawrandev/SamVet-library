@@ -29,6 +29,8 @@
             __('Nashr joyi') => $avtoreferat->publicationPlace?->name,
             __('Himoya yili') => $avtoreferat->defense_year,
             __('Inventari') => $avtoreferat->inventory_number,
+            __('Kirish akti') => trim(($avtoreferat->acquisition_act_number ?? '').($avtoreferat->acquisition_act_at ? ' ('.$avtoreferat->acquisition_act_at->format('d.m.Y').')' : '')) ?: null,
+            __('Chiqish akti') => trim(($avtoreferat->disposal_act_number ?? '').($avtoreferat->disposal_act_at ? ' ('.$avtoreferat->disposal_act_at->format('d.m.Y').')' : '')) ?: null,
             __('Tillari') => $avtoreferat->languages->pluck('name')->implode(', ') ?: null,
         ], fn ($v) => filled($v));
     @endphp

@@ -25,6 +25,8 @@ class Avtoreferat extends Model
         'defense_institution', 'performed_institution', 'advisor',
         'udc', 'registration_number', 'condition',
         'publication_place_id', 'defense_year', 'inventory_number',
+        'acquisition_act_number', 'acquisition_act_at',
+        'disposal_act_number', 'disposal_act_at',
         'annotation', 'keywords', 'electronic_file',
     ];
 
@@ -35,6 +37,8 @@ class Avtoreferat extends Model
             'condition' => AsEnumCollection::of(CopyCondition::class),
             'defense_year' => 'integer',
             'views_count' => 'integer',
+            'acquisition_act_at' => 'date',
+            'disposal_act_at' => 'date',
         ];
     }
 

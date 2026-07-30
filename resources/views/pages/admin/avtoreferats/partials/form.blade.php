@@ -101,6 +101,13 @@
 
                     <x-admin.form.input name="inventory_number" :label="__('Inventari')" :value="$avtoreferat?->inventory_number" />
 
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" :value="$avtoreferat?->acquisition_act_number" />
+                        <x-admin.form.input name="acquisition_act_at" type="date" :label="__('Kirish akti sanasi')" :value="$avtoreferat?->acquisition_act_at?->format('Y-m-d')" />
+                        <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')" :value="$avtoreferat?->disposal_act_number" />
+                        <x-admin.form.input name="disposal_act_at" type="date" :label="__('Chiqish akti sanasi')" :value="$avtoreferat?->disposal_act_at?->format('Y-m-d')" />
+                    </div>
+
                     <x-admin.form.multiselect name="language_ids" :label="__('Tillari')"
                         :options="$languages->map(fn ($l) => ['id' => $l->id, 'label' => $l->name])"
                         :selected="$avtoreferat?->languages->pluck('id')->all()" :placeholder="__('Tanlang')"
