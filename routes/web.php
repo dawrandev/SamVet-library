@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\AudiobookController;
 use App\Http\Controllers\Admin\AudioTrackController;
 use App\Http\Controllers\Admin\AvtoreferatController;
+use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ComputerSessionController;
@@ -283,6 +284,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('readers/{reader}/computer-sessions/{computerSession}', [ComputerSessionController::class, 'destroy'])->name('readers.computer-sessions.destroy');
     Route::patch('computer-sessions/{computerSession}/finish', [ComputerSessionController::class, 'finish'])->name('computer-sessions.finish');
     Route::patch('computer-sessions/{computerSession}/extend', [ComputerSessionController::class, 'extend'])->name('computer-sessions.extend');
+
+    // Admin activity log (audit trail)
+    Route::get('activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log.index');
 
     // User status (block / finish / restore)
     Route::patch('readers/{reader}/block', [ReaderStatusController::class, 'block'])->name('readers.block');

@@ -54,6 +54,12 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      # Fails the build on any known CVE/advisory in a locked dependency —
+      # catches issues like the dompdf 2026 CVEs before they ship, instead of
+      # relying on someone remembering to check manually.
+      - name: Audit Composer dependencies for known vulnerabilities
+        run: composer audit --locked
+
       - name: Prepare environment
         run: |
           cp .env.example .env

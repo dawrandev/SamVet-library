@@ -6,12 +6,15 @@ use App\Enums\CopyCondition;
 use App\Enums\LoanMaterialType;
 use App\Enums\LoanStatus;
 use App\Enums\PublicationKind;
+use App\Observers\LoanObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+#[ObservedBy([LoanObserver::class])]
 class Loan extends Model
 {
     use HasFactory;

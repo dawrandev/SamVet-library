@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\Month;
 use App\Enums\SubscriptionSource;
+use App\Observers\SubscriptionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * period (start_month..end_month) of a year, funded either by a specific
  * reader (Foydalanuvchi) or by the branch's own budget — see `source`.
  */
+#[ObservedBy([SubscriptionObserver::class])]
 class Subscription extends Model
 {
     use HasFactory;

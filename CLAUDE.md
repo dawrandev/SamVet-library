@@ -126,6 +126,10 @@ Bu loyiha kutubxona tizimi — xavfsizlikка **juda katta e'tibor**. Har bir ko
 - **PDF/media himoyasi:** elektron kitob/audio to'g'ridan-to'g'ri URL bilan berilmaydi — faqat auth + policy tekshiruvidan o'tган controller stream orqali. Yuklab olish yo'q. (Kirish/chiqish aktlari endi fayl EMAS — oddiy matn maydonlari: akt raqami + sanasi/vaqti.)
 - **Parol:** `Hash::make` (bcrypt/argon). Login'да rate limiting (`throttle`).
 - **Kutubxonachi hujjatlari** (kirish/chiqish aktlari) — mijoz saytda MUTLAQO ko'rinmaydi.
+- **HTTP xavfsizlik headerlari:** barcha web so'rovlariga `app/Http/Middleware/SecurityHeaders.php` orqali qo'llaniladi (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, production+HTTPS'da `Strict-Transport-Security`). CSP (Content-Security-Policy) hali YO'Q — Alpine.js inline `x-data`/`@click` ishlatgani sababli ehtiyotkorlik bilan alohida audit qilinishi kerak (bo'lim 12'ga qarang).
+- **`auth()` — guard'ni HAR DOIM aniq ko'rsating (`auth('web')`), guard'siz emas.** Loyihada 2 ta guard bor (`web` — admin/User, `reader` — kutubxonachi mijozi/Reader). Laravel'ning `actingAs($reader, 'reader')` (yoki production'da reader-tomonidagi har qanday auth) **standart guard'ni almashtiradi** (`Auth::shouldUse()`), shuning uchun guard'siz `auth()->check()`/`auth()->id()` reader kontekstida READER ID'sini qaytarib, uni "admin" deb noto'g'ri talqin qilishi mumkin. Bu haqiqiy xato sifatida topilgan va tuzatilgan (`AdminActivityLogService::logChange()` — pastga qarang), shuning uchun BARCHA yangi kodда shunday joylarда guard aniq yozilishi shart.
+- **Adminlar faoliyat jurnali (audit trail):** `admin_activity_logs` jadvali — kim (`admin_id`), qachon, qaysi modelга (`Reader`, `Book`, `BookCopy`, `Subscription`, `Loan`) nima o'zgartirdi (`changes` JSON, parol kabi maydonlar `[hidden]` bilan yashiriladi). Observer'lar orqali avtomatik yoziladi (`AdminActivityLogService::logChange()`), `/admin/activity-log` sahifasida ko'rinadi. Rol tizimi hali yo'qligi sababli (pastga qarang) hozircha "faqat superadmin" emas — har qanday signed-in admin ko'ra oladi, oddiy `auth` middleware bilan himoyalangan.
+- **`composer audit` CI'da** — har bir push/PR'da bloklovchi qadam sifatida ishlaydi (`.github/workflows/ci.yml`), ma'lum zaifliklarni (masalan dompdf CVE'lari) darhol topadi.
 
 ## Ishlash va interaktivlik (performance — loyiha qotmasligi kerak)
 
@@ -146,6 +150,17 @@ Loyiha tez va uzluksiz ishlashi shart:
 - Foydalanuvchi ham qo'lda test qiladi, lekin bu Claude'ning o'z-o'zini tekshirish majburiyatini bekor qilmaydi.
 - Minimal tekshiruv: `php -l` (sintaksis), `php artisan migrate` o'tishi, `php artisan route:list`, `tinker` bilan model/relation/enum yuklanishi, sahifa render bo'lishi (`php artisan view:cache` yoki HTTP so'rov). Iloji bo'lsa avtomatik test (Pest/PHPUnit).
 - Xato topilsa — tuzatiladi va qayta tekshiriladi.
+
+## Pre-launch system design — keyingi bosqichlar
+
+Loyiha tugallanish arafasida o'tkazilgan system design auditda (2026-07-30) topilgan, lekin **hozircha qurilmagan** narsalar — halollik uchun aniq yozib qo'yilgan, kerak bo'lganda shu ro'yxatdan qaytariladi:
+
+- **Backup (DB + `storage/app`)** va **production PHP yuklash limitlari tekshiruvi** (`upload_max_filesize`/`post_max_size` — 950MB'gacha fayl qabul qilish uchun) — **hosting hali tanlanmagani sababli qurilmagan**. Hosting aniqlangach birinchi galda bajarilishi kerak (ikkala band ham ma'lumot yo'qolishi/funksiya buzilishi bilan bog'liq real xavf).
+- **Xato monitoring** (masalan Sentry) — foydalanuvchi hozircha kerak emas dedi (o'quvchi PII'siga aloqador tashqi servis masalasi tufayli ehtiyot bo'lish kerak — kelajakda qaytilsa, xato kontekstidan PII scrub qilinishi shart).
+- **CSP (Content-Security-Policy)** — Alpine.js inline ishlatgani sababli alohida, ehtiyotkor audit talab qiladi (yuqoridagi Xavfsizlik bo'limiga qarang).
+- **Admin panel + Jurnal/Maqola qidiruvi** — hali oddiy `LIKE` (public katalogdagi kabi MySQL FULLTEXT emas). Kichik ma'lumotlar bazasi va faqat xodimlar foydalangani uchun hozircha muammo emas.
+- **Navbat (queue) infratuzilmasi** — `app/Jobs/` bo'sh, hech narsa navbatga qo'yilmayapti — real ehtiyoj yo'q. Kelajakda `ShouldQueue` kerak bo'lsa, root/sudo yo'qligi sababli worker masalasi alohida hal qilinishi kerak.
+- **`ReaderImportService`/bulk import'lardagi tranzaksiya siyosati** — qisman import muvaffaqiyati (partial success) qasddan bo'lishi mumkin, lekin tasdiqlanmagan — yaqinroq ko'rib chiqish tavsiya etiladi.
 
 ## Buyruqlar
 

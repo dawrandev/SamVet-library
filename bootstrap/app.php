@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureReaderIsAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Apply the selected locale on every web request.
         $middleware->web(append: [
             SetLocale::class,
+            SecurityHeaders::class,
         ]);
 
         // Reading endpoints require a signed-in reader (not an admin user).

@@ -490,6 +490,24 @@ Boshida bu loyihada "aqilli qidiruv = Laravel Scout + Meilisearch" deb rejalasht
 
 > **Test infratuzilmasi bo'yicha muhim eslatma:** yuqorida aytilgan FULLTEXT+tranzaksiya cheklovi sababli, FULLTEXT'ga bevosita bog'liq testlar (`MATCH()` natijasini tekshiradigan) alohida faylda, `RefreshDatabase` o'rniga `DatabaseTruncation` bilan yozilishi kerak (haqiqatan commit+truncate, tranzaksiya-rollback emas) — bo'lim 9'ga qarang. Bu sekinroq (~10s/test, millisekund o'rniga), shuning uchun **faqat FULLTEXT'ga chinakam bog'liq testlarni** shu faylga qo'ying — qolganini (stopword, LIKE-fallback, did-you-mean, Resource shakli) tezroq standart `RefreshDatabase`'da qoldiring.
 
+### 4.11 Audit trail — Observer + kichik yozuvchi Service
+
+"Kim, nimani, qachon o'zgartirdi" — nozik ma'lumotlarga (foydalanuvchi PII, inventar, moliyaviy yozuvlar) ega loyihalarda deyarli har doim kerak bo'ladigan pattern. Tayyor paket (masalan `spatie/laravel-activitylog`) o'rniga, loyiha allaqachon Observer'ni model-lifecycle logikasi uchun standart qilib olgani sababli (bo'lim 4.8), **shu uslubning o'zida davom etildi** — ikkita registratsiya mexanizmi (paket trait'i + loyihaning o'z Observer'lari) aralashib ketmasligi uchun.
+
+**Qatlamlar:** `AdminActivityLog` model (`admin_id`, `action` enum, `subject_type`, `subject_id`, `changes` JSON) → `AdminActivityLogRepositoryInterface`/`Repository` (oddiy `create()`/`paginate()`) → `AdminActivityLogService::logChange(Model $model, AdminActivityAction $action)` — yagona yozuvchi metod, o'zgargan maydonlarni (`getChanges()`/`getOriginal()` solishtirib) `[maydon => [eski, yangi]]` shaklida yig'adi. Kuzatiladigan har bir model (`Reader`, `Book`, `BookCopy`, `Subscription`, `Loan`)ning Observer'iga uch qatorlik qo'shimcha kiritildi:
+```php
+public function created(Book $book): void { $this->activityLog->logChange($book, AdminActivityAction::Created); }
+public function updated(Book $book): void { $this->activityLog->logChange($book, AdminActivityAction::Updated); }
+public function deleted(Book $book): void { $this->activityLog->logChange($book, AdminActivityAction::Deleted); }
+```
+`AdminActivityLogService` Observer konstruktoriga inject qilinadi — Laravel'ning `#[ObservedBy([...])]` orqali resolve qilingan Observer'lar konteyner orqali yaratiladi, shuning uchun bu oddiy, tanish DI.
+
+**Ikkita muhim, amaliyotda topilgan nozik joy:**
+- **Sezgir qiymatlar (`password`, `remember_token`) hech qachon logga yozilmaydi** — maydon nomi ko'rinadi ("parol o'zgardi"), lekin qiymat o'rniga `[hidden]` yoziladi. Bu accountability (nimadir o'zgarganini bilish) bilan xavfsizlikni (ikkinchi joyga maxfiy qiymat nusxalanmasligi) muvozanatlaydi.
+- **No-op update logga yozilmaydi** — agar `save()` faqat `updated_at`'ni o'zgartirsa (haqiqiy maydon o'zgarishi yo'q), bo'sh "yangilandi" yozuvi yaratilmaydi (shovqin).
+
+**Haqiqiy xato, testda topilgan** (bo'lim 8'dagi umumiy qoidaning aynan manba hodisasi): birinchi implementatsiya guard'siz `auth()->check()`/`auth()->id()` ishlatgan edi. Reader (mijoz)ga tegishli oqim `actingAs($reader, 'reader')` orqali ishlaganda, bu **standart guard'ni** `reader`ga almashtirib yuboradi — shuning uchun fon jarayonidagi Observer o'sha reader'ning ID'sini "admin_id" sifatida yozishga urinib, `users` jadvalida mavjud bo'lmagan FK'ga qarshi xato berdi. To'liq test to'plamini ishga tushirish shu xatoni **darhol** ushladi (bitta testda, standalone holatda ham takrorlangan) — tuzatish: har doim `auth('web')->check()`/`auth('web')->id()` aniq guard bilan.
+
 ---
 
 ## 5. DRY: bir xil shakldagi ko'p resurs uchun bazaviy klasslar
@@ -573,6 +591,8 @@ pages/admin/books/partials/form.blade.php  ← create+edit ikkalasida ham @inclu
 - **SQL injection:** faqat Eloquent/Query Builder. Xom SQL string konkatenatsiya YO'Q. Ustun nomi dinamik bo'lganda ham (masalan, migratsiyada `$column.'_at'`) — bu ishonchli, o'zingiz yozgan sobit ro'yxatdan kelgan bo'lishi kerak, foydalanuvchi kiritgan qiymatdan EMAS.
 - **Fayl yuklash:** mime-type/hajm FormRequest'da tekshiriladi (`'mimes:pdf', 'max:972800'`). Himoyalangan fayllar `storage/app` (public EMAS), controller orqali stream qilinadi, hech qachon to'g'ridan-to'g'ri URL bilan berilmaydi.
 - **CSRF:** barcha formalarda `@csrf`.
+- **HTTP xavfsizlik headerlari** — bitta global middleware (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, shartli `Strict-Transport-Security`), `bootstrap/app.php`'da `->withMiddleware()` ichida boshqa web middleware'lar bilan bir qatorda ro'yxatga olinadi. CSP qasddan qamrovdan tashqarida qoldirilgan — Alpine.js kabi inline-atribut asosidagi kutubxonalar bilan ishlaydigan loyihada CSP qo'shish alohida, ehtiyotkor audit talab qiladi (inline skript/uslublarni sanab chiqish kerak), "keyinroq to'g'ri qilish" ustuvor "hoziroq, yuzaki qo'shish"dan.
+- **Ko'p-guard loyihada `auth()`ni HECH QACHON guard'siz chaqirmang — haqiqiy xato manbai.** Agar loyihada bir nechta auth guard bo'lsa (masalan admin uchun `web`, mijoz uchun `reader`), Laravel'ning `actingAs($model, 'boshqa-guard')` (yoki production'dagi ekvivalenti) **standart guard'ni butun so'rov davomida almashtiradi** (`Auth::shouldUse()` orqali). Shu sababli fon jarayonida (masalan Observer ichida) guard'siz `auth()->check()`/`auth()->id()` chaqirilsa, boshqa guard bo'yicha autentifikatsiya qilingan foydalanuvchining ID'sini noto'g'ri kontekstda qaytarib berishi mumkin — bu loyihada aynan shu sabab bilan haqiqiy xato yuz berdi (pastga, 4.11-bo'limga qarang): mijoz (`reader` guard) o'quvchi sahifasini ochganda, fon jarayonidagi audit-log yozuvi buni "admin" deb noto'g'ri talqin qilib, mavjud bo'lmagan `users.id`ga FK xatosi berdi. **Qoida: fon/Observer/Job kodida foydalanuvchi turini har doim aniq guard bilan tekshiring** (`auth('web')->check()`, `auth('web')->id()`), hech qachon guard'siz emas.
 
 ---
 
@@ -663,6 +683,9 @@ Halollik uchun — CLAUDE.md'da yozilgan, lekin amalda hech qachon ishlatilmagan
 | **Pipeline** (murakkab filtr uchun) | Qurilmagan | `->when()` zanjiri yetarli bo'lib chiqdi, filtr shartlari hech qachon Pipeline talab qiladigan darajada murakkablashmadi |
 | **Policy/Gate** | Qurilmagan | Loyihada faqat bitta admin roli bor edi (rol tizimi yo'q) — `auth` middleware yetarli edi |
 | **CQRS, Event Sourcing** | Rejalashtirilmagan ham | Loyiha ko'lami buni talab qilmadi |
+| **CSP (Content-Security-Policy)** | Qurilmagan | Alpine.js inline atributlari bilan mos ravishda qo'shish alohida, ehtiyotkor audit talab qiladi — boshqa xavfsizlik headerlari (bo'lim 8) allaqachon qo'shilgan, CSP ataylab qoldirilgan |
+| **Backup (DB + katta fayllar)** | Qurilmagan | Production hosting hali tanlanmagan — server imkoniyatlari (crontab, disk) noma'lum bo'lgani uchun yechim (GitHub Actions'mi, `spatie/laravel-backup`mi) tanlanmagan |
+| **Xato monitoring (Sentry va h.k.)** | Qurilmagan | Foydalanuvchi hozircha kerak emas dedi — o'quvchi PII'si xato kontekstiga tushib, tashqi servisga yuborilib qolishi mumkinligi sababli ehtiyotkorlik talab qiladi |
 
 **Xulosa:** yangi loyihada bu patternlarni CLAUDE.md'ga "standart" deb yozmang — kerak bo'lib qolganda (masalan, ro'l tizimi qo'shilganda Policy, yoki filtr 6-7 shartdan oshganda Pipeline) o'shanda qo'shing va CLAUDE.md'ni **o'sha paytda** yangilang. Oldindan yozilgan, amalda tekshirilmagan qoida — chalg'ituvchi hujjat bo'lib qoladi.
 

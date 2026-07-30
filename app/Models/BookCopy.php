@@ -5,11 +5,14 @@ namespace App\Models;
 use App\Enums\BookFormat;
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
+use App\Observers\BookCopyObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([BookCopyObserver::class])]
 class BookCopy extends Model
 {
     use HasFactory;
