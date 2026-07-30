@@ -41,6 +41,7 @@
             <div class="space-y-5">
                 <x-admin.form.input name="name" :label="__('Audio nomi')" :value="$audiobook?->name" required :placeholder="__('Audiokitob nomi')" />
                 <x-admin.form.input name="author" :label="__('Muallifi')" :value="$audiobook?->author" :placeholder="__('masalan: Abdulla Qodiriy')" />
+                <x-admin.form.input type="date" name="published_at" :label="__('Joylangan sana')" :value="$audiobook?->published_at?->format('Y-m-d')" />
 
                 <div>
                     <label for="annotation" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">{{ __('Annotatsiyasi') }}</label>

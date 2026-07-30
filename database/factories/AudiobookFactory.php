@@ -17,6 +17,7 @@ class AudiobookFactory extends Factory
         return [
             'name' => $this->faker->unique()->sentence(3),
             'author' => $this->faker->name(),
+            'published_at' => $this->faker->optional()->date(),
             'annotation' => $this->faker->paragraph(),
             // slug is set by the observer
         ];

@@ -50,6 +50,10 @@
                             <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $audiobook->author }}</dd>
                         </div>
                     @endif
+                    <div class="flex justify-between gap-4 border-b border-gray-50 pb-2 dark:border-gray-800/50">
+                        <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Joylangan sana') }}</dt>
+                        <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $audiobook->published_at?->format('d.m.Y') ?? '—' }}</dd>
+                    </div>
                     <div class="flex justify-between gap-4 pb-2">
                         <dt class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Audiolar soni') }}</dt>
                         <dd class="text-theme-sm text-right font-medium text-gray-800 dark:text-white/90">{{ $audiobook->tracks->count() }}</dd>

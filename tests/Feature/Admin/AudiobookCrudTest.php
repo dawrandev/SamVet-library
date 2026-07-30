@@ -24,6 +24,41 @@ it('creates an audiobook', function () {
         ->and($audiobook->slug)->not->toBeEmpty();
 });
 
+it('creates an audiobook with a published_at date and shows it on the show page', function () {
+    Storage::fake('public');
+
+    $this->post(route('admin.audiobooks.store'), [
+        'name' => 'Sarob',
+        'author' => 'Abdulla Qahhor',
+        'published_at' => '2026-01-15',
+        'cover' => UploadedFile::fake()->image('cover.jpg'),
+    ])->assertRedirect();
+
+    $audiobook = Audiobook::firstWhere('name', 'Sarob');
+    expect($audiobook)->not->toBeNull()
+        ->and($audiobook->published_at->format('Y-m-d'))->toBe('2026-01-15');
+
+    $this->get(route('admin.audiobooks.show', $audiobook))
+        ->assertOk()
+        ->assertSee('15.01.2026');
+});
+
+it('creates an audiobook without a published_at date (nullable)', function () {
+    $this->post(route('admin.audiobooks.store'), [
+        'name' => 'Sarob 2',
+    ])->assertRedirect();
+
+    $audiobook = Audiobook::firstWhere('name', 'Sarob 2');
+    expect($audiobook)->not->toBeNull()
+        ->and($audiobook->published_at)->toBeNull();
+});
+
+it('renders the published_at date input on the create form', function () {
+    $this->get(route('admin.audiobooks.create'))
+        ->assertOk()
+        ->assertSee('published_at', false);
+});
+
 it('requires a name', function () {
     $this->from(route('admin.audiobooks.create'))
         ->post(route('admin.audiobooks.store'), [])
