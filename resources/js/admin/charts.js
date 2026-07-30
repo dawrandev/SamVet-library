@@ -123,6 +123,18 @@ const bar = (el) => {
     // 3 is the pivot where a fixed percentage would otherwise balloon.
     const columnWidth = labels.length <= 2 ? '35%' : labels.length <= 3 ? '20%' : labels.length <= 5 ? '35%' : '45%';
 
+    // Nomi (title counts) and nusxa (copy counts) are always on very
+    // different scales — one title can have many copies. Without an
+    // explicit shared max, ApexCharts auto-scales the y-axis to whichever
+    // series is currently shown, so toggling to the smaller "nomi" series
+    // rescales the axis to fit it — a bar sitting near its own (now much
+    // smaller) max renders almost as tall as before, looking like it grew
+    // instead of shrunk, even though the value correctly dropped (confirmed
+    // by direct pixel-height testing — this happens on a from-scratch
+    // render too, not just on update). A fixed max spanning BOTH series
+    // keeps bar height a true, comparable proportion across toggles.
+    const sharedMax = Math.max(1, ...seriesCopies, ...seriesTitles) * 1.1;
+
     // A handful of bars spread across the full card width leaves a huge dead
     // gap between them — constrain the container's own CSS width (a browser-
     // resolved percentage of its real parent, unlike ApexCharts' own `width`
@@ -135,9 +147,9 @@ const bar = (el) => {
         el.style.margin = '0 auto';
     }
 
-    const chart = new ApexCharts(el, {
+    const options = (mode) => ({
         chart: { type: 'bar', height: 300, width: '100%', fontFamily: FONT, toolbar: { show: false }, animations: { enabled: true } },
-        series: [{ name: nameFor('copies'), data: dataFor('copies') }],
+        series: [{ name: nameFor(mode), data: dataFor(mode) }],
         colors,
         plotOptions: {
             bar: { borderRadius: 4, borderRadiusApplication: 'end', columnWidth, distributed: true },
@@ -149,6 +161,8 @@ const bar = (el) => {
             axisTicks: { show: false },
         },
         yaxis: {
+            min: 0,
+            max: sharedMax,
             labels: { style: { colors: '#98a2b3', fontSize: '11px', fontFamily: FONT }, formatter: (v) => Math.round(v) },
         },
         grid: { borderColor: '#f2f4f7', strokeDashArray: 4 },
@@ -156,6 +170,8 @@ const bar = (el) => {
         dataLabels: { enabled: false },
         tooltip: { y: { formatter: (v) => String(v) } },
     });
+
+    const chart = new ApexCharts(el, options('copies'));
     chart.render();
 
     const group = el.closest('[data-dashboard], .rounded-2xl')?.querySelector('[data-bar-toggle-group]');
