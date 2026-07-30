@@ -128,18 +128,20 @@
                     <span class="text-sm tabular-nums text-gray-400">{{ __(':n ta', ['n' => number_format($total, 0, '.', ' ')]) }}</span>
                 </div>
 
+                {{-- A misspelled search: results below are for the corrected term,
+                     not literally what was typed — say so before showing them. --}}
+                @if ($correctedSearch)
+                    <p class="mt-4 text-sm text-gray-600">
+                        {{ __('«:original» uchun natija topilmadi. Natijalar «:corrected» so‘rovi bo‘yicha ko‘rsatilmoqda.', ['original' => $filters->search, 'corrected' => $correctedSearch]) }}
+                    </p>
+                @endif
+
                 @if ($items->isEmpty())
                     {{-- Empty state --}}
                     <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
                         <svg class="mx-auto h-10 w-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /></svg>
                         <p class="mt-4 text-sm font-semibold text-gray-900">{{ __('Hech narsa topilmadi') }}</p>
                         <p class="mt-1 text-sm text-gray-500">{{ __('Boshqa kalit so‘z yoki filtrlarni sinab ko‘ring.') }}</p>
-                        @if ($didYouMean)
-                            <p class="mt-3 text-sm text-gray-600">
-                                {{ __('Ehtimol shuni nazarda tutdingiz:') }}
-                                <a href="{{ route('catalog', ['q' => $didYouMean]) }}" class="font-semibold text-blue-700 hover:underline">{{ $didYouMean }}</a>?
-                            </p>
-                        @endif
                         @if ($filters->isActive())
                             <a href="{{ route('catalog') }}" class="mt-5 inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 {{ __('Filtrlarni tozalash') }}

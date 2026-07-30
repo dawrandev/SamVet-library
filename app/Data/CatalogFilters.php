@@ -31,6 +31,23 @@ final class CatalogFilters
         public readonly CatalogSearchScope $scope = CatalogSearchScope::All,
     ) {}
 
+    /** Same filters with only the search term swapped — used for the typo-correction retry. */
+    public function withSearch(?string $search): self
+    {
+        return new self(
+            search: $search,
+            categories: $this->categories,
+            types: $this->types,
+            languages: $this->languages,
+            formats: $this->formats,
+            yearFrom: $this->yearFrom,
+            yearTo: $this->yearTo,
+            author: $this->author,
+            sort: $this->sort,
+            scope: $this->scope,
+        );
+    }
+
     /** True when at least one narrowing filter is applied (sort excluded). */
     public function isActive(): bool
     {

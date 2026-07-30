@@ -77,10 +77,32 @@ it('quick-search returns an empty list for a blank or too-short query', function
     $this->getJson(route('catalog.quick-search', ['q' => '']))->assertOk()->assertJson(['data' => []]);
 });
 
-it('shows a "did you mean" suggestion on the catalog page when a misspelled search returns nothing', function () {
+it('auto-corrects a misspelled catalog search and shows the matching resource directly, not just a suggestion link', function () {
     Book::factory()->create(['title' => 'Veterinariya asoslari']);
 
     $res = $this->get(route('catalog', ['q' => 'veterenariya']));
 
-    $res->assertOk()->assertSee('veterinariya');
+    $res->assertOk()
+        ->assertSee('Veterinariya asoslari') // the actual resource, not merely a "did you mean" link
+        ->assertSee('veterenariya') // the corrected-term banner still names what was typed
+        ->assertSee('veterinariya');
+});
+
+it('does not claim a correction when the suggested word still matches nothing under the active filters', function () {
+    Book::factory()->create(['title' => 'Veterinariya asoslari']);
+    $unusedType = \App\Models\BookType::factory()->create();
+
+    $res = $this->get(route('catalog', ['q' => 'veterenariya', 'types' => [$unusedType->id]]));
+
+    $res->assertOk()->assertSee('Hech narsa topilmadi');
+});
+
+it('finds the matching resource via quick-search typeahead even when the query is misspelled', function () {
+    Book::factory()->create(['title' => 'Veterinariya asoslari']);
+
+    $res = $this->getJson(route('catalog.quick-search', ['q' => 'veterenariya']));
+
+    $res->assertOk();
+    expect($res->json('data'))->not->toBeEmpty();
+    expect(collect($res->json('data'))->pluck('title'))->toContain('Veterinariya asoslari');
 });
