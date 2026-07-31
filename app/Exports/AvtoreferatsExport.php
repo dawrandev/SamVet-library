@@ -24,7 +24,7 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
     public function query(): Builder
     {
         return app(AvtoreferatRepositoryInterface::class)->filtered($this->filters)
-            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole', 'languages'])
+            ->with(['scienceField', 'publicationPlace', 'contributors.contributorRole', 'languages', 'copies'])
             ->latest('id');
     }
 
@@ -36,7 +36,8 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
         return [
             'ID', 'Sarlavha', 'Muallif', 'Boshqa ishtirokchilar', 'Ixtisosligi', 'Fan nomi', 'Darajasi',
             'Kengash raqami', 'Himoya muassasasi', 'Bajarilgan muassasa', 'Ilmiy rahbar',
-            'UDC', "Ro'yxatga olish raqami", 'Holati', 'Nashr joyi', 'Himoya yili', 'Inventar raqami',
+            'UDC', "Ro'yxatga olish raqami", 'Nashr joyi', 'Himoya yili',
+            'Nusxalar soni', 'Inventar raqamlari', 'Holati',
             'Tillari', 'Tayanch so\'zlar', 'Annotatsiya', 'Elektron nusxa', "Ko'rishlar soni",
         ];
     }
@@ -61,10 +62,11 @@ class AvtoreferatsExport implements FromQuery, ShouldAutoSize, WithHeadings, Wit
             $avtoreferat->advisor,
             $avtoreferat->udc,
             $avtoreferat->registration_number,
-            $avtoreferat->condition?->map(fn ($c) => $c->label())->join(', '),
             $avtoreferat->publicationPlace?->name,
             $avtoreferat->defense_year,
-            $avtoreferat->inventory_number,
+            $avtoreferat->copies->count(),
+            $avtoreferat->copies->pluck('inventory_number')->filter()->implode(', '),
+            $avtoreferat->copies->flatMap(fn ($c) => $c->condition?->map(fn ($cc) => $cc->label()) ?? [])->unique()->implode(', '),
             $avtoreferat->languages->pluck('name')->implode(', '),
             $avtoreferat->keywords,
             $avtoreferat->annotation,

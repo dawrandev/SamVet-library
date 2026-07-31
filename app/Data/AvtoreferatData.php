@@ -26,11 +26,6 @@ class AvtoreferatData
         public readonly ?string $registration_number,
         public readonly ?int $publication_place_id,
         public readonly ?int $defense_year,
-        public readonly ?string $inventory_number,
-        public readonly ?string $acquisition_act_number,
-        public readonly ?string $acquisition_act_at,
-        public readonly ?string $disposal_act_number,
-        public readonly ?string $disposal_act_at,
         public readonly ?string $annotation,
         public readonly ?string $keywords,
         public readonly ?UploadedFile $electronic_file,
@@ -38,8 +33,6 @@ class AvtoreferatData
         public readonly array $contributors = [],
         /** @var array<int, int> */
         public readonly array $language_ids = [],
-        /** @var array<int, string> */
-        public readonly array $condition = [],
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -58,17 +51,11 @@ class AvtoreferatData
             registration_number: $request->input('registration_number') ?: null,
             publication_place_id: $request->integer('publication_place_id') ?: null,
             defense_year: $request->integer('defense_year') ?: null,
-            inventory_number: $request->input('inventory_number') ?: null,
-            acquisition_act_number: $request->input('acquisition_act_number') ?: null,
-            acquisition_act_at: $request->input('acquisition_act_at') ?: null,
-            disposal_act_number: $request->input('disposal_act_number') ?: null,
-            disposal_act_at: $request->input('disposal_act_at') ?: null,
             annotation: $request->input('annotation') ?: null,
             keywords: $request->input('keywords') ?: null,
             electronic_file: $request->file('electronic_file'),
             contributors: $request->input('contributors', []),
             language_ids: $request->input('language_ids', []),
-            condition: $request->input('condition', []),
         );
     }
 
@@ -91,14 +78,8 @@ class AvtoreferatData
             'advisor' => $this->advisor,
             'udc' => $this->udc,
             'registration_number' => $this->registration_number,
-            'condition' => $this->condition,
             'publication_place_id' => $this->publication_place_id,
             'defense_year' => $this->defense_year,
-            'inventory_number' => $this->inventory_number,
-            'acquisition_act_number' => $this->acquisition_act_number,
-            'acquisition_act_at' => $this->acquisition_act_at,
-            'disposal_act_number' => $this->disposal_act_number,
-            'disposal_act_at' => $this->disposal_act_at,
             'annotation' => $this->annotation,
             'keywords' => $this->keywords,
         ];

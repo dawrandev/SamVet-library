@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Repositories\Contracts\AdminActivityLogRepositoryInterface;
 use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Repositories\Contracts\AudiobookRepositoryInterface;
+use App\Repositories\Contracts\AvtoreferatCopyRepositoryInterface;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use App\Repositories\Contracts\BookReadingRepositoryInterface;
 use App\Repositories\Contracts\BookRepositoryInterface;
@@ -32,6 +33,7 @@ use App\Repositories\Contracts\WarningRepositoryInterface;
 use App\Repositories\Eloquent\AdminActivityLogRepository;
 use App\Repositories\Eloquent\ArticleRepository;
 use App\Repositories\Eloquent\AudiobookRepository;
+use App\Repositories\Eloquent\AvtoreferatCopyRepository;
 use App\Repositories\Eloquent\AvtoreferatRepository;
 use App\Repositories\Eloquent\BookReadingRepository;
 use App\Repositories\Eloquent\BookRepository;
@@ -71,6 +73,7 @@ class RepositoryServiceProvider extends ServiceProvider
         ArticleRepositoryInterface::class => ArticleRepository::class,
         AudiobookRepositoryInterface::class => AudiobookRepository::class,
         AvtoreferatRepositoryInterface::class => AvtoreferatRepository::class,
+        AvtoreferatCopyRepositoryInterface::class => AvtoreferatCopyRepository::class,
         BookReadingRepositoryInterface::class => BookReadingRepository::class,
         BookRepositoryInterface::class => BookRepository::class,
         CatalogRepositoryInterface::class => CatalogRepository::class,

@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Observers\AvtoreferatObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
-use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[ObservedBy([AvtoreferatObserver::class])]
@@ -23,10 +22,8 @@ class Avtoreferat extends Model
     protected $fillable = [
         'title', 'author', 'specialty', 'science_field_id', 'degree', 'council_number',
         'defense_institution', 'performed_institution', 'advisor',
-        'udc', 'registration_number', 'condition',
-        'publication_place_id', 'defense_year', 'inventory_number',
-        'acquisition_act_number', 'acquisition_act_at',
-        'disposal_act_number', 'disposal_act_at',
+        'udc', 'registration_number',
+        'publication_place_id', 'defense_year',
         'annotation', 'keywords', 'electronic_file',
     ];
 
@@ -34,15 +31,18 @@ class Avtoreferat extends Model
     {
         return [
             'degree' => DissertationDegree::class,
-            'condition' => AsEnumCollection::of(CopyCondition::class),
             'defense_year' => 'integer',
             'views_count' => 'integer',
-            'acquisition_act_at' => 'date',
-            'disposal_act_at' => 'date',
         ];
     }
 
     // --- Relationships ---
+
+    /** Physical copies — inventory number, condition, acquisition/disposal acts. Inventory-tracking only, no lending. */
+    public function copies(): HasMany
+    {
+        return $this->hasMany(AvtoreferatCopy::class);
+    }
 
     /** "Fan nomi" — same lookup Dissertation uses. */
     public function scienceField(): BelongsTo

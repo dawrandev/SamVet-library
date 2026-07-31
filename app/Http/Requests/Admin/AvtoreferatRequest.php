@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -37,15 +36,8 @@ class AvtoreferatRequest extends FormRequest
             'advisor' => ['required', 'string', 'max:500'],
             'udc' => ['nullable', 'string', 'max:50'],
             'registration_number' => ['nullable', 'string', 'max:255'],
-            'condition' => ['nullable', 'array'],
-            'condition.*' => [new Enum(CopyCondition::class)],
             'publication_place_id' => ['nullable', 'integer', 'exists:publication_places,id'],
             'defense_year' => ['nullable', 'integer', 'min:1000', "max:{$maxYear}"],
-            'inventory_number' => ['nullable', 'string', 'max:100'],
-            'acquisition_act_number' => ['nullable', 'string', 'max:100'],
-            'acquisition_act_at' => ['nullable', 'date'],
-            'disposal_act_number' => ['nullable', 'string', 'max:100'],
-            'disposal_act_at' => ['nullable', 'date'],
             'language_ids' => ['nullable', 'array'],
             'language_ids.*' => ['integer', 'exists:languages,id'],
             'annotation' => ['nullable', 'string'],
@@ -76,14 +68,8 @@ class AvtoreferatRequest extends FormRequest
             'advisor' => __('Ilmiy rahbar'),
             'udc' => __('UO‘K'),
             'registration_number' => __('Ro‘yxat raqami'),
-            'condition' => __('Holati'),
             'publication_place_id' => __('Nashr joyi'),
             'defense_year' => __('Himoya yili'),
-            'inventory_number' => __('Inventari'),
-            'acquisition_act_number' => __('Kirish akti raqami'),
-            'acquisition_act_at' => __('Kirish akti sanasi'),
-            'disposal_act_number' => __('Chiqish akti raqami'),
-            'disposal_act_at' => __('Chiqish akti sanasi'),
             'language_ids' => __('Tillari'),
             'annotation' => __('Annotatsiya'),
             'keywords' => __('Tayanch so‘zlar'),

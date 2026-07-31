@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\AudiobookController;
 use App\Http\Controllers\Admin\AudioTrackController;
 use App\Http\Controllers\Admin\AvtoreferatController;
+use App\Http\Controllers\Admin\AvtoreferatCopyController;
 use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
@@ -223,6 +224,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Avtoreferats CRUD (same shape as a dissertation)
     Route::resource('avtoreferats', AvtoreferatController::class);
+
+    // Avtoreferat copies (modal on the avtoreferat show page — mirrors books.copies)
+    Route::resource('avtoreferats.copies', AvtoreferatCopyController::class)->only(['store', 'update', 'destroy']);
 
     // Export audiobooks to Excel (BEFORE the resource — so it doesn't clash with `audiobooks/{audiobook}`)
     Route::get('audiobooks/export', [AudiobookController::class, 'export'])->name('audiobooks.export');

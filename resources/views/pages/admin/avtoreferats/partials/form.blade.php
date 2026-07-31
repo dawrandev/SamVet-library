@@ -4,9 +4,6 @@
 
     $degreeOptions = \App\Enums\DissertationDegree::cases();
     $currentDegree = old('degree', $editing ? $avtoreferat->degree?->value : null);
-
-    $conditionOptions = \App\Enums\CopyCondition::cases();
-    $conditionSelectOptions = collect($conditionOptions)->map(fn ($c) => ['id' => $c->value, 'label' => $c->label()]);
 @endphp
 
 <form
@@ -88,24 +85,10 @@
                         <x-admin.form.input name="registration_number" :label="__('Ro‘yxat raqami')" :value="$avtoreferat?->registration_number" />
                     </div>
 
-                    <div>
-                        <x-admin.form.multiselect name="condition" :label="__('Holati')" :options="$conditionSelectOptions"
-                            :selected="$avtoreferat?->condition?->map(fn ($c) => $c->value)->values()->all() ?? []" />
-                    </div>
-
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-admin.form.select name="publication_place_id" :label="__('Nashr joyi')" :options="$publicationPlaces" :selected="$avtoreferat?->publication_place_id" :placeholder="__('Tanlang')"
                             creatable create-translatable create-type="publication_place" :create-label="__('Yangi nashr joyi')" />
                         <x-admin.form.input type="number" name="defense_year" :label="__('Himoya yili')" :value="$avtoreferat?->defense_year" placeholder="masalan: 2024" />
-                    </div>
-
-                    <x-admin.form.input name="inventory_number" :label="__('Inventari')" :value="$avtoreferat?->inventory_number" />
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <x-admin.form.input name="acquisition_act_number" :label="__('Kirish akti raqami')" :value="$avtoreferat?->acquisition_act_number" />
-                        <x-admin.form.input name="acquisition_act_at" type="date" :label="__('Kirish akti sanasi')" :value="$avtoreferat?->acquisition_act_at?->format('Y-m-d')" />
-                        <x-admin.form.input name="disposal_act_number" :label="__('Chiqish akti raqami')" :value="$avtoreferat?->disposal_act_number" />
-                        <x-admin.form.input name="disposal_act_at" type="date" :label="__('Chiqish akti sanasi')" :value="$avtoreferat?->disposal_act_at?->format('Y-m-d')" />
                     </div>
 
                     <x-admin.form.multiselect name="language_ids" :label="__('Tillari')"

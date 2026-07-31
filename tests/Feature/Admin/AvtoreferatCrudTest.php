@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
 use App\Models\Language;
@@ -26,16 +25,13 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         'advisor' => 'Karimov K.',
         'udc' => '619:616.98',
         'registration_number' => 'B24.15',
-        'condition' => [CopyCondition::New->value],
         'publication_place_id' => $place->id,
         'defense_year' => 2024,
-        'inventory_number' => 'AR-00123',
     ])->assertRedirect();
 
     $avtoreferat = Avtoreferat::firstWhere('title', 'Veterinariya sohasida yangi usullar');
     expect($avtoreferat)->not->toBeNull()
         ->and($avtoreferat->degree)->toBe(DissertationDegree::Dsc)
-        ->and($avtoreferat->condition->first())->toBe(CopyCondition::New)
         ->and($avtoreferat->advisor)->toBe('Karimov K.')
         ->and($avtoreferat->publication_place_id)->toBe($place->id)
         ->and($avtoreferat->defense_year)->toBe(2024)
@@ -45,43 +41,6 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         ->and($avtoreferat->getAttributes())->not->toHaveKey('journal_issue_id');
 });
 
-it('saves the kirish/chiqish akti (acquisition/disposal act) number and date, like a book copy', function () {
-    $this->post(route('admin.avtoreferats.store'), [
-        'title' => 'Akt maydonlari sinovi',
-        'advisor' => 'Karimov K.',
-        'inventory_number' => 'AR-00456',
-        'acquisition_act_number' => 'KA-0012',
-        'acquisition_act_at' => '2024-03-10',
-        'disposal_act_number' => 'CHA-0003',
-        'disposal_act_at' => '2025-01-15',
-    ])->assertRedirect();
-
-    $avtoreferat = Avtoreferat::firstWhere('title', 'Akt maydonlari sinovi');
-    expect($avtoreferat->acquisition_act_number)->toBe('KA-0012')
-        ->and($avtoreferat->acquisition_act_at->format('Y-m-d'))->toBe('2024-03-10')
-        ->and($avtoreferat->disposal_act_number)->toBe('CHA-0003')
-        ->and($avtoreferat->disposal_act_at->format('Y-m-d'))->toBe('2025-01-15');
-
-    $this->get(route('admin.avtoreferats.show', $avtoreferat))
-        ->assertSee('KA-0012')
-        ->assertSee('10.03.2024')
-        ->assertSee('CHA-0003')
-        ->assertSee('15.01.2025');
-});
-
-it('leaves the acquisition/disposal act fields nullable', function () {
-    $this->post(route('admin.avtoreferats.store'), [
-        'title' => 'Aktsiz avtoreferat',
-        'advisor' => 'Karimov K.',
-    ])->assertRedirect();
-
-    $avtoreferat = Avtoreferat::firstWhere('title', 'Aktsiz avtoreferat');
-    expect($avtoreferat->acquisition_act_number)->toBeNull()
-        ->and($avtoreferat->acquisition_act_at)->toBeNull()
-        ->and($avtoreferat->disposal_act_number)->toBeNull()
-        ->and($avtoreferat->disposal_act_at)->toBeNull();
-});
-
 it('requires title and advisor, but not an author', function () {
     $this->from(route('admin.avtoreferats.create'))
         ->post(route('admin.avtoreferats.store'), [])
@@ -89,16 +48,15 @@ it('requires title and advisor, but not an author', function () {
         ->assertSessionDoesntHaveErrors('author');
 });
 
-it('rejects an invalid degree or condition', function () {
+it('rejects an invalid degree', function () {
     $this->from(route('admin.avtoreferats.create'))
         ->post(route('admin.avtoreferats.store'), [
             'title' => 'X',
             'author' => 'Y',
             'advisor' => 'Z',
             'degree' => 'professor', // not a DissertationDegree case
-            'condition' => ['destroyed'], // not a CopyCondition case
         ])
-        ->assertSessionHasErrors(['degree', 'condition.0']);
+        ->assertSessionHasErrors('degree');
 });
 
 it('rejects a non-pdf file', function () {

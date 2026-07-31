@@ -34,7 +34,8 @@ it('shows the avtoreferat detail page with its public bibliographic fields', fun
 });
 
 it('never shows an avtoreferat’s inventory number or condition on the client page', function () {
-    $avtoreferat = Avtoreferat::factory()->create(['inventory_number' => 'INV-SECRET-77']);
+    $avtoreferat = Avtoreferat::factory()->create();
+    \App\Models\AvtoreferatCopy::factory()->create(['avtoreferat_id' => $avtoreferat->id, 'inventory_number' => 'INV-SECRET-77']);
 
     $this->get(route('avtoreferat.show', $avtoreferat->slug))
         ->assertOk()

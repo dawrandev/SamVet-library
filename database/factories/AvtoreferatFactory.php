@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\CopyCondition;
 use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
 use App\Models\PublicationPlace;
@@ -30,12 +29,8 @@ class AvtoreferatFactory extends Factory
             'advisor' => $this->faker->name(),
             'udc' => $this->faker->numerify('###.#'),
             'registration_number' => $this->faker->numerify('B##.##'),
-            'condition' => [$this->faker->randomElement(CopyCondition::cases())->value],
             'publication_place_id' => PublicationPlace::factory(),
             'defense_year' => $this->faker->numberBetween(2000, (int) date('Y')),
-            'inventory_number' => $this->faker->numerify('INV-#####'),
-            'acquisition_act_number' => $this->faker->optional()->numerify('KA-####'),
-            'acquisition_act_at' => $this->faker->optional()->date(),
             // slug is set by the observer
         ];
     }
