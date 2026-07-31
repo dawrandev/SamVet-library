@@ -189,10 +189,119 @@ const bar = (el) => {
 };
 
 /**
+ * Render a stacked bar chart with BOTH a dimension selector (e.g. shakli /
+ * toifasi / tili — which breakdown the stack segments represent) and a
+ * nusxa/nomi toggle, from data-* attributes:
+ *   data-years               JSON array of year x-axis categories
+ *   data-dimensions           JSON object: { [dim]: { label, labels, colors, copies, titles } }
+ *                              copies/titles are arrays of per-segment arrays, already
+ *                              aligned to data-years (ApexCharts stacked-series shape).
+ *   data-default-dimension    which dimension key is shown first
+ * Dimension buttons live in a sibling [data-stacked-bar-dimension-group],
+ * mode buttons in [data-bar-toggle-group] (same attribute the single-series
+ * bar() charts use — same visual/CSS convention, different chart instance).
+ */
+const stackedBar = (el) => {
+    const years = JSON.parse(el.dataset.years || '[]');
+    const dims = JSON.parse(el.dataset.dimensions || '{}');
+
+    // Same class of bug as bar()'s sharedMax (see its comment) but across 3
+    // dimensions x 2 modes = 6 states, since switching the dimension
+    // selector ALSO swaps which stacked totals are shown. Compute the true
+    // worst-case per-year STACKED total across every one of the 6 states up
+    // front, set it once on the initial chart, and never pass yaxis again —
+    // switching dimension or mode only ever calls updateOptions with
+    // series/colors, so the axis literally cannot silently rescale.
+    let sharedMax = 1;
+    for (const dim of Object.values(dims)) {
+        for (const mode of ['copies', 'titles']) {
+            years.forEach((_, yi) => {
+                const stackedTotal = dim[mode].reduce((sum, series) => sum + Number(series[yi] || 0), 0);
+                sharedMax = Math.max(sharedMax, stackedTotal);
+            });
+        }
+    }
+    sharedMax *= 1.1;
+
+    const seriesFor = (dim, mode) => dims[dim].labels.map((name, i) => ({ name, data: dims[dim][mode][i] }));
+
+    let currentDim = el.dataset.defaultDimension || Object.keys(dims)[0];
+    let currentMode = 'copies';
+
+    const chart = new ApexCharts(el, {
+        chart: { type: 'bar', stacked: true, height: 320, width: '100%', fontFamily: FONT, toolbar: { show: false }, animations: { enabled: true } },
+        series: seriesFor(currentDim, currentMode),
+        colors: dims[currentDim].colors,
+        plotOptions: {
+            bar: { borderRadius: 4, borderRadiusApplication: 'end', columnWidth: '45%' },
+        },
+        xaxis: {
+            categories: years,
+            labels: { style: { colors: '#98a2b3', fontSize: '11px', fontFamily: FONT } },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+        },
+        yaxis: {
+            min: 0,
+            max: sharedMax,
+            labels: { style: { colors: '#98a2b3', fontSize: '11px', fontFamily: FONT }, formatter: (v) => Math.round(v) },
+        },
+        grid: { borderColor: '#f2f4f7', strokeDashArray: 4 },
+        legend: {
+            show: true,
+            position: 'top',
+            horizontalAlign: 'left',
+            fontSize: '13px',
+            fontFamily: FONT,
+            labels: { colors: '#667085' },
+            markers: { radius: 12 },
+            itemMargin: { horizontal: 10, vertical: 4 },
+        },
+        dataLabels: { enabled: false },
+        tooltip: { y: { formatter: (v) => String(v) } },
+    });
+    chart.render();
+
+    const redraw = () => {
+        chart.updateOptions({
+            series: seriesFor(currentDim, currentMode),
+            colors: dims[currentDim].colors,
+        }, true, true);
+    };
+
+    const card = el.closest('.rounded-2xl');
+
+    card?.querySelectorAll('[data-stacked-bar-dimension-group] [data-stacked-bar-dimension]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            currentDim = btn.dataset.stackedBarDimension;
+            redraw();
+            btn.parentElement.querySelectorAll('[data-stacked-bar-dimension]').forEach((b) => {
+                b.classList.toggle('bg-brand-500', b === btn);
+                b.classList.toggle('text-white', b === btn);
+                b.classList.toggle('text-gray-500', b !== btn);
+            });
+        });
+    });
+
+    card?.querySelectorAll('[data-bar-toggle-group] [data-bar-mode]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            currentMode = btn.dataset.barMode;
+            redraw();
+            btn.parentElement.querySelectorAll('[data-bar-mode]').forEach((b) => {
+                b.classList.toggle('bg-brand-500', b === btn);
+                b.classList.toggle('text-white', b === btn);
+                b.classList.toggle('text-gray-500', b !== btn);
+            });
+        });
+    });
+};
+
+/**
  * Initialize every dashboard chart on the page.
  */
 export const initDashboardCharts = () => {
     document.querySelectorAll('[data-donut]').forEach(donut);
     document.querySelectorAll('[data-line]').forEach(line);
     document.querySelectorAll('[data-bar]').forEach(bar);
+    document.querySelectorAll('[data-stacked-bar]').forEach(stackedBar);
 };

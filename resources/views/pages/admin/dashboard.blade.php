@@ -82,6 +82,31 @@
             $catColors[] = $catPalette[$i % count($catPalette)];
         }
 
+        // --- Stacked bar: annual acquisition report (Yillik hisobot), by
+        // category/format/language, toggled nusxa/nomi — 6 renderable
+        // states total (3 dims x 2 modes). All aggregation already happened
+        // in DashboardService::annualAcquisitionReport(); this block only
+        // assigns colors and encodes for JS, never re-aggregates.
+        $reportPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#06aed4', '#7a5af8'];
+        $reportDimensions = [];
+        foreach (['format' => __('Shakli'), 'category' => __('Toifasi'), 'language' => __('Tili')] as $dim => $dimLabel) {
+            $labels = $annualReport[$dim]['labels'];
+            $otherIndex = $annualReport[$dim]['otherIndex'];
+            $colors = [];
+            foreach ($labels as $i => $label) {
+                // Keyed by segment position, not by label text — a real
+                // category/language could itself be named "Boshqa".
+                $colors[] = $i === $otherIndex ? '#98a2b3' : $reportPalette[$i % count($reportPalette)];
+            }
+            $reportDimensions[$dim] = [
+                'label' => $dimLabel,
+                'labels' => $labels,
+                'colors' => $colors,
+                'copies' => $annualReport[$dim]['copies'],
+                'titles' => $annualReport[$dim]['titles'],
+            ];
+        }
+
         // --- Line: daily usage (6 series, one shared count axis) ---
         $dailySeries = [
             ['name' => __('Berilgan kitoblar'), 'data' => $dailyUsage['loans'], 'color' => '#465fff'],
@@ -243,6 +268,37 @@
                      data-series-copies="{{ json_encode($catCopySeries) }}" data-series-titles="{{ json_encode($catTitleSeries) }}"
                      data-label-copies="{{ __('Nusxa') }}" data-label-titles="{{ __('Nomi') }}"></div>
             </div>
+        </div>
+
+        {{-- ===== Annual acquisition report (Yillik hisobot) ===== --}}
+        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Yillik hisobot') }}</h3>
+                    <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kirish akti sanasi bo‘yicha qabul qilingan resurslar') }}</p>
+                </div>
+                @if (count($annualReport['years']))
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-stacked-bar-dimension-group>
+                            <button type="button" data-stacked-bar-dimension="format" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Shakli') }}</button>
+                            <button type="button" data-stacked-bar-dimension="category" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Toifasi') }}</button>
+                            <button type="button" data-stacked-bar-dimension="language" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Tili') }}</button>
+                        </div>
+                        <div class="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-800" data-bar-toggle-group>
+                            <button type="button" data-bar-mode="copies" class="rounded-md bg-brand-500 px-3 py-1.5 text-theme-xs font-medium text-white transition">{{ __('Nusxa') }}</button>
+                            <button type="button" data-bar-mode="titles" class="rounded-md px-3 py-1.5 text-theme-xs font-medium text-gray-500 transition dark:text-gray-400">{{ __('Nomi') }}</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            @if (count($annualReport['years']))
+                <div id="chart-annual-report" data-stacked-bar class="mt-4"
+                     data-years="{{ json_encode($annualReport['years']) }}"
+                     data-dimensions="{{ json_encode($reportDimensions) }}"
+                     data-default-dimension="format"></div>
+            @else
+                <p class="py-10 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hali kirish akti sanasi kiritilgan kitob nusxalari yo‘q.') }}</p>
+            @endif
         </div>
 
         {{-- ===== Online readings filter + quick counts ===== --}}
