@@ -107,6 +107,12 @@
             ];
         }
 
+        // --- Line: annual expenses (Yillik xarajatlar hisoboti) — kitob (acquisition price) vs. davriy nashr (branch-budget subscriptions) ---
+        $expenseSeries = [
+            ['name' => __('Kitob'), 'data' => $annualExpenses['books'], 'color' => '#465fff'],
+            ['name' => __('Davriy nashr'), 'data' => $annualExpenses['subscriptions'], 'color' => '#9cb9ff'],
+        ];
+
         // --- Line: daily usage (6 series, one shared count axis) ---
         $dailySeries = [
             ['name' => __('Berilgan kitoblar'), 'data' => $dailyUsage['loans'], 'color' => '#465fff'],
@@ -298,6 +304,21 @@
                      data-default-dimension="format"></div>
             @else
                 <p class="py-10 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hali kirish akti sanasi kiritilgan kitob nusxalari yo‘q.') }}</p>
+            @endif
+        </div>
+
+        {{-- ===== Annual expenses report (Yillik xarajatlar hisoboti) ===== --}}
+        <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div>
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Yillik xarajatlar hisoboti') }}</h3>
+                <p class="text-theme-xs mt-0.5 text-gray-400">{{ __('Kitob: kirish akti sanasi va narxi bo‘yicha. Davriy nashr: faqat filial byudjetidan ketgan obuna summasi.') }}</p>
+            </div>
+            @if (count($annualExpenses['years']))
+                <div id="chart-annual-expenses" data-yearly-line class="mt-4"
+                     data-years="{{ json_encode($annualExpenses['years']) }}"
+                     data-series="{{ json_encode($expenseSeries) }}"></div>
+            @else
+                <p class="py-10 text-center text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hali xarajat hisoblash uchun yetarli ma’lumot yo‘q.') }}</p>
             @endif
         </div>
 

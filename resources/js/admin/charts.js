@@ -297,6 +297,52 @@ const stackedBar = (el) => {
 };
 
 /**
+ * Render a yearly money line chart from data-* attributes:
+ *   data-years   JSON array of year x-axis categories (e.g. [2023,2024,...])
+ *   data-series  JSON array of {name, data, color} objects, all in so'm
+ * Every series is always shown together (no toggle that swaps which one is
+ * visible), so — unlike bar()/stackedBar() — a plain auto-scaled axis is
+ * safe here: the axis never needs to change to fit a different subset of
+ * data, since the same full set renders on every load. Mirrors the
+ * multi-series "Kunlik statistika" line() chart's own already-safe pattern.
+ */
+const yearlyLine = (el) => {
+    const years = JSON.parse(el.dataset.years || '[]');
+    const series = JSON.parse(el.dataset.series || '[]');
+    const money = (v) => Math.round(v).toLocaleString('fr-FR');
+
+    new ApexCharts(el, {
+        chart: { type: 'line', height: 300, width: '100%', fontFamily: FONT, toolbar: { show: false }, animations: { enabled: false } },
+        series: series.map((s) => ({ name: s.name, data: s.data })),
+        colors: series.map((s) => s.color),
+        stroke: { width: 2.5, curve: 'smooth' },
+        markers: { size: 5, hover: { size: 7 } },
+        xaxis: {
+            categories: years,
+            labels: { style: { colors: '#98a2b3', fontSize: '11px', fontFamily: FONT } },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+        },
+        yaxis: {
+            min: 0,
+            labels: { style: { colors: '#98a2b3', fontSize: '11px', fontFamily: FONT }, formatter: money },
+        },
+        grid: { borderColor: '#f2f4f7', strokeDashArray: 4 },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'left',
+            fontSize: '13px',
+            fontFamily: FONT,
+            labels: { colors: '#667085' },
+            markers: { radius: 12 },
+            itemMargin: { horizontal: 10, vertical: 4 },
+        },
+        tooltip: { shared: true, intersect: false, y: { formatter: (v) => `${money(v)} so‘m` } },
+        dataLabels: { enabled: false },
+    }).render();
+};
+
+/**
  * Initialize every dashboard chart on the page.
  */
 export const initDashboardCharts = () => {
@@ -304,4 +350,5 @@ export const initDashboardCharts = () => {
     document.querySelectorAll('[data-line]').forEach(line);
     document.querySelectorAll('[data-bar]').forEach(bar);
     document.querySelectorAll('[data-stacked-bar]').forEach(stackedBar);
+    document.querySelectorAll('[data-yearly-line]').forEach(yearlyLine);
 };

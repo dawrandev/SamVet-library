@@ -5,6 +5,7 @@ namespace App\Services\Site;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\StatisticsRepositoryInterface;
 use App\Repositories\Eloquent\DepartmentCoverageRepository;
+use App\Services\AnnualAcquisitionReportService;
 use App\Services\ReaderStatsService;
 use Illuminate\Support\Collection;
 
@@ -20,6 +21,7 @@ class StatisticsService
         private readonly CatalogRepositoryInterface $catalog,
         private readonly ReaderStatsService $readerStats,
         private readonly DepartmentCoverageRepository $departmentCoverages,
+        private readonly AnnualAcquisitionReportService $annualAcquisitionReportService,
     ) {}
 
     /**
@@ -40,6 +42,8 @@ class StatisticsService
             'readersByAgeGroup' => $this->labelledBreakdown($this->readerStats->byAgeGroup()),
             // Kafedralar kesimida ta'minganlik darajasi — admin-managed, not derived from counts.
             'byDepartment' => $this->departmentBreakdown(),
+            // Yillik hisobot — same report/aggregation the admin dashboard shows, reused as-is.
+            'annualReport' => $this->annualAcquisitionReportService->report(),
         ];
     }
 

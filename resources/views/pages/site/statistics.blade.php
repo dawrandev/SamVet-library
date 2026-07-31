@@ -33,6 +33,28 @@
         [__('Jinsi bo‘yicha'), $readersByGender, 'donut'],
         [__('Yoshi bo‘yicha'), $readersByAgeGroup, 'bar'],
     ];
+
+    // Yillik hisobot — same report the admin dashboard shows
+    // (StatisticsService::statisticsData() reuses AnnualAcquisitionReportService
+    // as-is), only the color palette/markup differs to match the site's own
+    // design instead of the admin panel's.
+    $reportPalette = ['#465fff', '#12b76a', '#f79009', '#f04438', '#9cb9ff', '#7592ff', '#32d583', '#fdb022'];
+    $reportDimensions = [];
+    foreach (['format' => __('Shakli'), 'category' => __('Toifasi'), 'language' => __('Tili')] as $dim => $dimLabel) {
+        $labels = $annualReport[$dim]['labels'];
+        $otherIndex = $annualReport[$dim]['otherIndex'];
+        $colors = [];
+        foreach ($labels as $i => $label) {
+            $colors[] = $i === $otherIndex ? '#98a2b3' : $reportPalette[$i % count($reportPalette)];
+        }
+        $reportDimensions[$dim] = [
+            'label' => $dimLabel,
+            'labels' => $labels,
+            'colors' => $colors,
+            'copies' => $annualReport[$dim]['copies'],
+            'titles' => $annualReport[$dim]['titles'],
+        ];
+    }
 @endphp
 
 @section('content')
@@ -73,6 +95,13 @@
             @foreach ($fundBreakdowns as [$heading, $rows, $type])
                 <x-site.stat-chart-card :heading="$heading" :rows="$rows" :type="$type" />
             @endforeach
+        </div>
+
+        {{-- Yillik hisobot --}}
+        <h2 class="mt-12 text-xl font-bold tracking-tight text-gray-900">{{ __('Yillik hisobot') }}</h2>
+        <div class="mt-5">
+            <x-site.annual-report-card :heading="__('Kirish akti sanasi bo‘yicha qabul qilingan resurslar')"
+                :years="$annualReport['years']" :dimensions="$reportDimensions" />
         </div>
 
         {{-- Reader demographics (turi / jinsi / yoshi) --}}

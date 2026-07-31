@@ -53,6 +53,25 @@ it('shows the fund and reader statistics section headings', function () {
         ->assertSee(__('Foydalanuvchilar statistikasi'));
 });
 
+it('shows the "Yillik hisobot" widget, reusing the same report the admin dashboard shows', function () {
+    $book = Book::factory()->create();
+    BookCopy::factory()->create(['book_id' => $book->id, 'acquisition_act_at' => '2025-05-01']);
+
+    $res = $this->get(route('statistics'));
+
+    $res->assertOk()->assertSee(__('Yillik hisobot'));
+
+    $report = $res->viewData('annualReport');
+    expect($report['years'])->toContain(2025);
+});
+
+it('shows a friendly empty state for the "Yillik hisobot" widget when no copy has an acquisition date', function () {
+    $this->get(route('statistics'))
+        ->assertOk()
+        ->assertSee(__('Yillik hisobot'))
+        ->assertSee(__('Ma‘lumot yo‘q'));
+});
+
 it('shows each department\'s own percentage as its bar share, not relative to the largest one', function () {
     DepartmentCoverage::factory()->create(['name' => ['uz' => 'Kichik kafedra', 'ru' => 'x', 'kk' => 'x'], 'percentage' => 20]);
     DepartmentCoverage::factory()->create(['name' => ['uz' => 'Katta kafedra', 'ru' => 'x', 'kk' => 'x'], 'percentage' => 80]);

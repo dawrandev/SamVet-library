@@ -180,7 +180,10 @@
                             <x-admin.form.input name="pages" type="number" :label="__('Sahifalar soni')" :value="$book?->pages" />
                             <x-admin.form.input name="size_cm" type="number" :label="__('O‘lchami (sm)')" :value="$book?->size_cm" :placeholder="__('masalan: 21')" />
                         </div>
-                        <x-admin.form.input name="print_sheets" :label="__('Bosma taboq')" :value="$book?->print_sheets" :placeholder="__('masalan: 20,5')" />
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <x-admin.form.input name="print_sheets" :label="__('Bosma taboq')" :value="$book?->print_sheets" :placeholder="__('masalan: 20,5')" />
+                            <x-admin.form.input name="price" type="number" step="0.01" min="0" :label="__('Narxi (so‘m)')" :value="$book?->price" :placeholder="__('masalan: 45000')" />
+                        </div>
                         <x-admin.form.input name="target_audience" :label="__('Kimlar uchun')" :value="$book?->target_audience" :placeholder="__('masalan: talabalar, o‘quvchilar uchun')" />
                         <x-admin.form.textarea name="annotation" :label="__('Annotatsiya')" :value="$book?->annotation" :rows="4" :placeholder="__('Kitob haqida qisqacha...')" />
                     </div>

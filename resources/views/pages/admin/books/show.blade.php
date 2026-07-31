@@ -29,6 +29,7 @@
             __('Tiraji') => $book->print_run,
             __('O‘lchami') => $book->size_cm ? $book->size_cm . ' ' . __('sm') : null,
             __('Bosma taboq') => $book->print_sheets,
+            __('Narxi') => $book->price !== null ? number_format($book->price, 0, '.', ' ') . ' ' . __('so‘m') : null,
             __('Kimlar uchun') => $book->target_audience,
         ], fn ($v) => filled($v));
 

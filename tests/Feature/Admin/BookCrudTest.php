@@ -109,6 +109,23 @@ it('creates a book with target_audience, size_cm and print_sheets left blank', f
         ->and($book->print_sheets)->toBeNull();
 });
 
+it('saves a nullable price, feeding the annual expenses report', function () {
+    $this->post(route('admin.books.store'), [
+        'title' => 'Narxli kitob',
+        'price' => '45000.50',
+    ])->assertRedirect();
+
+    $book = Book::firstWhere('title', 'Narxli kitob');
+    expect((float) $book->price)->toBe(45000.50);
+});
+
+it('rejects a negative price', function () {
+    $this->post(route('admin.books.store'), [
+        'title' => 'Manfiy narxli kitob',
+        'price' => '-100',
+    ])->assertSessionHasErrors('price');
+});
+
 it('shows the new fields on the book show page', function () {
     $book = Book::factory()->create([
         'target_audience' => 'Kattalar uchun',
