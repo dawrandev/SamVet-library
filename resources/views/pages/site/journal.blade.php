@@ -20,7 +20,9 @@
         [__('Davriyligi'), $periodicity],
         ['ISSN', $journal->issn],
         [__('Tili'), $journal->language?->name],
-        [__('Yili'), $sinceYear ? __(':y yildan', ['y' => $sinceYear]) : null],
+        // Newspapers don't carry a meaningful "since year" the way journals
+        // do — librarian request: hide this row on newspaper pages.
+        [__('Yili'), ! $isNewspaper && $sinceYear ? __(':y yildan', ['y' => $sinceYear]) : null],
     ], fn ($row) => filled($row[1]));
 @endphp
 
