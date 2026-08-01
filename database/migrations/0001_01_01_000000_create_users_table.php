@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            // Login is by username (not email): admin issues a username/password to each account.
+            $table->string('username')->nullable()->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

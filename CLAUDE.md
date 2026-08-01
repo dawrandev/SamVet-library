@@ -152,6 +152,42 @@ Loyiha tez va uzluksiz ishlashi shart:
 - Minimal tekshiruv: `php -l` (sintaksis), `php artisan migrate` o'tishi, `php artisan route:list`, `tinker` bilan model/relation/enum yuklanishi, sahifa render bo'lishi (`php artisan view:cache` yoki HTTP so'rov). Iloji bo'lsa avtomatik test (Pest/PHPUnit).
 - Xato topilsa — tuzatiladi va qayta tekshiriladi.
 
+## Migratsiya tarixi (qo'lda konsolidatsiya qilingan, 2026-08-02)
+
+Production'ga birinchi marta chiqishdan oldin 137 ta ketma-ket `add`/`drop`/`alter`/
+`backfill`/`convert` migratsiya fayli **qo'lda** 59 ta toza `create_*_table.php`
+faylga birlashtirildi — har bir tirik jadval uchun bitta, haqiqiy, tahrirlanadigan
+migratsiya fayli, ichida yakuniy ustun/tip/FK/indeks holati (oraliq bosqichlar
+yo'q). Bu **bitta SQL dump fayli EMAS** — `database/migrations/` hozir ham oddiy
+Laravel migratsiya papkasi, kelgusidagi yangi migratsiyalar shu yerga oddiy
+tartibda qo'shiladi.
+
+Muhim tafsilotlar:
+- Haqiqiy reference-data kirituvchi migratsiyalar (`reader_types` 7 qator,
+  `event_locations` 3 qator, `contributor_roles` 5 qator, `delivery_locations`
+  1 qator, `science_fields`/`doctoral_specialties`/`master_specialties` 4/6/11
+  qator, `department_coverages` 4 qator, `categories`ning 2 qo'shimcha qatori) —
+  Seeder klassiga EMAS, tegishli `create_*_table.php` faylining o'zi ichida
+  qoladi (`DB::table(...)->insert(...)` yoki `Model::create()` kodi aynan
+  saqlangan). `php artisan migrate:fresh --seed` bularni avtomatik to'g'ri
+  yaratadi — alohida qo'lda `db:seed --class=...` bosqichi SHART EMAS.
+- Yakuniy sxemada umuman yo'q 5 ta "o'lik" jadval (`authors`, `publishers`,
+  `book_author`, `reader_events`, `subscribers` — barchasi tarixda
+  create→drop bo'lgan, ma'lumotlari boshqa joyga ko'chgan) uchun endi HECH
+  qanday migratsiya fayli yo'q.
+- Bir nechta lookup jadval FK tartibini to'g'irlash uchun **asl sanasidan
+  oldinroqqa** ko'chirilgan (masalan `affiliation_places`/`affiliation_units`/
+  `affiliation_groups`/`regions`/`districts`/`reader_types` — `readers`dan
+  oldin; `science_fields`/`doctoral_specialties`/`master_specialties` —
+  `dissertations`/`avtoreferats`dan oldin; `computers` — `computer_sessions`dan
+  oldin; `delivery_locations`/`post_branches` — `subscriptions`dan oldin).
+  Yangi `publication_places` jadvali (eski `publishers`ning o'rnini bosuvchi)
+  ham shu sababli eng boshiga qo'shildi.
+- Manba haqiqat sifatida ishlatilgan (`mysqldump --no-data` orqali haqiqiy
+  DB'dan olingan, keyin `mysqldump --no-data` bilan qayta tekshirilgan) va
+  har bir jadval mustaqil agent tomonidan ustun-ustun solishtirilgan — nol farq.
+  To'liq Pest (620) + Dusk (10) to'plami tasdiqlangan.
+
 ## Pre-launch system design — keyingi bosqichlar
 
 Loyiha tugallanish arafasida o'tkazilgan system design auditda (2026-07-30) topilgan, lekin **hozircha qurilmagan** narsalar — halollik uchun aniq yozib qo'yilgan, kerak bo'lganda shu ro'yxatdan qaytariladi:

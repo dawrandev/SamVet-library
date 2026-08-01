@@ -14,16 +14,19 @@ return new class extends Migration
         Schema::create('computer_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
-            $table->date('date');                       // Date
-            $table->time('issued_time')->nullable();    // Time issued
-            $table->time('returned_time')->nullable();  // Time returned
-            $table->string('computer_number')->nullable(); // Computer number
+            $table->dateTime('issued_at');
+            $table->dateTime('returned_at')->nullable();
+            $table->unsignedInteger('duration_minutes')->nullable();
+            $table->dateTime('expires_at')->nullable();
+            $table->foreignId('computer_id')->constrained('computers')->restrictOnDelete();
             $table->string('location')->nullable();     // Location
             $table->string('purpose')->nullable();      // Purpose of use
             $table->text('note')->nullable();
             $table->timestamps();
 
             $table->index('reader_id');
+            $table->index('expires_at');
+            $table->index('returned_at');
         });
     }
 

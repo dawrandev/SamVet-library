@@ -17,19 +17,19 @@ return new class extends Migration
             // Format (physical): print | braille — App\Enums\BookFormat
             $table->string('format')->default('print');
 
-            // Physical condition: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
-            $table->string('condition')->default('new');
+            // Physical condition (multi-select, JSON array stored as text): new|old|torn|repaired|scribbled — App\Enums\CopyCondition
+            $table->text('condition')->nullable();
 
             // Availability: available|lost|written_off — App\Enums\CopyStatus
             $table->string('status')->default('available');
 
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
 
-            $table->decimal('price', 12, 2)->nullable(); // price
-
-            // Acts (librarian only) — protected stream
-            $table->string('acquisition_act')->nullable(); // acquisition act (PDF)
-            $table->string('disposal_act')->nullable();    // disposal act (PDF)
+            // Acts (librarian only) — plain fields, no file upload
+            $table->string('acquisition_act_number')->nullable();
+            $table->date('acquisition_act_at')->nullable();
+            $table->string('disposal_act_number')->nullable();
+            $table->date('disposal_act_at')->nullable();
 
             $table->timestamps();
 

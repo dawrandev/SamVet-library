@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Every news item is visible once created — no draft/published status.
+     */
     public function up(): void
     {
         Schema::create('news', function (Blueprint $table) {
@@ -21,13 +24,12 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('cover_image')->nullable();
 
-            $table->string('status')->default('draft'); // App\Enums\NewsStatus
             $table->dateTime('published_at')->nullable();
             $table->unsignedInteger('views_count')->default(0);
 
             $table->timestamps();
 
-            $table->index(['status', 'published_at']);
+            $table->index('published_at');
         });
     }
 

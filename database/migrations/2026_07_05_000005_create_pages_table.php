@@ -13,6 +13,8 @@ return new class extends Migration
             // Each page is tied to exactly one menu item.
             $table->foreignId('menu_item_id')->unique()
                 ->constrained('menu_items')->cascadeOnDelete();
+            // Translated (uz/ru/kk). Falls back to the menu item's own title when empty.
+            $table->json('title')->nullable();
             $table->json('body')->nullable();    // rich HTML (translated)
             $table->string('cover_image')->nullable();
             $table->timestamps();

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('menu_items')->cascadeOnDelete();
             $table->json('title'); // translated: {"uz":..,"ru":..,"kk":..}
             $table->string('url', 2048)->nullable(); // free link: external URL, internal path, or empty
+            $table->string('type')->default('dropdown'); // App\Enums\MenuItemType
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('target_blank')->default(false);

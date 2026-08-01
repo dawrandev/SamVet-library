@@ -13,6 +13,9 @@ return new class extends Migration
             $table->foreignId('journal_id')->constrained('journals')->cascadeOnDelete();
 
             $table->unsignedSmallInteger('year');   // Publication year
+            // Exact publication date of the issue (newspapers date each issue —
+            // `year` alone isn't precise enough), distinct from a copy's arrival_date.
+            $table->date('issue_date')->nullable();
             $table->string('issue_number');         // Issue number (e.g. "2024/3")
             $table->unsignedInteger('pages')->nullable();
 

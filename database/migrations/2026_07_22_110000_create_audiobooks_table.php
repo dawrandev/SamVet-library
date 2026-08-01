@@ -13,12 +13,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('author')->nullable();
+            $table->date('published_at')->nullable();
             $table->text('annotation')->nullable();
             $table->string('cover_image')->nullable();   // public disk
             $table->unsignedInteger('views_count')->default(0);
             $table->timestamps();
 
             $table->index('name'); // for search
+            $table->fullText(['name', 'author', 'annotation']);
         });
     }
 

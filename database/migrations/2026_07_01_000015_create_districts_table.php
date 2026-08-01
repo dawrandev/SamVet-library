@@ -6,21 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * "Mutaxassislik shifri va nomi" for a Magistrlik dissertation (e.g. "70710201 - Biotexnologiya").
-     * Stored as one combined code+name string per row, same as the librarian's own list.
-     */
     public function up(): void
     {
-        Schema::create('master_specialties', function (Blueprint $table) {
+        Schema::create('districts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            // Nullable — a district can exist unassigned to a region until an
+            // admin categorizes it.
+            $table->foreignId('region_id')->nullable()->constrained('regions')->nullOnDelete();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('master_specialties');
+        Schema::dropIfExists('districts');
     }
 };

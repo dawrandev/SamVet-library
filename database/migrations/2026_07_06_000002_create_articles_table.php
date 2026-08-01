@@ -10,13 +10,17 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('journal_issue_id')->constrained('journal_issues')->cascadeOnDelete();
+            $table->foreignId('journal_issue_id')->nullable()->constrained('journal_issues')->cascadeOnDelete();
+            // An article from a journal this library doesn't hold an issue of.
+            $table->string('external_journal_name')->nullable();
+            $table->string('external_journal_issue')->nullable();
 
             $table->string('title', 500);   // Single language (like a book title)
-            $table->string('author', 500);  // Free text (multiple authors, comma separated)
+            $table->string('author', 500)->nullable();  // Free text (multiple authors, comma separated)
 
             // Article-specific lookups (may differ from the parent journal)
             $table->foreignId('resource_field_id')->nullable()->constrained('resource_fields')->nullOnDelete();
+            $table->string('category')->nullable();
             $table->foreignId('language_id')->nullable()->constrained('languages')->nullOnDelete();
 
             $table->string('doi')->nullable();
@@ -32,7 +36,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('title');
-            $table->index('journal_issue_id');
         });
     }
 

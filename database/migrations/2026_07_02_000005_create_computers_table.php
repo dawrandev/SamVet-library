@@ -16,13 +16,13 @@ return new class extends Migration
             $table->string('model');                        // Model
             $table->string('type');                         // App\Enums\ComputerType
             $table->string('inventory_number')->unique();   // inventory number (librarian only)
+            $table->string('computer_number')->nullable()->unique();
             $table->string('status')->default('working');   // App\Enums\ComputerStatus
-            $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
+            $table->string('location')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
 
             $table->index('status');
-            $table->index('location_id');
         });
     }
 

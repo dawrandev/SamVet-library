@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('journal_issue_id')->constrained('journal_issues')->cascadeOnDelete();
 
-            $table->string('inventory_number')->unique(); // inventory number
+            $table->string('inventory_number')->nullable()->unique(); // inventory number
 
             // Physical condition: new|old|torn|repaired|scribbled — App\Enums\CopyCondition
-            $table->string('condition')->nullable();
+            $table->text('condition')->nullable();
 
             // Availability: available|borrowed|lost|written_off — App\Enums\CopyStatus
             $table->string('status')->default('available');
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
 
             $table->date('arrival_date')->nullable();     // arrival date
-            $table->decimal('price', 12, 2)->nullable();  // price
 
             $table->timestamps();
 
