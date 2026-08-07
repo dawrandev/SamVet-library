@@ -2,6 +2,7 @@
 
 use App\Models\Book;
 use App\Models\BookType;
+use App\Models\Category;
 use App\Models\Language;
 use App\Models\PublicationPlace;
 use Illuminate\Http\UploadedFile;
@@ -107,23 +108,6 @@ it('creates a book with target_audience, size_cm and print_sheets left blank', f
         ->and($book->target_audience)->toBeNull()
         ->and($book->size_cm)->toBeNull()
         ->and($book->print_sheets)->toBeNull();
-});
-
-it('saves a nullable price, feeding the annual expenses report', function () {
-    $this->post(route('admin.books.store'), [
-        'title' => 'Narxli kitob',
-        'price' => '45000.50',
-    ])->assertRedirect();
-
-    $book = Book::firstWhere('title', 'Narxli kitob');
-    expect((float) $book->price)->toBe(45000.50);
-});
-
-it('rejects a negative price', function () {
-    $this->post(route('admin.books.store'), [
-        'title' => 'Manfiy narxli kitob',
-        'price' => '-100',
-    ])->assertSessionHasErrors('price');
 });
 
 it('shows the new fields on the book show page', function () {
@@ -232,8 +216,8 @@ it('downloads an Excel export of the book list', function () {
 });
 
 it('filtering by a parent category surfaces books tagged only with its child (admin index)', function () {
-    $parent = \App\Models\Category::factory()->create();
-    $child = \App\Models\Category::factory()->create(['parent_id' => $parent->id]);
+    $parent = Category::factory()->create();
+    $child = Category::factory()->create(['parent_id' => $parent->id]);
     $book = Book::factory()->create();
     $book->categories()->attach($child->id);
     Book::factory()->create(); // unrelated book, must not match

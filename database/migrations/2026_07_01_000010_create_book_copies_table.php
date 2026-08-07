@@ -25,6 +25,8 @@ return new class extends Migration
 
             $table->foreignId('location_id')->nullable()->constrained('locations')->nullOnDelete();
 
+            $table->decimal('price', 12, 2)->nullable(); // this copy's own acquisition price
+
             // Acts (librarian only) — plain fields, no file upload
             $table->string('acquisition_act_number')->nullable();
             $table->date('acquisition_act_at')->nullable();

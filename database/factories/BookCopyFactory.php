@@ -26,6 +26,7 @@ class BookCopyFactory extends Factory
             'condition' => [CopyCondition::New->value],
             'status' => CopyStatus::Available->value,
             'location_id' => Location::factory(),
+            'price' => $this->faker->numberBetween(10000, 100000),
         ];
     }
 

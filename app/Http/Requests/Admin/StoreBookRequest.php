@@ -44,7 +44,6 @@ class StoreBookRequest extends FormRequest
             'target_audience' => ['nullable', 'string', 'max:255'],
             'size_cm' => ['nullable', 'integer', 'min:1', 'max:100'],
             'print_sheets' => ['nullable', 'string', 'max:50'],
-            'price' => ['nullable', 'numeric', 'min:0'],
 
             'translation_of' => ['nullable', 'integer', 'exists:books,id'],
 
@@ -92,7 +91,6 @@ class StoreBookRequest extends FormRequest
             'target_audience' => __('Kimlar uchun'),
             'size_cm' => __('O‘lchami'),
             'print_sheets' => __('Bosma taboq'),
-            'price' => __('Narxi'),
             'cover' => __('Muqova rasmi'),
             'electronic_file' => __('Elektron fayl'),
         ];

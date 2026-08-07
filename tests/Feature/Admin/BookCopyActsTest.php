@@ -28,6 +28,35 @@ it('creates a copy with plain-text acquisition and disposal act fields', functio
         ->and($copy->disposal_act_at->format('Y-m-d'))->toBe('2026-07-15');
 });
 
+it('saves a nullable copy price', function () {
+    $book = Book::factory()->create();
+
+    $this->post(route('admin.books.copies.store', $book), [
+        '_copy_form' => 'store',
+        'inventory_number' => 'INV-PRICE-1',
+        'format' => 'print',
+        'condition' => ['new'],
+        'status' => 'available',
+        'price' => '45000.50',
+    ])->assertRedirect();
+
+    $copy = BookCopy::firstWhere('inventory_number', 'INV-PRICE-1');
+    expect((float) $copy->price)->toBe(45000.50);
+});
+
+it('rejects a negative copy price', function () {
+    $book = Book::factory()->create();
+
+    $this->post(route('admin.books.copies.store', $book), [
+        '_copy_form' => 'store',
+        'inventory_number' => 'INV-PRICE-2',
+        'format' => 'print',
+        'condition' => ['new'],
+        'status' => 'available',
+        'price' => '-100',
+    ])->assertSessionHasErrors('price');
+});
+
 it('saves a copy with no act info at all', function () {
     $book = Book::factory()->create();
 

@@ -39,7 +39,6 @@ return new class extends Migration
             $table->string('target_audience')->nullable();
             $table->unsignedSmallInteger('size_cm')->nullable();
             $table->string('print_sheets')->nullable();
-            $table->decimal('price', 12, 2)->nullable();
 
             // Files
             $table->string('cover_image')->nullable();      // cover image

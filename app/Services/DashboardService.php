@@ -21,6 +21,7 @@ use App\Models\ReaderType;
 use App\Models\Subscription;
 use App\Models\Video;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -313,7 +314,7 @@ class DashboardService
      * includes its children" convention. Whatever top-level categories
      * exist drives the chart; nothing here is hardcoded to specific names.
      *
-     * @param  array{0: \Illuminate\Support\Collection<int, Category>, 1: \Closure(int): array<int, int>}  $categoryRollup
+     * @param  array{0: Collection<int, Category>, 1: \Closure(int): array<int, int>}  $categoryRollup
      * @return array{labels: array<int, string>, titles: array<int, int>, copies: array<int, int>}
      */
     private function literatureByCategory(array $categoryRollup): array
@@ -338,23 +339,22 @@ class DashboardService
     }
 
     /**
-     * Per-year expenses, two lines: books (kirish akti sanasi x Book.price,
-     * same acquisition-date convention as annualAcquisitionReport() — a
-     * copy with no acquisition date, or a book with no price, contributes
-     * nothing) and periodicals (subscription amount, but ONLY the ones paid
-     * from the branch's own budget — a reader-paid subscription is the
-     * reader's money, not a library expense). Zero-filled across every
-     * year in the combined min/max range of both sources.
+     * Per-year expenses, two lines: books (kirish akti sanasi x that copy's
+     * own price, same acquisition-date convention as annualAcquisitionReport()
+     * — a copy with no acquisition date, or no price, contributes nothing)
+     * and periodicals (subscription amount, but ONLY the ones paid from the
+     * branch's own budget — a reader-paid subscription is the reader's
+     * money, not a library expense). Zero-filled across every year in the
+     * combined min/max range of both sources.
      *
      * @return array{years: array<int, int>, books: array<int, float>, subscriptions: array<int, float>}
      */
     private function annualExpensesReport(): array
     {
         $bookExpenses = DB::table('book_copies')
-            ->join('books', 'books.id', '=', 'book_copies.book_id')
-            ->whereNotNull('book_copies.acquisition_act_at')
-            ->whereNotNull('books.price')
-            ->selectRaw('YEAR(book_copies.acquisition_act_at) as year, SUM(books.price) as total')
+            ->whereNotNull('acquisition_act_at')
+            ->whereNotNull('price')
+            ->selectRaw('YEAR(acquisition_act_at) as year, SUM(price) as total')
             ->groupBy('year')
             ->pluck('total', 'year');
 

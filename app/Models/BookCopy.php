@@ -5,12 +5,14 @@ namespace App\Models;
 use App\Enums\BookFormat;
 use App\Enums\CopyCondition;
 use App\Enums\CopyStatus;
+use App\Enums\LoanStatus;
 use App\Observers\BookCopyObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[ObservedBy([BookCopyObserver::class])]
 class BookCopy extends Model
@@ -19,7 +21,7 @@ class BookCopy extends Model
 
     protected $fillable = [
         'book_id', 'inventory_number', 'format', 'condition', 'status',
-        'location_id',
+        'location_id', 'price',
         'acquisition_act_number', 'acquisition_act_at',
         'disposal_act_number', 'disposal_act_at',
     ];
@@ -30,6 +32,7 @@ class BookCopy extends Model
             'format' => BookFormat::class,
             'condition' => AsEnumCollection::of(CopyCondition::class),
             'status' => CopyStatus::class,
+            'price' => 'decimal:2',
             'acquisition_act_at' => 'date',
             'disposal_act_at' => 'date',
         ];
@@ -45,14 +48,14 @@ class BookCopy extends Model
         return $this->belongsTo(Location::class);
     }
 
-    public function loans(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function loans(): MorphMany
     {
         return $this->morphMany(Loan::class, 'loanable');
     }
 
     /** The currently active (not returned) loan. */
-    public function currentLoan(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function currentLoan(): MorphMany
     {
-        return $this->morphMany(Loan::class, 'loanable')->where('status', \App\Enums\LoanStatus::OnLoan->value);
+        return $this->morphMany(Loan::class, 'loanable')->where('status', LoanStatus::OnLoan->value);
     }
 }

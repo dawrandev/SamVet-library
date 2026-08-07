@@ -32,7 +32,6 @@ class BookData
         public readonly ?string $target_audience,
         public readonly ?int $size_cm,
         public readonly ?string $print_sheets,
-        public readonly ?float $price,
         /** @var int[] */
         public readonly array $category_ids,
         public readonly ?UploadedFile $cover,
@@ -82,7 +81,6 @@ class BookData
             target_audience: $request->input('target_audience') ?: null,
             size_cm: $request->integer('size_cm') ?: null,
             print_sheets: $request->input('print_sheets') ?: null,
-            price: $request->input('price') !== null && $request->input('price') !== '' ? (float) $request->input('price') : null,
             category_ids: $request->input('category_ids', []),
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
@@ -116,7 +114,6 @@ class BookData
             'target_audience' => $this->target_audience,
             'size_cm' => $this->size_cm,
             'print_sheets' => $this->print_sheets,
-            'price' => $this->price,
         ];
     }
 }

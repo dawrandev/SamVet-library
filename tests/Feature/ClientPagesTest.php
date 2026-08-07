@@ -2,11 +2,15 @@
 
 use App\Models\Audiobook;
 use App\Models\AudioTrack;
+use App\Models\Avtoreferat;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Category;
+use App\Models\Dissertation;
 use App\Models\Journal;
+use App\Models\JournalCopy;
 use App\Models\JournalIssue;
+use App\Models\Language;
 use App\Models\News;
 use App\Models\PublicationPlace;
 use App\Models\Video;
@@ -31,21 +35,23 @@ it('shows a book detail page but hides admin-only data', function () {
     BookCopy::factory()->create([
         'book_id' => $book->id,
         'inventory_number' => 'INV-SECRET',
+        'price' => 88888,
     ]);
 
     $res = $this->get(route('book.show', $book->slug));
 
     $res->assertOk()->assertSee('Ochiq kitob');
-    // Inventory number and print run are librarian-only.
+    // Inventory number, price and print run are librarian-only.
     $res->assertDontSee('INV-SECRET')
+        ->assertDontSee('88888')
         ->assertDontSee('7777');
     // The raw protected file path must never leak into the public HTML.
     $res->assertDontSee('books/electronic');
 });
 
 it('shows a book\'s parallel title and all its languages on the public detail page', function () {
-    $uz = \App\Models\Language::factory()->create(['name' => 'Oʻzbek']);
-    $ru = \App\Models\Language::factory()->create(['name' => 'Rus']);
+    $uz = Language::factory()->create(['name' => 'Oʻzbek']);
+    $ru = Language::factory()->create(['name' => 'Rus']);
     $book = Book::factory()->create([
         'title' => 'Veterinariya asoslari',
         'parallel_titles' => ['Основы ветеринарии'],
@@ -91,7 +97,7 @@ it('shows only top-level categories as section tiles on the Bo‘limlar page, ne
 it('shows the "Boshqa" catch-all category tile last, after every other section tile', function () {
     Category::factory()->create(['name' => 'Ilmiy adabiyotlar']);
     Category::factory()->create(['name' => 'Boshqa']);
-    \App\Models\Audiobook::factory()->create();
+    Audiobook::factory()->create();
 
     $res = $this->get(route('sections'));
 
@@ -103,8 +109,8 @@ it('shows the "Boshqa" catch-all category tile last, after every other section t
 });
 
 it('includes Dissertatsiyalar and Avtoreferatlar as their own section tiles', function () {
-    \App\Models\Dissertation::factory()->count(2)->create();
-    \App\Models\Avtoreferat::factory()->create();
+    Dissertation::factory()->count(2)->create();
+    Avtoreferat::factory()->create();
 
     $res = $this->get(route('sections'));
 
@@ -148,7 +154,7 @@ it('shows the selected issue’s cover image, both as the page hero and its own 
 it('shows the issue date and physical copy count on the journal client page', function () {
     $journal = Journal::factory()->create(['name' => 'Sanali jurnal']);
     $issue = JournalIssue::factory()->for($journal)->create(['issue_date' => '2026-03-15']);
-    \App\Models\JournalCopy::factory()->count(3)->for($issue, 'issue')->create();
+    JournalCopy::factory()->count(3)->for($issue, 'issue')->create();
 
     $this->get(route('journal.show', $journal->slug, ['son' => $issue->id]))
         ->assertOk()
@@ -159,7 +165,7 @@ it('shows the issue date and physical copy count on the journal client page', fu
 it('never shows a journal issue’s inventory number, condition or arrival date on the client page', function () {
     $journal = Journal::factory()->create(['name' => 'Ichki maydonli jurnal']);
     $issue = JournalIssue::factory()->for($journal)->create();
-    \App\Models\JournalCopy::factory()->for($issue, 'issue')->create([
+    JournalCopy::factory()->for($issue, 'issue')->create([
         'inventory_number' => 'JINV-SECRET-1',
         'arrival_date' => '2020-01-01',
     ]);

@@ -35,9 +35,9 @@ class BookSeeder extends Seeder
             'authors' => 'A. O‘lmasov, A. Vahobov',
             'categories' => ['Iqtisodiyot nazariyasi'],
             'copies' => [
-                ['inventory_number' => 'INV-0001', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Kitob berish bo‘limi'],
-                ['inventory_number' => 'INV-0002', 'format' => BookFormat::Print, 'condition' => CopyCondition::Old, 'status' => CopyStatus::Available, 'location' => 'Kitob berish bo‘limi'],
-                ['inventory_number' => 'INV-0003', 'format' => BookFormat::Print, 'condition' => CopyCondition::Torn, 'status' => CopyStatus::WrittenOff, 'location' => 'Arxiv'],
+                ['inventory_number' => 'INV-0001', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Kitob berish bo‘limi', 'price' => 45000],
+                ['inventory_number' => 'INV-0002', 'format' => BookFormat::Print, 'condition' => CopyCondition::Old, 'status' => CopyStatus::Available, 'location' => 'Kitob berish bo‘limi', 'price' => 45000],
+                ['inventory_number' => 'INV-0003', 'format' => BookFormat::Print, 'condition' => CopyCondition::Torn, 'status' => CopyStatus::WrittenOff, 'location' => 'Arxiv', 'price' => 45000],
             ],
         ]);
 
@@ -58,8 +58,8 @@ class BookSeeder extends Seeder
             'authors' => 'B. Xodiyev',
             'categories' => ['Umumiy veterinariya'],
             'copies' => [
-                ['inventory_number' => 'INV-0101', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Ilmiy adabiyotlar zali'],
-                ['inventory_number' => 'INV-0102', 'format' => BookFormat::Braille, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'O‘qish zali'],
+                ['inventory_number' => 'INV-0101', 'format' => BookFormat::Print, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'Ilmiy adabiyotlar zali', 'price' => 38000],
+                ['inventory_number' => 'INV-0102', 'format' => BookFormat::Braille, 'condition' => CopyCondition::New, 'status' => CopyStatus::Available, 'location' => 'O‘qish zali', 'price' => 52000],
             ],
         ]);
     }
@@ -98,6 +98,7 @@ class BookSeeder extends Seeder
                     'condition' => $copy['condition'],
                     'status' => $copy['status'],
                     'location_id' => Location::where('name->uz', $copy['location'])->value('id'),
+                    'price' => $copy['price'],
                 ]
             );
         }
