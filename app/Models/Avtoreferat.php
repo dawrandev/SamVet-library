@@ -20,7 +20,7 @@ class Avtoreferat extends Model
     // `slug` (set by the observer) and `views_count` (DB default) are intentionally
     // NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
-        'title', 'author', 'specialty', 'science_field_id', 'degree', 'council_number',
+        'title', 'category_id', 'author', 'specialty', 'science_field_id', 'degree', 'council_number',
         'defense_institution', 'performed_institution', 'advisor',
         'udc', 'registration_number',
         'publication_place_id', 'defense_year',
@@ -37,6 +37,11 @@ class Avtoreferat extends Model
     }
 
     // --- Relationships ---
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     /** Physical copies — inventory number, condition, acquisition/disposal acts. Inventory-tracking only, no lending. */
     public function copies(): HasMany

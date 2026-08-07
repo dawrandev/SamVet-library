@@ -2,27 +2,28 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Book;
-use App\Models\BookReading;
+use App\Models\OnlineRead;
 use App\Models\Reader;
-use App\Repositories\Contracts\BookReadingRepositoryInterface;
+use App\Repositories\Contracts\OnlineReadRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 
-class BookReadingRepository implements BookReadingRepositoryInterface
+class OnlineReadRepository implements OnlineReadRepositoryInterface
 {
-    public function log(Reader $reader, Book $book): BookReading
+    public function log(Reader $reader, Model $readable): OnlineRead
     {
-        return BookReading::create([
+        return OnlineRead::create([
             'reader_id' => $reader->id,
-            'book_id' => $book->id,
+            'readable_type' => $readable->getMorphClass(),
+            'readable_id' => $readable->getKey(),
             'read_at' => now(),
         ]);
     }
 
     public function paginateForReader(int $readerId, int $perPage = 10): LengthAwarePaginator
     {
-        return BookReading::query()
-            ->with('book')
+        return OnlineRead::query()
+            ->with('readable')
             ->where('reader_id', $readerId)
             ->latest('read_at')
             ->paginate($perPage, ['*'], 'readings_page')

@@ -2,6 +2,7 @@
 
 use App\Enums\DissertationDegree;
 use App\Models\Avtoreferat;
+use App\Models\Category;
 use App\Models\Language;
 use App\Models\PublicationPlace;
 use App\Models\ScienceField;
@@ -39,6 +40,19 @@ it('creates an avtoreferat with the dissertation-defense fields', function () {
         ->and($avtoreferat->slug)->not->toBeEmpty()
         // No longer belongs to a journal issue.
         ->and($avtoreferat->getAttributes())->not->toHaveKey('journal_issue_id');
+});
+
+it('saves the chosen category, feeding the "Ilmiy adabiyotlar" homepage grouping', function () {
+    $category = Category::factory()->create();
+
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Kategoriyali avtoreferat',
+        'advisor' => 'Karimov K.',
+        'category_id' => $category->id,
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Kategoriyali avtoreferat');
+    expect($avtoreferat->category_id)->toBe($category->id);
 });
 
 it('requires title and advisor, but not an author', function () {

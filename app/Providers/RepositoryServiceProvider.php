@@ -7,7 +7,6 @@ use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Repositories\Contracts\AudiobookRepositoryInterface;
 use App\Repositories\Contracts\AvtoreferatCopyRepositoryInterface;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
-use App\Repositories\Contracts\BookReadingRepositoryInterface;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
 use App\Repositories\Contracts\ComputerRepositoryInterface;
@@ -21,6 +20,7 @@ use App\Repositories\Contracts\JournalRepositoryInterface;
 use App\Repositories\Contracts\LoanRepositoryInterface;
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Repositories\Contracts\NewsRepositoryInterface;
+use App\Repositories\Contracts\OnlineReadRepositoryInterface;
 use App\Repositories\Contracts\PageRepositoryInterface;
 use App\Repositories\Contracts\PeriodicalRepositoryInterface;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
@@ -35,7 +35,6 @@ use App\Repositories\Eloquent\ArticleRepository;
 use App\Repositories\Eloquent\AudiobookRepository;
 use App\Repositories\Eloquent\AvtoreferatCopyRepository;
 use App\Repositories\Eloquent\AvtoreferatRepository;
-use App\Repositories\Eloquent\BookReadingRepository;
 use App\Repositories\Eloquent\BookRepository;
 use App\Repositories\Eloquent\CatalogRepository;
 use App\Repositories\Eloquent\ComputerRepository;
@@ -49,6 +48,7 @@ use App\Repositories\Eloquent\JournalRepository;
 use App\Repositories\Eloquent\LoanRepository;
 use App\Repositories\Eloquent\MenuItemRepository;
 use App\Repositories\Eloquent\NewsRepository;
+use App\Repositories\Eloquent\OnlineReadRepository;
 use App\Repositories\Eloquent\PageRepository;
 use App\Repositories\Eloquent\PeriodicalRepository;
 use App\Repositories\Eloquent\ReaderRepository;
@@ -74,7 +74,6 @@ class RepositoryServiceProvider extends ServiceProvider
         AudiobookRepositoryInterface::class => AudiobookRepository::class,
         AvtoreferatRepositoryInterface::class => AvtoreferatRepository::class,
         AvtoreferatCopyRepositoryInterface::class => AvtoreferatCopyRepository::class,
-        BookReadingRepositoryInterface::class => BookReadingRepository::class,
         BookRepositoryInterface::class => BookRepository::class,
         CatalogRepositoryInterface::class => CatalogRepository::class,
         ComputerRepositoryInterface::class => ComputerRepository::class,
@@ -88,6 +87,7 @@ class RepositoryServiceProvider extends ServiceProvider
         LoanRepositoryInterface::class => LoanRepository::class,
         MenuItemRepositoryInterface::class => MenuItemRepository::class,
         NewsRepositoryInterface::class => NewsRepository::class,
+        OnlineReadRepositoryInterface::class => OnlineReadRepository::class,
         PageRepositoryInterface::class => PageRepository::class,
         PeriodicalRepositoryInterface::class => PeriodicalRepository::class,
         ReaderRepositoryInterface::class => ReaderRepository::class,

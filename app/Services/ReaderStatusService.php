@@ -16,7 +16,7 @@ class ReaderStatusService
     /**
      * Block a reader. If $blockedUntil is null — block permanently.
      *
-     * @throws RuntimeException  When the reader still has unreturned books.
+     * @throws RuntimeException When the reader still has unreturned books.
      */
     public function block(Reader $reader, ?string $blockedUntil, string $reason): Reader
     {
@@ -37,7 +37,7 @@ class ReaderStatusService
      * End usage (graduated / left employment) — status=left.
      * The record is kept but does not appear in the main list.
      *
-     * @throws RuntimeException  When the reader still has unreturned books.
+     * @throws RuntimeException When the reader still has unreturned books.
      */
     public function finish(Reader $reader, string $reason): Reader
     {
@@ -50,11 +50,12 @@ class ReaderStatusService
         return $this->readers->update($reader, [
             'status' => ReaderStatus::Left->value,
             'left_reason' => $reason,
+            'left_at' => now(),
         ]);
     }
 
     /**
-     * Restore a reader — status=active, block is cleared.
+     * Restore a reader — status=active, block and left info are both cleared.
      */
     public function restore(Reader $reader): Reader
     {
@@ -62,6 +63,8 @@ class ReaderStatusService
             'status' => ReaderStatus::Active->value,
             'blocked_until' => null,
             'block_reason' => null,
+            'left_reason' => null,
+            'left_at' => null,
         ]);
     }
 }

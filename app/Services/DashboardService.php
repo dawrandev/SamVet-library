@@ -7,7 +7,6 @@ use App\Models\Article;
 use App\Models\Audiobook;
 use App\Models\Book;
 use App\Models\BookCopy;
-use App\Models\BookReading;
 use App\Models\Category;
 use App\Models\Computer;
 use App\Models\ComputerSession;
@@ -16,6 +15,7 @@ use App\Models\Journal;
 use App\Models\Language;
 use App\Models\Loan;
 use App\Models\News;
+use App\Models\OnlineRead;
 use App\Models\Reader;
 use App\Models\ReaderType;
 use App\Models\Subscription;
@@ -105,7 +105,7 @@ class DashboardService
             ->distinct('reader_id')
             ->count('reader_id');
 
-        $onlineReadings = BookReading::with(['reader', 'book'])
+        $onlineReadings = OnlineRead::with(['reader', 'readable'])
             ->whereBetween('read_at', [$rangeFrom, $rangeTo])
             ->latest('read_at')
             ->paginate(20, ['*'], 'readings_page')
@@ -242,7 +242,7 @@ class DashboardService
             ->selectRaw('DATE(returned_at) as d, COUNT(*) as c')
             ->groupBy('d')->pluck('c', 'd');
 
-        $readings = BookReading::query()
+        $readings = OnlineRead::query()
             ->whereBetween('read_at', [$from, $to])
             ->selectRaw('DATE(read_at) as d, COUNT(*) as c')
             ->groupBy('d')->pluck('c', 'd');

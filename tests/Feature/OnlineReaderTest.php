@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Book;
-use App\Models\BookReading;
+use App\Models\OnlineRead;
 use Illuminate\Support\Facades\Storage;
 
 it('redirects a guest from the reader page to the reader login', function () {
@@ -58,7 +58,7 @@ it('logs an online read, with an exact timestamp, when a reader opens the book',
 
     $this->get(route('read.book', $book->slug))->assertOk();
 
-    $reading = BookReading::where('reader_id', $reader->id)->where('book_id', $book->id)->first();
+    $reading = OnlineRead::where('reader_id', $reader->id)->where('readable_type', 'book')->where('readable_id', $book->id)->first();
     expect($reading)->not->toBeNull()
         ->and($reading->read_at)->not->toBeNull()
         ->and($reading->read_at->diffInSeconds(now()))->toBeLessThan(5);
@@ -71,7 +71,7 @@ it('logs a separate row for each time a reader reopens the same book', function 
     $this->get(route('read.book', $book->slug));
     $this->get(route('read.book', $book->slug));
 
-    expect(BookReading::where('reader_id', $reader->id)->where('book_id', $book->id)->count())->toBe(2);
+    expect(OnlineRead::where('reader_id', $reader->id)->where('readable_type', 'book')->where('readable_id', $book->id)->count())->toBe(2);
 });
 
 it('does not log a read for a guest (redirected before the book is resolved)', function () {
@@ -79,5 +79,5 @@ it('does not log a read for a guest (redirected before the book is resolved)', f
 
     $this->get(route('read.book', $book->slug));
 
-    expect(BookReading::count())->toBe(0);
+    expect(OnlineRead::count())->toBe(0);
 });

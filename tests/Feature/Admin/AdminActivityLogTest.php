@@ -52,6 +52,17 @@ it('redacts a reader password change instead of storing it in plain/hashed form'
         ->and($log->changes['password'])->toBe(['[hidden]', '[hidden]']);
 });
 
+it('is reachable directly by URL but has no sidebar link', function () {
+    actingAsAdmin();
+
+    // The page itself still works and shows its own heading...
+    $this->get(route('admin.activity-log.index'))->assertOk()->assertSee('Faoliyat jurnali');
+
+    // ...but no other admin page links to it from the sidebar (librarian shouldn't
+    // stumble onto it — only reachable if you already know the URL).
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Faoliyat jurnali');
+});
+
 it('shows the activity log page with filters', function () {
     actingAsAdmin();
     $book = Book::factory()->create();

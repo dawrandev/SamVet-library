@@ -14,8 +14,8 @@ final class CatalogFilters
 {
     /**
      * @param  array<int, int>  $categories  selected category ids (parent or child)
-     * @param  array<int, int>  $types       selected book type ids
-     * @param  array<int, int>  $languages   selected language ids
+     * @param  array<int, int>  $types  selected book type ids
+     * @param  array<int, int>  $languages  selected language ids
      * @param  array<int, string>  $formats  selected BookFormat enum values
      */
     public function __construct(
@@ -75,18 +75,26 @@ final class CatalogFilters
     }
 
     /**
-     * True when a book-only facet is in play. Kategoriya/Turi/Til/Yil and the
-     * ISBN search scope have no counterpart on audiobooks, videos,
-     * dissertations or avtoreferats — using one narrows the whole catalog
-     * down to books. Intentional, not a gap.
+     * True when a book-only facet is in play. Turi/Til/Yil and the ISBN
+     * search scope have no counterpart on audiobooks, videos, dissertations
+     * or avtoreferats — using one narrows the whole catalog down to books.
+     * Intentional, not a gap. Kategoriya is NOT included here — Book,
+     * Dissertation and Avtoreferat all carry a category_id (see
+     * CatalogResourceType::supportsCategoryFacet()), so a category filter
+     * narrows to those three instead of to Book alone.
      */
     public function booksOnly(): bool
     {
-        return $this->categories !== []
-            || $this->types !== []
+        return $this->types !== []
             || $this->languages !== []
             || $this->yearFrom !== null
             || $this->yearTo !== null
             || $this->scope === CatalogSearchScope::Isbn;
+    }
+
+    /** True when a category facet is in play — narrows to Book/Dissertation/Avtoreferat. */
+    public function categoryOnly(): bool
+    {
+        return $this->categories !== [];
     }
 }

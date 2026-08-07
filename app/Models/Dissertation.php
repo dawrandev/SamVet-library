@@ -20,7 +20,7 @@ class Dissertation extends Model
     // `slug` (set by the observer) and `views_count` (DB default) are intentionally
     // NOT fillable — only user-supplied fields belong here.
     protected $fillable = [
-        'title', 'author', 'degree',
+        'title', 'category_id', 'author', 'degree',
         'science_field_id', 'doctoral_specialty_id', 'master_specialty_id',
         'advisor', 'institution', 'language_id', 'publication_place_id',
         'defense_year', 'pages', 'udc', 'inventory_number', 'condition',
@@ -43,6 +43,11 @@ class Dissertation extends Model
     }
 
     // --- Relationships ---
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     /** "Fan nomi" — PhD/DSc only. */
     public function scienceField(): BelongsTo

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\DissertationData;
 use App\Enums\CopyCondition;
 use App\Enums\DissertationType;
+use App\Models\Category;
 use App\Models\ContributorRole;
 use App\Models\Dissertation;
 use App\Models\DoctoralSpecialty;
@@ -15,6 +16,7 @@ use App\Models\ScienceField;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,6 +48,7 @@ class DissertationService
     public function formOptions(): array
     {
         return [
+            'categories' => $this->categoryOptions(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
             'scienceFields' => ScienceField::orderBy('name')->get(),
             'doctoralSpecialties' => DoctoralSpecialty::orderBy('name')->get(),
@@ -55,6 +58,15 @@ class DissertationService
             'degreeTypes' => DissertationType::cases(),
             'conditionOptions' => CopyCondition::cases(),
         ];
+    }
+
+    /** "Parent › Child" labeled options for the category select — flat list, hierarchy shown in the label. */
+    private function categoryOptions(): Collection
+    {
+        return Category::with('parent')->orderBy('name')->get()->map(fn (Category $c) => (object) [
+            'id' => $c->id,
+            'name' => $c->parent ? $c->parent->name.' › '.$c->name : $c->name,
+        ]);
     }
 
     public function create(DissertationData $data): Dissertation

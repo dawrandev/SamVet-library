@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Category;
 use App\Models\Dissertation;
 use Illuminate\Http\UploadedFile;
 
@@ -14,6 +15,18 @@ it('creates a standalone dissertation, with no journal/issue involved', function
     $dissertation = Dissertation::firstWhere('title', 'Test dissertatsiya');
     expect($dissertation)->not->toBeNull()
         ->and($dissertation->slug)->not->toBeEmpty();
+});
+
+it('saves the chosen category, feeding the "Ilmiy adabiyotlar" homepage grouping', function () {
+    $category = Category::factory()->create();
+
+    $this->post(route('admin.dissertations.store'), [
+        'title' => 'Kategoriyali dissertatsiya',
+        'category_id' => $category->id,
+    ])->assertRedirect();
+
+    $dissertation = Dissertation::firstWhere('title', 'Kategoriyali dissertatsiya');
+    expect($dissertation->category_id)->toBe($category->id);
 });
 
 it('requires only a title — not a journal, not even an author', function () {

@@ -287,6 +287,21 @@
                         @endif
                     </div>
                 @endif
+
+                {{-- Left (finished usage) indicator --}}
+                @if ($reader->status === \App\Enums\ReaderStatus::Left)
+                    <div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left text-theme-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+                        <p class="font-medium">
+                            {{ __('Foydalanish tugatilgan') }}
+                            @if ($reader->left_at)
+                                — {{ $reader->left_at->format('d.m.Y H:i') }}
+                            @endif
+                        </p>
+                        @if ($reader->left_reason)
+                            <p class="mt-1">{{ $reader->left_reason }}</p>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             {{-- Affiliation --}}
@@ -640,30 +655,32 @@
         </template>
     </div>
 
-    {{-- Online reads (electronic books opened on the client site) — alongside physical loans above --}}
+    {{-- Online reads (books/videos/audiobooks/dissertations/avtoreferats opened on the client site) — alongside physical loans above --}}
     <div class="mt-6">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
             <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Onlayn o‘qishlar') }}</h3>
 
-            @if ($bookReadings->isEmpty())
+            @if ($onlineReads->isEmpty())
                 <p class="text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Hozircha onlayn o‘qish yo‘q.') }}</p>
             @else
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-left text-theme-sm">
                         <thead>
                             <tr class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                                <th class="px-3 py-2 font-medium">{{ __('Kitob') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Turi') }}</th>
+                                <th class="px-3 py-2 font-medium">{{ __('Nomi') }}</th>
                                 <th class="px-3 py-2 font-medium">{{ __('Sana va vaqti') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($bookReadings as $reading)
+                            @foreach ($onlineReads as $reading)
                                 <tr class="border-b border-gray-50 dark:border-gray-800/50">
+                                    <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $reading->typeLabel() }}</td>
                                     <td class="px-3 py-2">
-                                        @if ($reading->book)
-                                            <a href="{{ route('admin.books.show', $reading->book) }}" class="font-medium text-gray-800 hover:text-brand-600 dark:text-white/90 dark:hover:text-brand-400">{{ $reading->book->title }}</a>
+                                        @if ($reading->adminUrl())
+                                            <a href="{{ $reading->adminUrl() }}" class="font-medium text-gray-800 hover:text-brand-600 dark:text-white/90 dark:hover:text-brand-400">{{ $reading->readableTitle() }}</a>
                                         @else
-                                            <span class="text-gray-400">{{ __('Kitob o‘chirilgan') }}</span>
+                                            <span class="text-gray-400">{{ __('O‘chirilgan') }}</span>
                                         @endif
                                     </td>
                                     <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $reading->read_at->format('d.m.Y H:i') }}</td>
@@ -673,7 +690,7 @@
                     </table>
                 </div>
                 <div class="mt-4">
-                    {{ $bookReadings->links() }}
+                    {{ $onlineReads->links() }}
                 </div>
             @endif
         </div>

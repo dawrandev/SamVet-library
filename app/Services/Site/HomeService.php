@@ -3,12 +3,10 @@
 namespace App\Services\Site;
 
 use App\Enums\CopyStatus;
-use App\Enums\PublicationKind;
 use App\Enums\ReaderStatus;
 use App\Models\Article;
 use App\Models\Book;
 use App\Models\BookCopy;
-use App\Models\BookType;
 use App\Models\Journal;
 use App\Models\News;
 use App\Models\Reader;
@@ -22,8 +20,11 @@ use Illuminate\Support\Collection;
 class HomeService
 {
     private const FEATURED_LIMIT = 5;
+
     private const NEWS_LIMIT = 4;
+
     private const HERO_ANNOUNCEMENTS_LIMIT = 5;
+
     private const ACTIVE_READERS_LIMIT = 20;
 
     /** The hero slider is announcements-only — must match NewsCategorySeeder's uz name exactly. */
@@ -139,12 +140,12 @@ class HomeService
      */
     private function activeReaders(): Collection
     {
-        $activityExpr = '(loans_count + book_readings_count + computer_sessions_count + event_participations_count)';
+        $activityExpr = '(loans_count + online_reads_count + computer_sessions_count + event_participations_count)';
 
         return Reader::query()
             ->where('status', ReaderStatus::Active->value)
             ->with(['type', 'affiliationUnit', 'affiliationGroup'])
-            ->withCount(['loans', 'bookReadings', 'computerSessions', 'eventParticipations'])
+            ->withCount(['loans', 'onlineReads', 'computerSessions', 'eventParticipations'])
             ->havingRaw("{$activityExpr} > 0")
             ->orderByRaw("{$activityExpr} desc")
             ->limit(self::ACTIVE_READERS_LIMIT)

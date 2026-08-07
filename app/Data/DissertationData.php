@@ -13,6 +13,7 @@ class DissertationData
 {
     public function __construct(
         public readonly string $title,
+        public readonly ?int $category_id,
         public readonly ?string $author,
         public readonly ?string $degree,
         public readonly ?int $science_field_id,
@@ -42,6 +43,7 @@ class DissertationData
     {
         return new self(
             title: $request->string('title')->toString(),
+            category_id: $request->integer('category_id') ?: null,
             author: $request->input('author') ?: null,
             degree: $request->input('degree') ?: null,
             science_field_id: $request->integer('science_field_id') ?: null,
@@ -80,6 +82,7 @@ class DissertationData
 
         return [
             'title' => $this->title,
+            'category_id' => $this->category_id,
             'author' => $this->author,
             'degree' => $this->degree,
             'science_field_id' => $isDoctoral ? $this->science_field_id : null,

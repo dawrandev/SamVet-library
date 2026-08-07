@@ -2,6 +2,7 @@
 
 use App\Models\Audiobook;
 use App\Models\AudioTrack;
+use App\Models\OnlineRead;
 use Illuminate\Support\Facades\Storage;
 
 it('redirects a guest from the listen page to the reader login', function () {
@@ -27,6 +28,22 @@ it('lets a signed-in reader open the listen page', function () {
     AudioTrack::factory()->for($audiobook)->create();
 
     $this->get(route('listen.audiobook', $audiobook->slug))->assertOk();
+});
+
+it('logs an online read when a reader opens the listen page', function () {
+    Storage::fake('local');
+    $reader = actingAsReader();
+    $audiobook = Audiobook::factory()->create();
+    AudioTrack::factory()->for($audiobook)->create();
+
+    $this->get(route('listen.audiobook', $audiobook->slug))->assertOk();
+
+    $reading = OnlineRead::where('reader_id', $reader->id)
+        ->where('readable_type', 'audiobook')
+        ->where('readable_id', $audiobook->id)
+        ->first();
+    expect($reading)->not->toBeNull()
+        ->and($reading->read_at->diffInSeconds(now()))->toBeLessThan(5);
 });
 
 it('shows the audiobook cover on the listen page', function () {

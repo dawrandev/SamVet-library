@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Services\OnlineReadService;
 use App\Services\Site\AudioReaderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -20,11 +22,14 @@ class AudioReaderController extends Controller
 {
     public function __construct(
         private readonly AudioReaderService $reader,
+        private readonly OnlineReadService $onlineReads,
     ) {}
 
     public function show(string $slug): View
     {
         $audiobook = $this->reader->audiobook($slug);
+
+        $this->onlineReads->log(Auth::guard('reader')->user(), $audiobook);
 
         return view('pages.site.audio-player', [
             'audiobook' => $audiobook,

@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Article;
+use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\Dissertation;
 use App\Models\JournalCopy;
+use App\Models\Video;
 use App\Repositories\Contracts\MenuItemRepositoryInterface;
 use App\Services\ComputerSessionService;
 use App\Services\LoanService;
@@ -41,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
             'article' => Article::class,
             'dissertation' => Dissertation::class,
             'avtoreferat' => Avtoreferat::class,
+            'video' => Video::class,
+            'audiobook' => Audiobook::class,
         ]);
 
         // Pass the number of overdue books and expired-unfinished computer

@@ -44,6 +44,7 @@
             <x-admin.form.section :title="__('Asosiy ma’lumotlar')">
                 <div class="space-y-5">
                     <x-admin.form.input name="title" :label="__('Avtoreferat nomi')" :value="$avtoreferat?->title" required :placeholder="__('Avtoreferat nomi')" />
+                    <x-admin.form.select name="category_id" :label="__('Kategoriya')" :options="$categories" :selected="$avtoreferat?->category_id" :placeholder="__('Kategoriyani tanlang')" />
                     <x-admin.form.input name="author" :label="__('Muallifi')" :value="$avtoreferat?->author" :placeholder="__('masalan: Aliyev A.')" />
 
                     <x-admin.form.input name="specialty" :label="__('Ixtisoslik shifri va nomi')" :value="$avtoreferat?->specialty" :placeholder="__('masalan: 05.07.01 – ...')" />

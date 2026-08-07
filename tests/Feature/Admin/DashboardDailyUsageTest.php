@@ -2,7 +2,7 @@
 
 use App\Models\Book;
 use App\Models\BookCopy;
-use App\Models\BookReading;
+use App\Models\OnlineRead;
 use App\Models\Computer;
 use App\Models\ComputerSession;
 use App\Models\Event;
@@ -30,7 +30,7 @@ it('counts each metric on its own day and sums them into a daily total', functio
     Loan::factory()->create(['reader_id' => $reader->id, 'issued_at' => '2026-05-01 09:00:00', 'returned_at' => "{$day} 14:00:00"]);
 
     $book = Book::factory()->create();
-    BookReading::factory()->create(['reader_id' => $reader->id, 'book_id' => $book->id, 'read_at' => "{$day} 10:00:00"]);
+    OnlineRead::factory()->create(['reader_id' => $reader->id, 'readable_type' => 'book', 'readable_id' => $book->id, 'read_at' => "{$day} 10:00:00"]);
 
     ComputerSession::factory()->create(['reader_id' => $reader->id, 'computer_id' => Computer::factory(), 'issued_at' => "{$day} 11:00:00"]);
 

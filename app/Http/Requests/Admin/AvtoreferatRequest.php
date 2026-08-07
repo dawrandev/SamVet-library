@@ -26,6 +26,7 @@ class AvtoreferatRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:500'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'author' => ['nullable', 'string', 'max:500'],
             'specialty' => ['nullable', 'string', 'max:500'],
             'science_field_id' => ['nullable', 'integer', 'exists:science_fields,id'],
@@ -58,6 +59,7 @@ class AvtoreferatRequest extends FormRequest
     {
         return [
             'title' => __('Avtoreferat nomi'),
+            'category_id' => __('Kategoriya'),
             'author' => __('Muallifi'),
             'specialty' => __('Ixtisoslik shifri va nomi'),
             'science_field_id' => __('Fan nomi'),

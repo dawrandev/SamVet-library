@@ -108,17 +108,30 @@ it('shows the "Boshqa" catch-all category tile last, after every other section t
         ->and($boshqaIndex)->toBe(count($labels) - 1);
 });
 
-it('includes Dissertatsiyalar and Avtoreferatlar as their own section tiles', function () {
+it('no longer shows Dissertatsiyalar/Avtoreferatlar as their own section tiles — folded into Ilmiy adabiyotlar', function () {
     Dissertation::factory()->count(2)->create();
     Avtoreferat::factory()->create();
 
     $res = $this->get(route('sections'));
 
     $res->assertOk()
-        ->assertSee('Dissertatsiyalar')
-        ->assertSee('Avtoreferatlar')
-        ->assertSee(route('dissertations.index'), false)
-        ->assertSee(route('avtoreferats.index'), false);
+        ->assertDontSee('Dissertatsiyalar')
+        ->assertDontSee('Avtoreferatlar')
+        ->assertDontSee(route('dissertations.index'), false)
+        ->assertDontSee(route('avtoreferats.index'), false);
+});
+
+it('counts dissertations and avtoreferats into the "Ilmiy adabiyotlar" tile, alongside its books', function () {
+    $ilmiy = Category::factory()->create(['name' => ['uz' => 'Ilmiy adabiyotlar', 'ru' => 'x', 'kk' => 'x']]);
+    $book = Book::factory()->create();
+    $book->categories()->attach($ilmiy->id);
+    Dissertation::factory()->create(['category_id' => $ilmiy->id]);
+    Avtoreferat::factory()->create(['category_id' => $ilmiy->id]);
+
+    $res = $this->get(route('sections'));
+
+    $tile = $res->viewData('tiles')->firstWhere('label', $ilmiy->name);
+    expect($tile['count'])->toBe(3);
 });
 
 it('shows a journal detail page but hides library-internal fields', function () {

@@ -212,6 +212,11 @@ class CatalogRepository implements CatalogRepositoryInterface
                 $eligible,
                 fn (CatalogResourceType $type) => $type->supportsBookFacets()
             ));
+        } elseif ($filters->categoryOnly()) {
+            $eligible = array_values(array_filter(
+                $eligible,
+                fn (CatalogResourceType $type) => $type->supportsCategoryFacet()
+            ));
         }
 
         return $eligible;
@@ -223,9 +228,25 @@ class CatalogRepository implements CatalogRepositoryInterface
             CatalogResourceType::Book => $this->bookQuery($filters),
             CatalogResourceType::Audiobook => $this->nonBookQuery(Audiobook::query(), 'name', $filters),
             CatalogResourceType::Video => $this->nonBookQuery(Video::query(), 'name', $filters),
-            CatalogResourceType::Dissertation => $this->nonBookQuery(Dissertation::query(), 'title', $filters),
-            CatalogResourceType::Avtoreferat => $this->nonBookQuery(Avtoreferat::query(), 'title', $filters),
+            CatalogResourceType::Dissertation => $this->categorizedQuery(Dissertation::query(), 'title', $filters),
+            CatalogResourceType::Avtoreferat => $this->categorizedQuery(Avtoreferat::query(), 'title', $filters),
         };
+    }
+
+    /**
+     * Selected ids can be top-level or child categories — a parent id still
+     * expands to include its children (so it keeps surfacing rows tagged
+     * only with a child); a child id has no children of its own, so this
+     * expansion is a no-op for it and it matches exactly.
+     *
+     * @param  array<int, int>  $ids
+     * @return Collection<int, int>
+     */
+    private function expandCategoryIds(array $ids): Collection
+    {
+        return Category::query()->where(
+            fn (Builder $q) => $q->whereIn('id', $ids)->orWhereIn('parent_id', $ids)
+        )->pluck('id');
     }
 
     private function bookQuery(CatalogFilters $filters): Builder
@@ -247,13 +268,7 @@ class CatalogRepository implements CatalogRepositoryInterface
                 };
             })
             ->when($filters->categories, function (Builder $query, array $ids): void {
-                // Selected ids can be top-level or child categories now. A parent id
-                // still expands to include its children (so it keeps surfacing books
-                // tagged only with a child); a child id has no children of its own,
-                // so this expansion is a no-op for it and it matches exactly.
-                $expandedIds = Category::query()->where(
-                    fn (Builder $q) => $q->whereIn('id', $ids)->orWhereIn('parent_id', $ids)
-                )->pluck('id');
+                $expandedIds = $this->expandCategoryIds($ids);
 
                 $query->whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $expandedIds));
             })
@@ -278,7 +293,8 @@ class CatalogRepository implements CatalogRepositoryInterface
 
     /**
      * Shared filter shape for Audiobook/Video/Dissertation/Avtoreferat — none
-     * of them carry Kategoriya/Turi/Til/Yil, so this is just search + author.
+     * of them carry Turi/Til/Yil, so this is just search + author (+ category
+     * for Dissertation/Avtoreferat, layered on top by categorizedQuery()).
      * The ISBN scope never reaches here — CatalogFilters::booksOnly() excludes
      * every non-Book type upstream whenever that scope is active.
      */
@@ -295,6 +311,15 @@ class CatalogRepository implements CatalogRepositoryInterface
                 };
             })
             ->when($filters->author, fn (Builder $q, string $author) => $q->where('author', 'like', "%{$author}%"));
+    }
+
+    /** nonBookQuery() plus the category_id filter — Dissertation/Avtoreferat only. */
+    private function categorizedQuery(Builder $query, string $titleColumn, CatalogFilters $filters): Builder
+    {
+        return $this->nonBookQuery($query, $titleColumn, $filters)
+            ->when($filters->categories, function (Builder $q, array $ids): void {
+                $q->whereIn('category_id', $this->expandCategoryIds($ids));
+            });
     }
 
     /**
@@ -498,16 +523,31 @@ class CatalogRepository implements CatalogRepositoryInterface
 
         foreach ($parents as $parent) {
             $childIds = $parent->children->pluck('id');
-            $parentCount = Book::whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $childIds->push($parent->id)))->count();
+            $parentCount = $this->categoryResourceCount($childIds->push($parent->id));
             $facets->push($this->facet($parent, $parentCount) + ['parentId' => null]);
 
             foreach ($parent->children as $child) {
-                $childCount = Book::whereHas('categories', fn (Builder $q) => $q->where('categories.id', $child->id))->count();
+                $childCount = $this->categoryResourceCount(collect([$child->id]));
                 $facets->push($this->facet($child, $childCount) + ['parentId' => $parent->id]);
             }
         }
 
         return $facets;
+    }
+
+    /**
+     * Books (via the book_category pivot) plus dissertations/avtoreferats
+     * (via their own category_id) tagged with any of the given category ids.
+     *
+     * @param  Collection<int, int>  $categoryIds
+     */
+    private function categoryResourceCount(Collection $categoryIds): int
+    {
+        $bookCount = Book::whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $categoryIds))->count();
+        $dissertationCount = Dissertation::whereIn('category_id', $categoryIds)->count();
+        $avtoreferatCount = Avtoreferat::whereIn('category_id', $categoryIds)->count();
+
+        return $bookCount + $dissertationCount + $avtoreferatCount;
     }
 
     public function typeFacets(): Collection

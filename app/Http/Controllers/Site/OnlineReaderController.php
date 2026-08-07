@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
-use App\Services\BookReadingService;
+use App\Services\OnlineReadService;
 use App\Services\Site\OnlineReaderService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +18,7 @@ class OnlineReaderController extends Controller
 {
     public function __construct(
         private readonly OnlineReaderService $reader,
-        private readonly BookReadingService $bookReadings,
+        private readonly OnlineReadService $onlineReads,
     ) {}
 
     public function book(string $slug): View
@@ -27,7 +27,7 @@ class OnlineReaderController extends Controller
 
         // One log row per opened reading session — lets the librarian see who
         // read what electronically and exactly when, alongside physical loans.
-        $this->bookReadings->log(Auth::guard('reader')->user(), $book);
+        $this->onlineReads->log(Auth::guard('reader')->user(), $book);
 
         return view('pages.site.reader', [
             'title' => $book->title,
@@ -63,6 +63,8 @@ class OnlineReaderController extends Controller
     {
         $dissertation = $this->reader->dissertation($slug);
 
+        $this->onlineReads->log(Auth::guard('reader')->user(), $dissertation);
+
         return view('pages.site.reader', [
             'title' => $dissertation->title,
             'subtitle' => $dissertation->author,
@@ -79,6 +81,8 @@ class OnlineReaderController extends Controller
     public function avtoreferat(string $slug): View
     {
         $avtoreferat = $this->reader->avtoreferat($slug);
+
+        $this->onlineReads->log(Auth::guard('reader')->user(), $avtoreferat);
 
         return view('pages.site.reader', [
             'title' => $avtoreferat->title,

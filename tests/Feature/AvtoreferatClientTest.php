@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Avtoreferat;
+use App\Models\AvtoreferatCopy;
+use App\Models\OnlineRead;
 use Illuminate\Support\Facades\Storage;
 
 it('renders the public avtoreferat catalog', function () {
@@ -35,7 +37,7 @@ it('shows the avtoreferat detail page with its public bibliographic fields', fun
 
 it('never shows an avtoreferat’s inventory number or condition on the client page', function () {
     $avtoreferat = Avtoreferat::factory()->create();
-    \App\Models\AvtoreferatCopy::factory()->create(['avtoreferat_id' => $avtoreferat->id, 'inventory_number' => 'INV-SECRET-77']);
+    AvtoreferatCopy::factory()->create(['avtoreferat_id' => $avtoreferat->id, 'inventory_number' => 'INV-SECRET-77']);
 
     $this->get(route('avtoreferat.show', $avtoreferat->slug))
         ->assertOk()
@@ -93,4 +95,18 @@ it('404s when a reader opens an avtoreferat that has no stored pdf', function ()
 
     $this->get(route('read.avtoreferat', $avtoreferat->slug))->assertNotFound();
     $this->get(route('read.avtoreferat.file', $avtoreferat->slug))->assertNotFound();
+});
+
+it('logs an online read when a reader opens the avtoreferat', function () {
+    $reader = actingAsReader();
+    $avtoreferat = Avtoreferat::factory()->withPdf()->create();
+
+    $this->get(route('read.avtoreferat', $avtoreferat->slug))->assertOk();
+
+    $reading = OnlineRead::where('reader_id', $reader->id)
+        ->where('readable_type', 'avtoreferat')
+        ->where('readable_id', $avtoreferat->id)
+        ->first();
+    expect($reading)->not->toBeNull()
+        ->and($reading->read_at->diffInSeconds(now()))->toBeLessThan(5);
 });

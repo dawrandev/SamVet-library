@@ -28,6 +28,7 @@ class DissertationRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:500'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'author' => ['nullable', 'string', 'max:500'],
             'degree' => ['nullable', new Enum(DissertationType::class)],
             'science_field_id' => ['nullable', 'integer', 'exists:science_fields,id'],
@@ -85,6 +86,7 @@ class DissertationRequest extends FormRequest
     {
         return [
             'title' => __('Dissertatsiya nomi'),
+            'category_id' => __('Kategoriya'),
             'author' => __('Muallifi'),
             'degree' => __('Turi'),
             'science_field_id' => __('Fan nomi'),

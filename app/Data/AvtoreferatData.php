@@ -14,6 +14,7 @@ class AvtoreferatData
 {
     public function __construct(
         public readonly string $title,
+        public readonly ?int $category_id,
         public readonly ?string $author,
         public readonly ?string $specialty,
         public readonly ?int $science_field_id,
@@ -39,6 +40,7 @@ class AvtoreferatData
     {
         return new self(
             title: $request->string('title')->toString(),
+            category_id: $request->integer('category_id') ?: null,
             author: $request->input('author') ?: null,
             specialty: $request->input('specialty') ?: null,
             science_field_id: $request->integer('science_field_id') ?: null,
@@ -68,6 +70,7 @@ class AvtoreferatData
     {
         return [
             'title' => $this->title,
+            'category_id' => $this->category_id,
             'author' => $this->author,
             'specialty' => $this->specialty,
             'science_field_id' => $this->science_field_id,

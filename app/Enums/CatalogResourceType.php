@@ -7,6 +7,7 @@ use App\Models\Avtoreferat;
 use App\Models\Book;
 use App\Models\Dissertation;
 use App\Models\Video;
+use Illuminate\Database\Eloquent\Model;
 
 /** Which of the five catalogued resource types a merged catalog row is. */
 enum CatalogResourceType: string
@@ -28,7 +29,7 @@ enum CatalogResourceType: string
         };
     }
 
-    /** @return class-string<\Illuminate\Database\Eloquent\Model> */
+    /** @return class-string<Model> */
     public function modelClass(): string
     {
         return match ($this) {
@@ -68,12 +69,23 @@ enum CatalogResourceType: string
     }
 
     /**
-     * Only books carry the Kategoriya/Turi/Til/Yil taxonomy — using one of
-     * those facets narrows the whole catalog down to books by construction,
-     * not a gap to fill in for the other four types.
+     * Only books carry the Turi/Til/Yil taxonomy — using one of those facets
+     * narrows the whole catalog down to books by construction, not a gap to
+     * fill in for the other four types.
      */
     public function supportsBookFacets(): bool
     {
         return $this === self::Book;
+    }
+
+    /**
+     * Book, Dissertation and Avtoreferat each have their own `category_id` —
+     * Audiobook/Video don't, so a category filter must exclude them (same
+     * reasoning as supportsBookFacets(), just for the one facet the other
+     * two catalogued types also carry).
+     */
+    public function supportsCategoryFacet(): bool
+    {
+        return in_array($this, [self::Book, self::Dissertation, self::Avtoreferat], true);
     }
 }

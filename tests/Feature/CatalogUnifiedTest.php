@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\BookFormat;
+use App\Enums\CatalogResourceType;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
@@ -7,6 +9,7 @@ use App\Models\BookCopy;
 use App\Models\Category;
 use App\Models\Dissertation;
 use App\Models\Video;
+use Illuminate\Support\Facades\DB;
 
 it('shows both Bosma and Elektron on a card when a book has a print copy and an online-readable PDF, with no electronic copy row', function () {
     $book = Book::factory()->withPdf()->create();
@@ -15,7 +18,7 @@ it('shows both Bosma and Elektron on a card when a book has a print copy and an 
     $res = $this->get(route('catalog'));
 
     $item = $res->viewData('items')->getCollection()->first();
-    expect($item->formats)->toContain(\App\Enums\BookFormat::Print, \App\Enums\BookFormat::Electronic);
+    expect($item->formats)->toContain(BookFormat::Print, BookFormat::Electronic);
 });
 
 it('matches Shakli=Elektron for a book with only electronic_file and no electronic copy row', function () {
@@ -101,7 +104,7 @@ it('isolates to audiobooks only when Shakli=audio', function () {
     $res = $this->get(route('catalog', ['formats' => ['audio']]));
 
     expect($res->viewData('total'))->toBe(2);
-    expect($res->viewData('items')->getCollection()->every(fn ($i) => $i->type === \App\Enums\CatalogResourceType::Audiobook))->toBeTrue();
+    expect($res->viewData('items')->getCollection()->every(fn ($i) => $i->type === CatalogResourceType::Audiobook))->toBeTrue();
 });
 
 it('isolates to videos only when Shakli=video', function () {
@@ -112,7 +115,7 @@ it('isolates to videos only when Shakli=video', function () {
     $res = $this->get(route('catalog', ['formats' => ['video']]));
 
     expect($res->viewData('total'))->toBe(2);
-    expect($res->viewData('items')->getCollection()->every(fn ($i) => $i->type === \App\Enums\CatalogResourceType::Video))->toBeTrue();
+    expect($res->viewData('items')->getCollection()->every(fn ($i) => $i->type === CatalogResourceType::Video))->toBeTrue();
 });
 
 it('isolates to print books only when Shakli=print', function () {
@@ -315,10 +318,47 @@ it('keeps the query count low regardless of how many rows exist per type (two-ph
     Dissertation::factory()->count(15)->create();
     Avtoreferat::factory()->count(15)->create();
 
-    \Illuminate\Support\Facades\DB::enableQueryLog();
+    DB::enableQueryLog();
     $this->get(route('catalog'))->assertOk();
-    $queryCount = count(\Illuminate\Support\Facades\DB::getQueryLog());
-    \Illuminate\Support\Facades\DB::disableQueryLog();
+    $queryCount = count(DB::getQueryLog());
+    DB::disableQueryLog();
 
     expect($queryCount)->toBeLessThan(40);
+});
+
+it('mixes books, dissertations and avtoreferats tagged with the same category in one filtered result', function () {
+    $category = Category::factory()->create();
+    $book = Book::factory()->create();
+    $book->categories()->attach($category->id);
+    $dissertation = Dissertation::factory()->create(['category_id' => $category->id]);
+    $avtoreferat = Avtoreferat::factory()->create(['category_id' => $category->id]);
+    Audiobook::factory()->create(); // no category concept at all — must not match
+    Book::factory()->create(); // untagged — must not match
+
+    $res = $this->get(route('catalog', ['categories' => [$category->id]]));
+
+    expect($res->viewData('total'))->toBe(3);
+});
+
+it('excludes audiobooks and videos from a category-filtered result — neither carries a category', function () {
+    $category = Category::factory()->create();
+    Dissertation::factory()->create(['category_id' => $category->id]);
+    Audiobook::factory()->create();
+    Video::factory()->create();
+
+    $res = $this->get(route('catalog', ['categories' => [$category->id]]));
+
+    $types = $res->viewData('items')->getCollection()->pluck('type');
+    expect($types)->not->toContain(CatalogResourceType::Audiobook)
+        ->and($types)->not->toContain(CatalogResourceType::Video);
+});
+
+it('expands a parent category id to also match dissertations/avtoreferats tagged only with its child', function () {
+    $parent = Category::factory()->create();
+    $child = Category::factory()->create(['parent_id' => $parent->id]);
+    Dissertation::factory()->create(['category_id' => $child->id]);
+
+    $res = $this->get(route('catalog', ['categories' => [$parent->id]]));
+
+    expect($res->viewData('total'))->toBe(1);
 });

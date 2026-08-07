@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\AvtoreferatData;
 use App\Models\Avtoreferat;
+use App\Models\Category;
 use App\Models\ContributorRole;
 use App\Models\Language;
 use App\Models\PublicationPlace;
@@ -11,6 +12,7 @@ use App\Models\ScienceField;
 use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,11 +44,21 @@ class AvtoreferatService
     public function formOptions(): array
     {
         return [
+            'categories' => $this->categoryOptions(),
             'publicationPlaces' => PublicationPlace::orderBy('id')->get(),
             'contributorRoles' => ContributorRole::orderBy('name')->get(),
             'scienceFields' => ScienceField::orderBy('name')->get(),
             'languages' => Language::orderBy('name')->get(),
         ];
+    }
+
+    /** "Parent › Child" labeled options for the category select — flat list, hierarchy shown in the label. */
+    private function categoryOptions(): Collection
+    {
+        return Category::with('parent')->orderBy('name')->get()->map(fn (Category $c) => (object) [
+            'id' => $c->id,
+            'name' => $c->parent ? $c->parent->name.' › '.$c->name : $c->name,
+        ]);
     }
 
     public function create(AvtoreferatData $data): Avtoreferat

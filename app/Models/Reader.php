@@ -29,7 +29,7 @@ class Reader extends Model implements Authenticatable
         'nationality', 'birth_date', 'passport', 'pinfl', 'gender',
         'region_id', 'district_id', 'address', 'phone', 'member_year',
         'photo', 'other_library_member', 'note',
-        'status', 'blocked_until', 'block_reason', 'left_reason',
+        'status', 'blocked_until', 'block_reason', 'left_reason', 'left_at',
     ];
 
     protected function casts(): array
@@ -41,6 +41,7 @@ class Reader extends Model implements Authenticatable
             'issued_date' => 'date',
             'birth_date' => 'date',
             'blocked_until' => 'date',
+            'left_at' => 'datetime',
             'member_year' => 'integer',
         ];
     }
@@ -84,10 +85,10 @@ class Reader extends Model implements Authenticatable
         return $this->hasMany(Loan::class)->latest('issued_at');
     }
 
-    /** Online reads (electronic books opened on the client site) — newest first. */
-    public function bookReadings(): HasMany
+    /** Online reads/watches/listens (materials opened on the client site) — newest first. */
+    public function onlineReads(): HasMany
     {
-        return $this->hasMany(BookReading::class)->latest('read_at');
+        return $this->hasMany(OnlineRead::class)->latest('read_at');
     }
 
     public function warnings(): HasMany

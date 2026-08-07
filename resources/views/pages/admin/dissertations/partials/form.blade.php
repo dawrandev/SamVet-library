@@ -43,6 +43,7 @@
             <x-admin.form.section :title="__('Dissertatsiya ma’lumotlari')">
                 <div class="space-y-5">
                     <x-admin.form.input name="title" :label="__('Dissertatsiya nomi')" :value="$dissertation?->title" required :placeholder="__('Dissertatsiya nomi')" />
+                    <x-admin.form.select name="category_id" :label="__('Kategoriya')" :options="$categories" :selected="$dissertation?->category_id" :placeholder="__('Kategoriyani tanlang')" />
                     <x-admin.form.input name="author" :label="__('Muallifi')" :value="$dissertation?->author" :placeholder="__('masalan: Aliyev A.')" />
 
                     <x-admin.form.contributors-input :roles="$contributorRoles" :label="__('Boshqa ishtirokchilar')"

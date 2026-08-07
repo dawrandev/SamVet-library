@@ -351,7 +351,8 @@
                         <thead>
                             <tr class="border-y border-gray-100 dark:border-gray-800">
                                 <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('Foydalanuvchi') }}</th>
-                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Kitob') }}</th>
+                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Turi') }}</th>
+                                <th class="px-5 py-3 text-left text-theme-xs font-medium text-gray-500 dark:text-gray-400">{{ __('Nomi') }}</th>
                                 <th class="px-5 py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400 sm:px-6">{{ __('O‘qilgan vaqti') }}</th>
                             </tr>
                         </thead>
@@ -359,12 +360,13 @@
                             @forelse ($onlineReadings as $reading)
                                 <tr class="border-b border-gray-50 last:border-0 dark:border-gray-800/60">
                                     <td class="px-5 py-3.5 text-theme-sm font-medium text-gray-800 dark:text-white/90 sm:px-6">{{ $reading->reader?->full_name ?? '—' }}</td>
-                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($reading->book?->title ?? '—', 30) }}</td>
+                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ $reading->typeLabel() ?? '—' }}</td>
+                                    <td class="px-5 py-3.5 text-theme-sm text-gray-600 dark:text-gray-400">{{ \Illuminate\Support\Str::limit($reading->readableTitle() ?? '—', 30) }}</td>
                                     <td class="px-5 py-3.5 text-right text-theme-sm text-gray-600 dark:text-gray-400 sm:px-6">{{ $reading->read_at->format('d.m.Y H:i') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-6 py-10 text-center">
+                                    <td colspan="4" class="px-6 py-10 text-center">
                                         <x-admin.icon name="book" class="mx-auto h-9 w-9 text-gray-300 dark:text-gray-600" />
                                         <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">{{ __('Bu oraliqda onlayn o‘qish topilmadi.') }}</p>
                                     </td>

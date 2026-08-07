@@ -7,7 +7,7 @@ use App\Models\Reader;
 
 beforeEach(fn () => actingAsAdmin());
 
-it('finishes usage and stores the reason when the reader has no outstanding loans', function () {
+it('finishes usage and stores the reason and timestamp when the reader has no outstanding loans', function () {
     $reader = Reader::factory()->create(['status' => 'active']);
 
     $this->patch(route('admin.readers.finish', $reader), [
@@ -16,7 +16,33 @@ it('finishes usage and stores the reason when the reader has no outstanding loan
 
     $reader->refresh();
     expect($reader->status)->toBe(ReaderStatus::Left)
-        ->and($reader->left_reason)->toBe('O‘qishni bitirgan');
+        ->and($reader->left_reason)->toBe('O‘qishni bitirgan')
+        ->and($reader->left_at)->not->toBeNull();
+});
+
+it('shows the finish reason and timestamp on the show page afterward', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+
+    $this->patch(route('admin.readers.finish', $reader), [
+        'left_reason' => 'Ishdan bo‘shadi',
+    ]);
+
+    $this->get(route('admin.readers.show', $reader))
+        ->assertSee('Foydalanish tugatilgan')
+        ->assertSee('Ishdan bo‘shadi')
+        ->assertSee($reader->fresh()->left_at->format('d.m.Y'));
+});
+
+it('clears the left reason and timestamp when a finished reader is restored', function () {
+    $reader = Reader::factory()->create(['status' => 'active']);
+    $this->patch(route('admin.readers.finish', $reader), ['left_reason' => 'Vaqtincha']);
+
+    $this->patch(route('admin.readers.restore', $reader))->assertRedirect();
+
+    $reader->refresh();
+    expect($reader->status)->toBe(ReaderStatus::Active)
+        ->and($reader->left_reason)->toBeNull()
+        ->and($reader->left_at)->toBeNull();
 });
 
 it('requires a reason to finish usage', function () {

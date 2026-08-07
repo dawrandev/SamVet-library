@@ -6,7 +6,7 @@ use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 
 it('is not active when no narrowing filter is set', function () {
-    expect((new CatalogFilters())->isActive())->toBeFalse();
+    expect((new CatalogFilters)->isActive())->toBeFalse();
 });
 
 it('is active when any narrowing filter is set', function () {
@@ -19,7 +19,7 @@ it('is active when any narrowing filter is set', function () {
 });
 
 it('defaults to the newest sort', function () {
-    expect((new CatalogFilters())->sort)->toBe(CatalogSort::Newest);
+    expect((new CatalogFilters)->sort)->toBe(CatalogSort::Newest);
 });
 
 it('gives every sort option a non-empty label', function () {
@@ -35,11 +35,10 @@ it('resolves formatCases() and drops unknown values', function () {
 });
 
 it('is not booksOnly by default', function () {
-    expect((new CatalogFilters())->booksOnly())->toBeFalse();
+    expect((new CatalogFilters)->booksOnly())->toBeFalse();
 });
 
 it('is booksOnly when a book-only facet is active', function () {
-    expect((new CatalogFilters(categories: [1]))->booksOnly())->toBeTrue();
     expect((new CatalogFilters(types: [1]))->booksOnly())->toBeTrue();
     expect((new CatalogFilters(languages: [1]))->booksOnly())->toBeTrue();
     expect((new CatalogFilters(yearFrom: 2000))->booksOnly())->toBeTrue();
@@ -47,8 +46,16 @@ it('is booksOnly when a book-only facet is active', function () {
     expect((new CatalogFilters(scope: CatalogSearchScope::Isbn))->booksOnly())->toBeTrue();
 });
 
-it('is not booksOnly for a plain search, author, or Shakli-only filter', function () {
+it('is not booksOnly for a plain search, author, category, or Shakli-only filter', function () {
     expect((new CatalogFilters(search: 'veterinariya'))->booksOnly())->toBeFalse();
     expect((new CatalogFilters(author: 'Aliyev'))->booksOnly())->toBeFalse();
     expect((new CatalogFilters(formats: ['audio']))->booksOnly())->toBeFalse();
+    // Category narrows to Book/Dissertation/Avtoreferat (categoryOnly()), not Book alone.
+    expect((new CatalogFilters(categories: [1]))->booksOnly())->toBeFalse();
+});
+
+it('is categoryOnly only when categories is the (or one of the) active filter', function () {
+    expect((new CatalogFilters)->categoryOnly())->toBeFalse();
+    expect((new CatalogFilters(categories: [1]))->categoryOnly())->toBeTrue();
+    expect((new CatalogFilters(search: 'veterinariya'))->categoryOnly())->toBeFalse();
 });

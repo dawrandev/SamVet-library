@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Services\OnlineReadService;
 use App\Services\Site\VideoReaderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -19,11 +21,14 @@ class VideoReaderController extends Controller
 {
     public function __construct(
         private readonly VideoReaderService $reader,
+        private readonly OnlineReadService $onlineReads,
     ) {}
 
     public function show(string $slug): View
     {
         $video = $this->reader->video($slug);
+
+        $this->onlineReads->log(Auth::guard('reader')->user(), $video);
 
         return view('pages.site.video-player', [
             'video' => $video,

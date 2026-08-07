@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\OnlineRead;
 use App\Models\Video;
 use App\Models\VideoTrack;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +28,22 @@ it('lets a signed-in reader open the watch page', function () {
     VideoTrack::factory()->for($video)->create();
 
     $this->get(route('watch.video', $video->slug))->assertOk();
+});
+
+it('logs an online read when a reader opens the watch page', function () {
+    Storage::fake('local');
+    $reader = actingAsReader();
+    $video = Video::factory()->create();
+    VideoTrack::factory()->for($video)->create();
+
+    $this->get(route('watch.video', $video->slug))->assertOk();
+
+    $reading = OnlineRead::where('reader_id', $reader->id)
+        ->where('readable_type', 'video')
+        ->where('readable_id', $video->id)
+        ->first();
+    expect($reading)->not->toBeNull()
+        ->and($reading->read_at->diffInSeconds(now()))->toBeLessThan(5);
 });
 
 it('404s when a reader opens a video that has no tracks', function () {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Dissertation;
+use App\Models\OnlineRead;
 use App\Models\ScienceField;
 use Illuminate\Support\Facades\Storage;
 
@@ -106,4 +107,18 @@ it('404s when a reader opens a dissertation that has no stored pdf', function ()
 
     $this->get(route('read.dissertation', $dissertation->slug))->assertNotFound();
     $this->get(route('read.dissertation.file', $dissertation->slug))->assertNotFound();
+});
+
+it('logs an online read when a reader opens the dissertation', function () {
+    $reader = actingAsReader();
+    $dissertation = Dissertation::factory()->withPdf()->create();
+
+    $this->get(route('read.dissertation', $dissertation->slug))->assertOk();
+
+    $reading = OnlineRead::where('reader_id', $reader->id)
+        ->where('readable_type', 'dissertation')
+        ->where('readable_id', $dissertation->id)
+        ->first();
+    expect($reading)->not->toBeNull()
+        ->and($reading->read_at->diffInSeconds(now()))->toBeLessThan(5);
 });
