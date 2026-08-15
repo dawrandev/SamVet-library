@@ -3,10 +3,24 @@
 namespace App\Observers;
 
 use App\Models\Dissertation;
+use App\Services\SearchIndexService;
 use Illuminate\Support\Str;
 
 class DissertationObserver
 {
+    public function __construct(
+        private readonly SearchIndexService $searchIndex,
+    ) {}
+
+    /**
+     * Refresh the script-independent search columns on every write, so a
+     * record stays findable in both Latin and Cyrillic the moment it's saved.
+     */
+    public function saving(Dissertation $dissertation): void
+    {
+        $this->searchIndex->fill($dissertation);
+    }
+
     /**
      * Slug is generated automatically (from the title) and guaranteed to be unique.
      */

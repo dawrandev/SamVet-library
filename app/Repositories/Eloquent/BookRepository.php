@@ -5,23 +5,26 @@ namespace App\Repositories\Eloquent;
 use App\Enums\CopyStatus;
 use App\Models\Book;
 use App\Models\Category;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class BookRepository implements BookRepositoryInterface
 {
+    use NormalizedSearch;
+
     public function filtered(array $filters = []): Builder
     {
         return Book::query()
-            // Search (title, ISBN, UDC)
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('isbn', 'like', "%{$search}%")
-                        ->orWhere('udc', 'like', "%{$search}%");
-                });
-            })
+            // Search — script-independent over search_text (title, authors,
+            // annotation, UDC), plus a literal ISBN match: ISBN is kept out of
+            // search_text on purpose so a year-like query can't collide with a
+            // digit run inside one (see SearchIndexService).
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search, ['isbn'])
+            )
             ->when($filters['category_id'] ?? null, function ($query, int $categoryId) {
                 // A parent category id must also surface books tagged only with
                 // one of its children — mirrors the public catalog's own

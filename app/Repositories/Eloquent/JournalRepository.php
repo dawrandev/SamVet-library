@@ -3,22 +3,24 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Journal;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\JournalRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class JournalRepository implements JournalRepositoryInterface
 {
+    use NormalizedSearch;
+
     public function filtered(array $filters = []): Builder
     {
         return Journal::query()
-            // Search (name, ISSN)
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('issn', 'like', "%{$search}%");
-                });
-            })
+            // Search — script-independent; search_text covers name, ISSN and
+            // founder (see SearchIndexService).
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search)
+            )
             ->when($filters['journal_type_id'] ?? null, function ($query, int $typeId) {
                 $query->where('journal_type_id', $typeId);
             })

@@ -4,23 +4,24 @@ namespace App\Repositories\Eloquent;
 
 use App\Enums\ReaderStatus;
 use App\Models\Reader;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\ReaderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class ReaderRepository implements ReaderRepositoryInterface
 {
+    use NormalizedSearch;
+
     public function filtered(array $filters = []): Builder
     {
         return Reader::query()
-            // Search (full name, ID number, PINFL)
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('full_name', 'like', "%{$search}%")
-                        ->orWhere('id_number', 'like', "%{$search}%")
-                        ->orWhere('pinfl', 'like', "%{$search}%");
-                });
-            })
+            // Search (full name, ID number, PINFL) — script-independent, so a
+            // librarian finds "Oʻlmasov" by typing "Ўлмасов" and vice versa.
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search)
+            )
             ->when($filters['type'] ?? null, function ($query, string $type) {
                 $query->where('reader_type_id', $type);
             })

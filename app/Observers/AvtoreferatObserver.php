@@ -3,10 +3,24 @@
 namespace App\Observers;
 
 use App\Models\Avtoreferat;
+use App\Services\SearchIndexService;
 use Illuminate\Support\Str;
 
 class AvtoreferatObserver
 {
+    public function __construct(
+        private readonly SearchIndexService $searchIndex,
+    ) {}
+
+    /**
+     * Refresh the script-independent search columns on every write, so a
+     * record stays findable in both Latin and Cyrillic the moment it's saved.
+     */
+    public function saving(Avtoreferat $avtoreferat): void
+    {
+        $this->searchIndex->fill($avtoreferat);
+    }
+
     /**
      * Slug is generated automatically (from the title) and guaranteed to be unique.
      */

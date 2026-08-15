@@ -5,12 +5,25 @@ namespace App\Observers;
 use App\Enums\AdminActivityAction;
 use App\Models\Reader;
 use App\Services\AdminActivityLogService;
+use App\Services\SearchIndexService;
 
 class ReaderObserver
 {
     public function __construct(
         private readonly AdminActivityLogService $activityLog,
+        private readonly SearchIndexService $searchIndex,
     ) {}
+
+    /**
+     * Refresh the script-independent search columns on every write, so a
+     * reader stays findable whichever script the librarian types their name
+     * in. These words never reach the public suggestion vocabulary — see
+     * SearchIndexService::PUBLIC_MODELS.
+     */
+    public function saving(Reader $reader): void
+    {
+        $this->searchIndex->fill($reader);
+    }
 
     /**
      * New readers get the library's shared sign-in password (hashed by the

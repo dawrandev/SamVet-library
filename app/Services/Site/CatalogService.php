@@ -25,9 +25,9 @@ class CatalogService
     ) {}
 
     /**
-     * A misspelled term that matches nothing directly falls back to the
-     * closest real catalog word, so a typo still surfaces the resource the
-     * visitor meant — not just a "did you mean" link to click through.
+     * A misspelled term falls back to the closest real catalog word, so a
+     * typo still surfaces the resource the visitor meant — not just a "did
+     * you mean" link to click through.
      *
      * @return Collection<int, CatalogItem>
      */
@@ -35,15 +35,19 @@ class CatalogService
     {
         $results = $this->catalog->quickSearch($term, self::QUICK_SEARCH_LIMIT);
 
-        if ($results->isNotEmpty() || blank($term)) {
+        if (blank($term)) {
             return $results;
         }
 
         $corrected = $this->suggestions->suggest($term);
 
-        return $corrected !== null
-            ? $this->catalog->quickSearch($corrected, self::QUICK_SEARCH_LIMIT)
-            : $results;
+        if ($corrected === null) {
+            return $results;
+        }
+
+        $correctedResults = $this->catalog->quickSearch($corrected, self::QUICK_SEARCH_LIMIT);
+
+        return $correctedResults->isNotEmpty() ? $correctedResults : $results;
     }
 
     /**
@@ -57,17 +61,27 @@ class CatalogService
         // A misspelled search shows the corrected term's results directly
         // (like a browser search engine), instead of making the visitor
         // click a separate "did you mean" suggestion to see anything.
-        if ($items->total() === 0 && filled($filters->search)) {
-            $correctedSearch = $this->suggestions->suggest($filters->search);
+        //
+        // The trigger is "the query contains a word the catalog has never
+        // heard of", not "the query found nothing". Gating on a zero (or low)
+        // result count misses the commonest real typo — one misspelled word
+        // beside a correct one. "vetrenariya asoslari" still matches every
+        // book whose title ends in "asoslari", so the count never looks bad,
+        // yet every one of those hits is the wrong book. suggest() returns
+        // null whenever every word is already spelled the way the catalog
+        // spells it, so a correct query costs nothing and is never rewritten.
+        if (filled($filters->search)) {
+            $suggestion = $this->suggestions->suggest($filters->search);
 
-            if ($correctedSearch !== null) {
-                $items = $this->catalog->paginate($filters->withSearch($correctedSearch), self::PER_PAGE);
+            if ($suggestion !== null) {
+                $correctedItems = $this->catalog->paginate($filters->withSearch($suggestion), self::PER_PAGE);
 
                 // The corrected word can still turn up nothing once combined
                 // with the rest of the active filters — don't claim a
                 // correction that didn't actually find anything.
-                if ($items->total() === 0) {
-                    $correctedSearch = null;
+                if ($correctedItems->total() > 0) {
+                    $items = $correctedItems;
+                    $correctedSearch = $suggestion;
                 }
             }
         }

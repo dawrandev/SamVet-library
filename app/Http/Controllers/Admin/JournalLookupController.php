@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\JournalSearchResource;
 use App\Models\Journal;
 use App\Models\JournalIssue;
+use App\Support\SearchNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -21,8 +22,14 @@ class JournalLookupController extends Controller
 
         $query = Journal::query()->with('type')->withCount('issues');
 
-        if ($term !== '') {
-            $query->where('name', 'like', "%{$term}%");
+        // Normalized on both sides, so typing the journal's name in either
+        // script autocompletes it (see SearchNormalizer). A term that
+        // normalizes away to nothing (punctuation only) is treated as no term
+        // at all, which for an autocomplete means "show the first few".
+        $normalized = SearchNormalizer::normalize($term);
+
+        if ($normalized !== '') {
+            $query->where('search_text', 'like', '%'.$normalized.'%');
         }
 
         // Scopes results to journals or newspapers only — used when the form

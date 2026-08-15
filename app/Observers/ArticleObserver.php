@@ -3,10 +3,24 @@
 namespace App\Observers;
 
 use App\Models\Article;
+use App\Services\SearchIndexService;
 use Illuminate\Support\Str;
 
 class ArticleObserver
 {
+    public function __construct(
+        private readonly SearchIndexService $searchIndex,
+    ) {}
+
+    /**
+     * Refresh the script-independent search columns on every write, so a
+     * record stays findable in both Latin and Cyrillic the moment it's saved.
+     */
+    public function saving(Article $article): void
+    {
+        $this->searchIndex->fill($article);
+    }
+
     /**
      * Slug is generated automatically (from the title) and guaranteed to be unique.
      */

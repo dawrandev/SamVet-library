@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Audiobook;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\AudiobookRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,15 +11,15 @@ use Illuminate\Support\Collection;
 
 class AudiobookRepository implements AudiobookRepositoryInterface
 {
+    use NormalizedSearch;
+
     public function filtered(array $filters = []): Builder
     {
         return Audiobook::query()
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('author', 'like', "%{$search}%");
-                });
-            });
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search)
+            );
     }
 
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator

@@ -9,6 +9,7 @@ use App\Models\BookCopy;
 use App\Models\JournalCopy;
 use App\Models\Loan;
 use App\Repositories\Contracts\LoanRepositoryInterface;
+use App\Support\SearchNormalizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -129,21 +130,36 @@ class LoanRepository implements LoanRepositoryInterface
         };
     }
 
+    /**
+     * One box searching four different things: the copy's inventory number,
+     * the borrowed book's or journal's title, and (on the loans index, though
+     * not on a reader's own page) the borrower's name.
+     *
+     * The three text fields go through the normalized columns, so a librarian
+     * gets the same hit whether they type Latin or Cyrillic. The inventory
+     * number stays a literal match — it's a code, not prose, and folding it
+     * would only blur digits and letters that are meant to be exact.
+     */
     private function applySearch(Builder $query, string $search, bool $includeReader): void
     {
-        $morphSearch = function (Builder $cq, string $type) use ($search) {
-            $cq->where('inventory_number', 'like', "%{$search}%");
+        $normalized = SearchNormalizer::normalize($search);
+        $rawTerm = addcslashes($search, '%_\\');
 
-            if ($type === BookCopy::class) {
-                $cq->orWhereHas('book', fn (Builder $b) => $b->where('title', 'like', "%{$search}%"));
-            } else {
-                $cq->orWhereHas('issue.journal', fn (Builder $j) => $j->where('name', 'like', "%{$search}%"));
+        $morphSearch = function (Builder $cq, string $type) use ($rawTerm, $normalized) {
+            $cq->where('inventory_number', 'like', "%{$rawTerm}%");
+
+            if ($normalized === '') {
+                return;
             }
+
+            $relation = $type === BookCopy::class ? 'book' : 'issue.journal';
+
+            $cq->orWhereHas($relation, fn (Builder $r) => $r->where('search_text', 'like', "%{$normalized}%"));
         };
 
-        $query->where(function (Builder $q) use ($search, $includeReader, $morphSearch) {
-            if ($includeReader) {
-                $q->whereHas('reader', fn (Builder $r) => $r->where('full_name', 'like', "%{$search}%"))
+        $query->where(function (Builder $q) use ($normalized, $includeReader, $morphSearch) {
+            if ($includeReader && $normalized !== '') {
+                $q->whereHas('reader', fn (Builder $r) => $r->where('search_text', 'like', "%{$normalized}%"))
                     ->orWhereHasMorph('loanable', [BookCopy::class, JournalCopy::class], $morphSearch);
             } else {
                 $q->whereHasMorph('loanable', [BookCopy::class, JournalCopy::class], $morphSearch);

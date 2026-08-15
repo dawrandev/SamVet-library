@@ -5,12 +5,14 @@ namespace App\Observers;
 use App\Enums\AdminActivityAction;
 use App\Models\Book;
 use App\Services\AdminActivityLogService;
+use App\Services\SearchIndexService;
 use Illuminate\Support\Str;
 
 class BookObserver
 {
     public function __construct(
         private readonly AdminActivityLogService $activityLog,
+        private readonly SearchIndexService $searchIndex,
     ) {}
 
     /**
@@ -21,6 +23,15 @@ class BookObserver
         if (empty($book->slug)) {
             $book->slug = $this->uniqueSlug($book->title);
         }
+    }
+
+    /**
+     * Refresh the script-independent search columns on every write, so a
+     * record stays findable in both Latin and Cyrillic the moment it's saved.
+     */
+    public function saving(Book $book): void
+    {
+        $this->searchIndex->fill($book);
     }
 
     public function created(Book $book): void

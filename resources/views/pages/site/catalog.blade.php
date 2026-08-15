@@ -129,10 +129,13 @@
                 </div>
 
                 {{-- A misspelled search: results below are for the corrected term,
-                     not literally what was typed — say so before showing them. --}}
+                     not literally what was typed — say so before showing them.
+                     Worded without claiming the original found nothing, since the
+                     correction now also fires when a typo sat beside a word that
+                     did match (see CatalogService::catalogData()). --}}
                 @if ($correctedSearch)
                     <p class="mt-4 text-sm text-gray-600">
-                        {{ __('«:original» uchun natija topilmadi. Natijalar «:corrected» so‘rovi bo‘yicha ko‘rsatilmoqda.', ['original' => $filters->search, 'corrected' => $correctedSearch]) }}
+                        {{ __('Natijalar «:original» o‘rniga «:corrected» so‘rovi bo‘yicha ko‘rsatilmoqda.', ['original' => $filters->search, 'corrected' => $correctedSearch]) }}
                     </p>
                 @endif
 

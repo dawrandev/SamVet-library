@@ -20,6 +20,7 @@ use App\Models\Dissertation;
 use App\Models\Language;
 use App\Models\Video;
 use App\Repositories\Contracts\CatalogRepositoryInterface;
+use App\Support\SearchNormalizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -51,11 +52,16 @@ class CatalogRepository implements CatalogRepositoryInterface
      * for MySQL's own stopword table, which (like the setting above) needs
      * server config access this deploy pipeline doesn't have.
      *
+     * Written in NORMALIZED form (see SearchNormalizer), because that's the
+     * only shape these are ever compared against: the Russian entries below
+     * are "и/или/с/на/для/это/то/в/по/а" after transliteration, and listing
+     * them in Cyrillic would silently never match anything.
+     *
      * @var array<int, string>
      */
     private const STOPWORDS = [
         'va', 'yoki', 'ham', 'bilan', 'uchun', 'bu', 'shu', 'u', 'da', 'de', 'ya',
-        'и', 'или', 'с', 'на', 'для', 'это', 'то', 'в', 'по', 'а',
+        'i', 'ili', 's', 'na', 'dlya', 'eto', 'to', 'v', 'po', 'a',
     ];
 
     /**
@@ -147,11 +153,6 @@ class CatalogRepository implements CatalogRepositoryInterface
         $rows = collect();
 
         foreach (CatalogResourceType::cases() as $type) {
-            $titleColumn = $type->titleColumn();
-            $columns = $type === CatalogResourceType::Book
-                ? ['title', 'authors', 'annotation', 'udc']
-                : [$titleColumn, 'author', 'annotation'];
-
             $query = match ($type) {
                 CatalogResourceType::Book => Book::query(),
                 CatalogResourceType::Audiobook => Audiobook::query(),
@@ -160,7 +161,7 @@ class CatalogRepository implements CatalogRepositoryInterface
                 CatalogResourceType::Avtoreferat => Avtoreferat::query(),
             };
 
-            $this->applySmartSearch($query, $columns, $term);
+            $this->applySmartSearch($query, $term);
 
             $typeRows = $query->addSelect(['id'])
                 ->limit($limit)
@@ -226,10 +227,12 @@ class CatalogRepository implements CatalogRepositoryInterface
     {
         return match ($type) {
             CatalogResourceType::Book => $this->bookQuery($filters),
-            CatalogResourceType::Audiobook => $this->nonBookQuery(Audiobook::query(), 'name', $filters),
-            CatalogResourceType::Video => $this->nonBookQuery(Video::query(), 'name', $filters),
-            CatalogResourceType::Dissertation => $this->categorizedQuery(Dissertation::query(), 'title', $filters),
-            CatalogResourceType::Avtoreferat => $this->categorizedQuery(Avtoreferat::query(), 'title', $filters),
+            CatalogResourceType::Audiobook => $this->nonBookQuery(Audiobook::query(), $filters),
+            CatalogResourceType::Video => $this->nonBookQuery(Video::query(), $filters),
+            // Dissertation/Avtoreferat carry their own category_id, so they
+            // take the categorized variant on top of the shared shape.
+            CatalogResourceType::Dissertation => $this->categorizedQuery(Dissertation::query(), $filters),
+            CatalogResourceType::Avtoreferat => $this->categorizedQuery(Avtoreferat::query(), $filters),
         };
     }
 
@@ -256,15 +259,19 @@ class CatalogRepository implements CatalogRepositoryInterface
         return Book::query()
             ->when($filters->search, function (Builder $query) use ($filters): void {
                 match ($filters->scope) {
-                    CatalogSearchScope::Title => $this->applyWordLike($query, ['title'], $filters->search),
+                    // Matched against the normalized title, so this chip is
+                    // script-independent too (Cyrillic query, Latin record).
+                    CatalogSearchScope::Title => $this->applyWordLike($query, ['title_normalized'], SearchNormalizer::normalize($filters->search)),
                     CatalogSearchScope::Isbn => $query->where('isbn', 'like', "%{$filters->search}%"),
                     // "Mavzu" (topic) — the annotation is the only free-text field that
                     // actually describes subject matter, so it's what this scope searches.
+                    // Still raw (single-script): the annotation has no normalized column
+                    // of its own, only its words folded into search_text alongside the
+                    // title/author, which this scope must not match on.
                     CatalogSearchScope::Topic => $this->applyWordLike($query, ['annotation'], $filters->search),
-                    // "Barchasi" (default/All) — relevance-ranked smart search across
-                    // every free-text field, backed by the FULLTEXT index on
-                    // (title, authors, annotation, udc).
-                    default => $this->applySmartSearch($query, ['title', 'authors', 'annotation', 'udc'], $filters->search),
+                    // "Barchasi" (default/All) — relevance-ranked smart search over the
+                    // normalized search_text blob covering every free-text field.
+                    default => $this->applySmartSearch($query, $filters->search),
                 };
             })
             ->when($filters->categories, function (Builder $query, array $ids): void {
@@ -298,61 +305,66 @@ class CatalogRepository implements CatalogRepositoryInterface
      * The ISBN scope never reaches here — CatalogFilters::booksOnly() excludes
      * every non-Book type upstream whenever that scope is active.
      */
-    private function nonBookQuery(Builder $query, string $titleColumn, CatalogFilters $filters): Builder
+    private function nonBookQuery(Builder $query, CatalogFilters $filters): Builder
     {
         return $query
-            ->when($filters->search, function (Builder $q) use ($filters, $titleColumn): void {
+            ->when($filters->search, function (Builder $q) use ($filters): void {
                 match ($filters->scope) {
-                    CatalogSearchScope::Title => $this->applyWordLike($q, [$titleColumn], $filters->search),
+                    CatalogSearchScope::Title => $this->applyWordLike($q, ['title_normalized'], SearchNormalizer::normalize($filters->search)),
                     CatalogSearchScope::Topic => $this->applyWordLike($q, ['annotation'], $filters->search),
-                    // "Barchasi" (default/All) — relevance-ranked smart search, backed by
-                    // the FULLTEXT index on (title|name, author, annotation).
-                    default => $this->applySmartSearch($q, [$titleColumn, 'author', 'annotation'], $filters->search),
+                    // "Barchasi" (default/All) — relevance-ranked smart search over the
+                    // normalized search_text blob covering every free-text field.
+                    default => $this->applySmartSearch($q, $filters->search),
                 };
             })
             ->when($filters->author, fn (Builder $q, string $author) => $q->where('author', 'like', "%{$author}%"));
     }
 
     /** nonBookQuery() plus the category_id filter — Dissertation/Avtoreferat only. */
-    private function categorizedQuery(Builder $query, string $titleColumn, CatalogFilters $filters): Builder
+    private function categorizedQuery(Builder $query, CatalogFilters $filters): Builder
     {
-        return $this->nonBookQuery($query, $titleColumn, $filters)
+        return $this->nonBookQuery($query, $filters)
             ->when($filters->categories, function (Builder $q, array $ids): void {
                 $q->whereIn('category_id', $this->expandCategoryIds($ids));
             });
     }
 
     /**
-     * Relevance-ranked, typo-tolerant search across the given columns.
-     * Deliberately uses BOOLEAN MODE only, not NATURAL LANGUAGE MODE:
-     *  - BOOLEAN MODE with a trailing wildcard per word (`word*`) tolerates
-     *    prefixes/typos (needed for the live typeahead as much as for actual
-     *    misspellings).
-     *  - NATURAL LANGUAGE MODE would give TF-IDF-style relevance in theory,
-     *    but was dropped for two independent reasons: (1) InnoDB's
-     *    natural-language scoring treats a word present in >50% of rows as a
-     *    de-facto stopword — in a small, domain-heavy corpus (a *veterinary*
-     *    library, where "veterinariya" appears in most titles) that's most
-     *    search terms; (2) InnoDB's FULLTEXT index update isn't reliably
-     *    visible to NATURAL LANGUAGE MODE within the same uncommitted
-     *    transaction that inserted the row — harmless in production (real
-     *    traffic reads committed data) but makes it flaky under Pest's
-     *    RefreshDatabase, which wraps every test in a transaction it never
-     *    commits. BOOLEAN MODE doesn't have either problem here.
-     * On top of that: a title/name match is boosted directly (`+10`), not
-     * left to FULLTEXT's own scoring — a title hit should outrank an
-     * incidental annotation/author hit far more reliably than BOOLEAN MODE's
-     * own (fairly crude) scoring guarantees on its own. Words too short for
-     * FULLTEXT (below the DB's own token-length floor, which needs server
-     * config we don't have to lower) fall back to word-boundary LIKE via
-     * likeMatch(). Adds a `relevance` computed column that paginate() and
-     * quickSearch() select and sort by.
+     * Relevance-ranked, script-independent search over a resource's derived
+     * `search_text` column (see SearchIndexService / SearchNormalizer).
      *
-     * @param  array<int, string>  $fulltextColumns  must exactly match an existing FULLTEXT index's columns; the FIRST entry is treated as the title/name column and gets the exact-match boost
+     * Both sides of the comparison are normalized — the stored text once at
+     * save time, the query here — so a Cyrillic term finds a Latin-script
+     * record and vice versa without any per-script branching below this line.
+     *
+     * MATCH() is used in the WHERE clause only, never in the SELECT list.
+     * That is not a style choice: on MySQL 8.0 a MATCH() in the select list
+     * combined with an OR in the WHERE makes the optimizer abandon the
+     * FULLTEXT index, evaluate MATCH() per row without an initialized
+     * fulltext handler, and return a garbage rank — which then overflows the
+     * moment it's added to anything ("SQLSTATE[22003] ... DOUBLE value is out
+     * of range", MySQL error 1690, a hard 500 on every search that actually
+     * matched something). Relevance is therefore scored entirely with
+     * deterministic CASE/LIKE arithmetic, which also ranks better than
+     * BOOLEAN MODE's own notoriously coarse scoring: an exact title prefix
+     * beats a title substring, which beats a hit anywhere in the record, and
+     * each individual query word adds its own smaller weight on top.
+     *
+     * BOOLEAN MODE (rather than NATURAL LANGUAGE MODE) is still what the
+     * MATCH() clause uses, for the reasons that already applied: natural
+     * language scoring treats a word present in >50% of rows as a de-facto
+     * stopword — fatal in a *veterinary* library where "veterinariya" is in
+     * most titles — and its index updates aren't reliably visible inside the
+     * uncommitted transaction Pest's RefreshDatabase wraps every test in.
+     *
+     * Escaping note: normalization strips everything outside [a-z0-9 ], so a
+     * term can no longer smuggle LIKE wildcards (`%`, `_`) into these
+     * patterns — that whole class of input is gone before it reaches SQL.
      */
-    private function applySmartSearch(Builder $query, array $fulltextColumns, string $term): void
+    private function applySmartSearch(Builder $query, string $term): void
     {
-        $words = $this->searchWords($term);
+        $normalized = SearchNormalizer::normalize($term);
+        $words = $this->searchWords($normalized);
 
         if ($words === []) {
             // A term that's entirely stopwords ("va bilan") has nothing left
@@ -363,35 +375,58 @@ class CatalogRepository implements CatalogRepositoryInterface
             return;
         }
 
-        $titleColumn = $fulltextColumns[0];
-        $matchColumns = implode(', ', $fulltextColumns);
         $fulltextWords = array_values(array_filter($words, fn (string $w) => mb_strlen($w) >= self::FULLTEXT_MIN_WORD_LENGTH));
-        $likeWords = array_values(array_filter($words, fn (string $w) => mb_strlen($w) < self::FULLTEXT_MIN_WORD_LENGTH));
         $prefixExpression = implode(' ', array_map(fn (string $w) => $w.'*', $fulltextWords));
 
-        $query->where(function (Builder $q) use ($fulltextColumns, $titleColumn, $prefixExpression, $likeWords, $matchColumns, $term): void {
+        $query->where(function (Builder $q) use ($prefixExpression, $words, $normalized): void {
             if ($prefixExpression !== '') {
-                $q->orWhereRaw("MATCH({$matchColumns}) AGAINST(? IN BOOLEAN MODE)", [$prefixExpression]);
+                $q->orWhereRaw('MATCH(search_text) AGAINST(? IN BOOLEAN MODE)', [$prefixExpression]);
             }
-            $q->orWhere($titleColumn, 'like', '%'.$term.'%');
-            foreach ($likeWords as $word) {
-                foreach ($fulltextColumns as $column) {
-                    $this->likeMatch($q, $column, $word);
-                }
+
+            // Whole-phrase substring — more permissive than FULLTEXT's
+            // prefix-only `word*`, so an inner fragment ("terinar") still
+            // matches "veterinariya".
+            //
+            // Length-gated for the same reason likeMatch() anchors short
+            // words: a bare '%ai%' across the whole record matches inside any
+            // unrelated word that happens to contain those letters
+            // ("maiores"), which would make a two-letter query return most of
+            // the fund. Below the floor, the anchored per-word clause below is
+            // the only thing that runs.
+            if (mb_strlen($normalized) >= self::FULLTEXT_MIN_WORD_LENGTH) {
+                $q->orWhere('search_text', 'like', '%'.$normalized.'%');
+            }
+
+            foreach ($words as $word) {
+                $this->likeMatch($q, 'search_text', $word);
             }
         });
 
-        $titleBoost = "(CASE WHEN {$titleColumn} LIKE ? THEN 10 ELSE 0 END)";
-        $titleBoostBinding = '%'.$term.'%';
+        $query->selectRaw(...$this->relevanceExpression($normalized, $words));
+    }
 
-        if ($prefixExpression !== '') {
-            $query->selectRaw(
-                "MATCH({$matchColumns}) AGAINST(? IN BOOLEAN MODE) + {$titleBoost} as relevance",
-                [$prefixExpression, $titleBoostBinding]
-            );
-        } else {
-            $query->selectRaw("{$titleBoost} as relevance", [$titleBoostBinding]);
+    /**
+     * The `relevance` computed column paginate() and quickSearch() sort by:
+     * a whole-phrase ladder (title prefix > title substring > anywhere in the
+     * record) plus a per-word bonus so a row matching every query word
+     * outranks one matching a single word.
+     *
+     * @param  array<int, string>  $words
+     * @return array{0: string, 1: array<int, string>}  [raw SQL, bindings] for selectRaw()
+     */
+    private function relevanceExpression(string $normalized, array $words): array
+    {
+        $parts = ['(CASE WHEN title_normalized LIKE ? THEN 100 WHEN title_normalized LIKE ? THEN 50 WHEN search_text LIKE ? THEN 20 ELSE 0 END)'];
+        $bindings = [$normalized.'%', '%'.$normalized.'%', '%'.$normalized.'%'];
+
+        foreach ($words as $word) {
+            $parts[] = '(CASE WHEN title_normalized LIKE ? THEN 5 ELSE 0 END)';
+            $bindings[] = '%'.$word.'%';
+            $parts[] = '(CASE WHEN search_text LIKE ? THEN 2 ELSE 0 END)';
+            $bindings[] = '%'.$word.'%';
         }
+
+        return ['('.implode(' + ', $parts).') as relevance', $bindings];
     }
 
     /**

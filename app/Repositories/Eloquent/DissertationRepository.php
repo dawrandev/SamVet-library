@@ -3,12 +3,15 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Dissertation;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class DissertationRepository implements DissertationRepositoryInterface
 {
+    use NormalizedSearch;
+
     /**
      * Eager loads to avoid N+1.
      *
@@ -19,13 +22,11 @@ class DissertationRepository implements DissertationRepositoryInterface
     public function filtered(array $filters = []): Builder
     {
         return Dissertation::query()
-            // Search (title or author)
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('author', 'like', "%{$search}%");
-                });
-            });
+            // Search — script-independent (see NormalizedSearch).
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search)
+            );
     }
 
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator

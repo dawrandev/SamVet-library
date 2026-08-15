@@ -4,11 +4,15 @@ namespace App\Repositories\Eloquent;
 
 use App\Enums\PublicationKind;
 use App\Models\Article;
+use App\Repositories\Concerns\NormalizedSearch;
 use App\Repositories\Contracts\ArticleRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ArticleRepository implements ArticleRepositoryInterface
 {
+    use NormalizedSearch;
+
     /**
      * Eager loads to avoid N+1 (issue → journal → type/place, plus lookups).
      *
@@ -25,13 +29,13 @@ class ArticleRepository implements ArticleRepositoryInterface
     {
         return Article::query()
             ->with(self::RELATIONS)
-            // Search (title or author)
-            ->when($filters['search'] ?? null, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('author', 'like', "%{$search}%");
-                });
-            })
+            // Search — script-independent, and wider than the old title+author
+            // pair: search_text also folds in the annotation, DOI and the
+            // external journal name (see SearchIndexService).
+            ->when(
+                $filters['search'] ?? null,
+                fn (Builder $query, string $search) => $this->applyNormalizedSearch($query, $search)
+            )
             // Filter by journal (through the parent issue)
             ->when($filters['journal_id'] ?? null, function ($query, int $journalId) {
                 $query->whereHas('journalIssue', function ($q) use ($journalId) {
