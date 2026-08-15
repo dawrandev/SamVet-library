@@ -11,7 +11,7 @@
             <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF Nukus filiali logotipi') }}"
                  class="h-12 w-12 flex-none object-contain" width="48" height="48" />
             <span class="leading-tight">
-                <span class="block text-base font-bold text-gray-900">SDVUNF · {{ __('Nukus filiali') }}</span>
+                <span class="block text-base font-bold text-gray-900">{{ __('SamDVMChBU Nukus filiali') }}</span>
                 <span class="block text-xs text-gray-500">{{ __('Axborot resurs markazi (ARM)') }}</span>
             </span>
         </a>

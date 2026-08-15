@@ -8,10 +8,10 @@
                         <img src="{{ asset('images/samvet/logo.png') }}" alt="{{ __('SDVUNF Nukus filiali logotipi') }}"
                              class="h-full w-full object-contain" width="44" height="44" />
                     </span>
-                    <span class="text-base font-bold">SDVUNF · {{ __('Nukus filiali') }}</span>
+                    <span class="text-base font-bold">{{ __('SamDVMChBU Nukus filiali') }}</span>
                 </div>
                 <p class="mt-4 text-sm leading-relaxed text-white/60">
-                    {{ __('Axborot resurs markazi (ARM). Nukus shahri, universitet filiali hududi. Ta‘lim va ilm-fan uchun ochiq raqamli fond.') }}
+                    {{ __('Samarqand davlat veterinariya meditsinasi, chorvachilik va biotexnologiyalar universiteti Nukus filiali Axborot resurs markazi.') }}
                 </p>
             </div>
 
@@ -41,11 +41,12 @@
 
             {{-- Contacts --}}
             <div>
-                <h3 class="text-sm font-semibold text-white">{{ __('Aloqa') }}</h3>
+                <h3 class="text-sm font-semibold text-white">{{ __('Murojaat uchun') }}</h3>
                 <ul class="mt-4 space-y-2.5 text-sm text-white/70">
-                    <li>{{ __('Tel') }}: +998 (61) 000-00-00</li>
-                    <li>Email: arm@samvmcbtu-nukus.uz</li>
-                    <li>{{ __('Dush–Shan') }}: 09:00 – 18:00</li>
+                    <li>{{ __('Manzil') }}: {{ __('230102, Nukus shahar, A. Utepov ko‘chasi 31 uy') }}</li>
+                    <li>{{ __('Email') }}: samvminf@edu.uz</li>
+                    <li>{{ __('Telefon') }}: +998 61 224 71 09</li>
+                    <li>{{ __('Ish vaqti') }}: {{ __('Dush–Juma') }} 09:00 – 17:00, {{ __('Shanba') }} 09:00 – 15:00</li>
                 </ul>
             </div>
         </div>

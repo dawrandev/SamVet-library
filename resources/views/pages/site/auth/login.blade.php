@@ -10,7 +10,7 @@
                  class="h-full w-full object-contain" width="56" height="56" />
         </span>
         <span class="leading-tight">
-            <span class="block text-base font-bold text-white">SDVUNF · {{ __('Nukus filiali') }}</span>
+            <span class="block text-base font-bold text-white">{{ __('SamDVMChBU Nukus filiali') }}</span>
             <span class="block text-xs text-blue-100/70">{{ __('Axborot resurs markazi (ARM)') }}</span>
         </span>
     </a>
