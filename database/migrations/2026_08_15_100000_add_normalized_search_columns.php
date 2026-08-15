@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Schema;
  * queries them any more now that every match runs through search_text, and
  * leaving five multi-column FULLTEXT indexes in place would cost write
  * throughput on every catalog save for no read benefit. down() restores them
- * exactly as 2026_07_30_100000 created them.
+ * exactly as each table's own create_*_table migration declares them.
  *
  * title_normalized deliberately gets no index — it is only ever read with a
  * leading-wildcard LIKE ('%term%'), which no B-tree can serve anyway.
