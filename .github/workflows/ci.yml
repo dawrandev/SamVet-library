@@ -210,6 +210,16 @@ jobs:
             # Bring in any new/updated PHP deps (prod only), then run migrations.
             composer install --no-dev --optimize-autoloader --no-interaction
             php artisan migrate --force
+            # Rebuild the normalized search columns. This is NOT optional and
+            # must stay right behind migrate: search matches on the derived
+            # search_text column, and a migration that adds it leaves every
+            # existing row empty. Skipping this doesn't error — it just makes
+            # every search on the site and in the admin panel return zero
+            # results, silently, until someone runs it by hand. Re-running it
+            # on an already-indexed fund is harmless (it just re-derives), so
+            # it stays unconditional rather than trying to detect when it's
+            # needed.
+            php artisan search:reindex
             # Refresh cached config/views so the new code takes effect.
             php artisan config:clear
             php artisan view:clear
