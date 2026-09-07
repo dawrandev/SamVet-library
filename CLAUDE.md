@@ -267,4 +267,21 @@ bo'lsa, hosting panelidagi "Restart PHP".
 
 ## Test login
 
-`admin@samvet.uz` / `password` (DatabaseSeeder).
+`DatabaseSeeder` yaratadigan admin:
+
+| Maydon | Qiymat |
+|---|---|
+| **Login** (forma shuni so'raydi) | `admin` |
+| Parol | `password` |
+| Email (faqat bazada, login uchun EMAS) | `admin@samvet.uz` |
+
+Sahifa: `/login` (`/admin/login` EMAS — u `guest` middleware guruhida, ildizda).
+
+**Diqqat:** `LoginController::store()` `Auth::attempt()` ga **`username`** maydonini
+uzatadi, `email`ni emas. Shu sabab `admin@samvet.uz` bilan kirishga urinish
+ishlamaydi — bu yerda ilgari email yozib qo'yilgan edi va chalg'itardi.
+Urinishlar cheklangan: **60 soniyada 5 marta**.
+
+**Production'da bu parol BO'LMASLIGI kerak.** `DatabaseSeeder` `updateOrCreate`
+ishlatadi — ya'ni uni jonli bazada ishlatish o'zgartirilgan parolni ham `password`ga
+qaytarib qo'yadi. Shu sabab `deploy.sh` hech qachon `db:seed` chaqirmaydi.
