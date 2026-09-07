@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Requests\Admin\ImportReadersRequest;
 use App\Services\ServerLimitsService;
 
 beforeEach(fn () => actingAsAdmin());
@@ -37,6 +38,34 @@ it('takes the smallest real limit and ignores unlimited ones', function (array $
     'all unlimited stays unlimited' => [[-1, -1], -1],
     'zero is not a real ceiling either' => [[0, 80], 80],
 ]);
+
+it('never lets the import rule promise more than the server will accept', function () {
+    // The production 503 was exactly this gap: upload_max_filesize was 2M
+    // while the rule advertised 100M, so PHP discarded the request before
+    // Laravel could return the rule's friendly "file too big" message. The
+    // rule derives its ceiling from the server now, and this keeps it that
+    // way — a hardcoded max: here would reintroduce the same failure the
+    // moment a host lowered a limit.
+    $serverBytes = ServerLimitsService::effectiveUploadBytes();
+
+    $max = collect((new ImportReadersRequest)->rules()['file'])
+        ->first(fn ($rule) => is_string($rule) && str_starts_with($rule, 'max:'));
+
+    expect($max)->not->toBeNull();
+
+    $ruleBytes = (int) substr($max, 4) * 1024;
+
+    if ($serverBytes > 0) {
+        expect($ruleBytes)->toBeLessThanOrEqual($serverBytes);
+    }
+
+    // Whatever the host allows, the form keeps its own sanity ceiling.
+    expect($ruleBytes)->toBeGreaterThan(0)->toBeLessThanOrEqual(100 * 1024 * 1024);
+});
+
+it('stops reporting a mismatch now that the rule follows the server', function () {
+    expect(app(ServerLimitsService::class)->verdict()['mismatch'])->toBeFalse();
+});
 
 it('flags a validation rule that promises more than the server accepts', function () {
     $verdict = app(ServerLimitsService::class)->verdict();

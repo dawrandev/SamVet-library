@@ -158,12 +158,26 @@ class ServerLimitsService
      *
      * @return array{effective_upload: int, app_allows: int, mismatch: bool, memory: int, sapi: string}
      */
-    public function verdict(): array
+    /**
+     * The largest upload this server will actually accept, in bytes.
+     *
+     * Public and static because validation rules read it too: a `max:` rule
+     * that promises more than this cannot protect anything — PHP rejects the
+     * request before Laravel is reached, so the visitor gets a raw 503 from
+     * the web server instead of the rule's friendly message. Deriving the rule
+     * from here keeps the two from drifting apart when a host changes a limit.
+     */
+    public static function effectiveUploadBytes(): int
     {
-        $effective = self::effectiveLimit([
+        return self::effectiveLimit([
             self::toBytes((string) ini_get('upload_max_filesize')),
             self::toBytes((string) ini_get('post_max_size')),
         ]);
+    }
+
+    public function verdict(): array
+    {
+        $effective = self::effectiveUploadBytes();
 
         return [
             'effective_upload' => $effective,
