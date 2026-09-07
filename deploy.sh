@@ -110,6 +110,26 @@ run "$PHP" artisan migrate --force
 # outside the app's own models are never indexed by the observers.
 run "$PHP" artisan search:reindex
 
+# public/storage -> storage/app/public. Without it every file on the public
+# disk 404s: reader photos from the Excel import land there and are served as
+# /storage/readers/photos/..., so the records import fine and every picture is
+# broken, which looks like an import bug rather than a missing symlink.
+#
+# Guarded on absence rather than run with --force: storage:link fails when the
+# path already exists, which would abort the whole deploy, and --force deletes
+# whatever sits at that path first — the wrong tool if it is ever a real
+# directory holding files.
+#
+# Not fatal: a host that forbids symlinks should not block a release over
+# broken thumbnails, but it must say so in the log rather than pass silently.
+if [ -e public/storage ]; then
+    log "storage:link: public/storage allaqachon mavjud — o'tkazib yuborildi"
+elif "$PHP" artisan storage:link >>"$LOG" 2>&1; then
+    log "storage:link: yaratildi"
+else
+    log "DIQQAT: storage:link bajarilmadi — public diskdagi fayllar (kitobxon suratlari) ko'rinmaydi."
+fi
+
 # Cleared before rebuilding so a stale compiled view or config from the
 # previous release cannot survive.
 run "$PHP" artisan config:clear
