@@ -1,14 +1,22 @@
 <?php
 
 use App\Models\AdminActivityLog;
+use App\Models\Article;
+use App\Models\Audiobook;
+use App\Models\AudioTrack;
+use App\Models\Avtoreferat;
 use App\Models\Book;
 use App\Models\BookType;
+use App\Models\Dissertation;
+use App\Models\Journal;
+use App\Models\JournalIssue;
 use App\Models\UploadSession;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoTrack;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Storage::fake('local');
@@ -20,6 +28,9 @@ function chunkedUploadFakeContent(string $kind): string
     return match ($kind) {
         'pdf' => '%PDF-1.4'.str_repeat('A', 2048),
         'video' => "\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2avc1mp41".str_repeat('A', 2048),
+        // ID3v2 header followed by repeated MPEG-1 Layer III frame syncs —
+        // enough for the assembled file to be sniffed as audio/mpeg.
+        'audio' => "ID3\x04\x00\x00\x00\x00\x00\x00".str_repeat("\xFF\xFB\x90\x00", 512),
     };
 }
 
@@ -128,7 +139,7 @@ it('rejects a file whose assembled content does not match the declared kind', fu
 it('lazily cleans up an admin\'s own stale sessions when starting a new upload', function () {
     $admin = auth('web')->user();
     $stale = UploadSession::create([
-        'token' => (string) \Illuminate\Support\Str::uuid(),
+        'token' => (string) Str::uuid(),
         'admin_id' => $admin->id,
         'kind' => 'pdf',
         'original_filename' => 'old.pdf',
@@ -174,6 +185,127 @@ it('creates a Book via a chunked-uploaded PDF, landing the file exactly where a 
         ->and(AdminActivityLog::where('subject_type', 'Book')->where('subject_id', $book->id)->exists())->toBeTrue(); // audit trail still fires
 });
 
+it('creates a Dissertation via a chunked-uploaded PDF, landing the file exactly where a direct upload would', function () {
+    $content = chunkedUploadFakeContent('pdf');
+
+    $start = $this->postJson(route('admin.uploads.start'), [
+        'filename' => 'dissertatsiya.pdf', 'total_size' => strlen($content), 'kind' => 'pdf',
+    ])->json();
+    chunkedUploadPostChunks($start['token'], $content, (int) $start['chunk_size'])->assertJson(['status' => 'assembled']);
+
+    $this->post(route('admin.dissertations.store'), [
+        'title' => 'Chunked yuklangan dissertatsiya',
+        'electronic_file_token' => $start['token'],
+    ])->assertRedirect();
+
+    $dissertation = Dissertation::firstWhere('title', 'Chunked yuklangan dissertatsiya');
+
+    expect($dissertation)->not->toBeNull()
+        ->and($dissertation->electronic_file)->not->toBeNull()
+        ->and(str_starts_with($dissertation->electronic_file, 'dissertations/electronic/'))->toBeTrue()
+        ->and(Storage::disk('local')->exists($dissertation->electronic_file))->toBeTrue()
+        ->and(Storage::disk('local')->size($dissertation->electronic_file))->toBe(strlen($content))
+        ->and(UploadSession::where('token', $start['token'])->exists())->toBeFalse(); // single-use
+});
+
+it('creates an Avtoreferat via a chunked-uploaded PDF, landing the file exactly where a direct upload would', function () {
+    $content = chunkedUploadFakeContent('pdf');
+
+    $start = $this->postJson(route('admin.uploads.start'), [
+        'filename' => 'avtoreferat.pdf', 'total_size' => strlen($content), 'kind' => 'pdf',
+    ])->json();
+    chunkedUploadPostChunks($start['token'], $content, (int) $start['chunk_size'])->assertJson(['status' => 'assembled']);
+
+    $this->post(route('admin.avtoreferats.store'), [
+        'title' => 'Chunked yuklangan avtoreferat',
+        'advisor' => 'Ilmiy rahbar',
+        'electronic_file_token' => $start['token'],
+    ])->assertRedirect();
+
+    $avtoreferat = Avtoreferat::firstWhere('title', 'Chunked yuklangan avtoreferat');
+
+    expect($avtoreferat)->not->toBeNull()
+        ->and($avtoreferat->electronic_file)->not->toBeNull()
+        ->and(str_starts_with($avtoreferat->electronic_file, 'avtoreferats/electronic/'))->toBeTrue()
+        ->and(Storage::disk('local')->exists($avtoreferat->electronic_file))->toBeTrue()
+        ->and(Storage::disk('local')->size($avtoreferat->electronic_file))->toBe(strlen($content))
+        ->and(UploadSession::where('token', $start['token'])->exists())->toBeFalse();
+});
+
+it('creates an Article via a chunked-uploaded PDF', function () {
+    $content = chunkedUploadFakeContent('pdf');
+
+    $start = $this->postJson(route('admin.uploads.start'), [
+        'filename' => 'maqola.pdf', 'total_size' => strlen($content), 'kind' => 'pdf',
+    ])->json();
+    chunkedUploadPostChunks($start['token'], $content, (int) $start['chunk_size'])->assertJson(['status' => 'assembled']);
+
+    $this->post(route('admin.articles.store'), [
+        'title' => 'Chunked yuklangan maqola',
+        'external_journal_name' => 'Tashqi jurnal',
+        'electronic_file_token' => $start['token'],
+    ])->assertRedirect();
+
+    $article = Article::firstWhere('title', 'Chunked yuklangan maqola');
+
+    expect($article)->not->toBeNull()
+        ->and(str_starts_with($article->electronic_file, 'articles/electronic/'))->toBeTrue()
+        ->and(Storage::disk('local')->size($article->electronic_file))->toBe(strlen($content))
+        ->and(UploadSession::where('token', $start['token'])->exists())->toBeFalse();
+});
+
+it('creates a JournalIssue via a chunked-uploaded PDF', function () {
+    $journal = Journal::factory()->create();
+    $content = chunkedUploadFakeContent('pdf');
+
+    $start = $this->postJson(route('admin.uploads.start'), [
+        'filename' => 'son.pdf', 'total_size' => strlen($content), 'kind' => 'pdf',
+    ])->json();
+    chunkedUploadPostChunks($start['token'], $content, (int) $start['chunk_size'])->assertJson(['status' => 'assembled']);
+
+    $this->post(route('admin.journals.issues.store', $journal), [
+        'year' => 2026,
+        'issue_number' => '7',
+        'electronic_file_token' => $start['token'],
+    ])->assertRedirect();
+
+    $issue = JournalIssue::where('journal_id', $journal->id)->first();
+
+    expect($issue)->not->toBeNull()
+        ->and(str_starts_with($issue->electronic_file, 'journals/electronic/'))->toBeTrue()
+        ->and(Storage::disk('local')->size($issue->electronic_file))->toBe(strlen($content))
+        ->and(UploadSession::where('token', $start['token'])->exists())->toBeFalse();
+});
+
+it('creates an AudioTrack via a chunked-uploaded audio file', function () {
+    $audiobook = Audiobook::factory()->create();
+    $content = chunkedUploadFakeContent('audio');
+
+    $start = $this->postJson(route('admin.uploads.start'), [
+        'filename' => 'trek.mp3', 'total_size' => strlen($content), 'kind' => 'audio',
+    ])->json();
+    chunkedUploadPostChunks($start['token'], $content, (int) $start['chunk_size'])->assertJson(['status' => 'assembled']);
+
+    $this->post(route('admin.audiobooks.tracks.store', $audiobook), [
+        'title' => 'Chunked yuklangan trek',
+        'audio_file_token' => $start['token'],
+    ])->assertRedirect();
+
+    $track = AudioTrack::firstWhere('title', 'Chunked yuklangan trek');
+
+    expect($track)->not->toBeNull()
+        ->and(str_starts_with($track->audio_file, 'audiobooks/audio/'))->toBeTrue()
+        ->and(Storage::disk('local')->size($track->audio_file))->toBe(strlen($content))
+        ->and(UploadSession::where('token', $start['token'])->exists())->toBeFalse();
+});
+
+it('rejects a Dissertation whose upload token was never started', function () {
+    $this->post(route('admin.dissertations.store'), [
+        'title' => 'Soxta token',
+        'electronic_file_token' => (string) Str::uuid(),
+    ])->assertSessionHasErrors('electronic_file_token');
+});
+
 it('creates a VideoTrack via a chunked-uploaded video, landing the file exactly where a direct upload would', function () {
     $video = Video::factory()->create();
     $content = chunkedUploadFakeContent('video');
@@ -203,7 +335,7 @@ it('rejects a book form submitted with a token for a wrong/unclaimed session', f
         ->post(route('admin.books.store'), [
             'title' => 'X',
             'book_type_id' => $type->id,
-            'electronic_file_token' => (string) \Illuminate\Support\Str::uuid(), // never started
+            'electronic_file_token' => (string) Str::uuid(), // never started
         ])
         ->assertSessionHasErrors('electronic_file_token');
 });

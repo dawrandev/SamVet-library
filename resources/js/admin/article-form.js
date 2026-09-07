@@ -16,7 +16,11 @@ import uploadForm from './upload-form';
  */
 export default function articleForm(config) {
     return {
-        ...uploadForm(),
+        // The article's PDF goes through chunked upload like a book's does.
+        // Without this config uploadForm() posts it as one request, which the
+        // host rejects outright above its upload_max_filesize — a bare 503,
+        // no Laravel error, nothing in any log.
+        ...uploadForm({ chunked: { electronic_file: 'pdf' } }),
 
         searchUrl: config.searchUrl,
         issuesUrlTemplate: config.issuesUrlTemplate,

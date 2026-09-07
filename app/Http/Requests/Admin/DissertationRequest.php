@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ChunkedUploadKind;
 use App\Enums\CopyCondition;
 use App\Enums\DissertationType;
+use App\Services\ChunkedUploadService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Validator;
@@ -50,6 +52,13 @@ class DissertationRequest extends FormRequest
             'condition.*' => [new Enum(CopyCondition::class)],
             'annotation' => ['nullable', 'string'],
             'electronic_file' => ['nullable', 'mimes:pdf', 'max:972800'], // 950 MB
+            // Set instead of electronic_file when the PDF was large enough to go
+            // through the chunked-upload flow (see resources/js/admin/upload-form.js).
+            'electronic_file_token' => ['nullable', 'uuid', function ($attribute, $value, $fail) {
+                if (! app(ChunkedUploadService::class)->isClaimable($value, ChunkedUploadKind::Pdf, $this->user())) {
+                    $fail(__('Fayl yuklash sessiyasi topilmadi yoki muddati tugagan. Iltimos, faylni qayta yuklang.'));
+                }
+            }],
 
             // Other participants (muharrir, tarjimon, ...) — a row is only kept when both fields are given.
             'contributors' => ['nullable', 'array'],

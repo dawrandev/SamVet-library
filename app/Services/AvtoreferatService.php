@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\AvtoreferatData;
+use App\Enums\ChunkedUploadKind;
 use App\Models\Avtoreferat;
 use App\Models\Category;
 use App\Models\ContributorRole;
@@ -13,6 +14,7 @@ use App\Repositories\Contracts\AvtoreferatRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +26,7 @@ class AvtoreferatService
     public function __construct(
         private readonly AvtoreferatRepositoryInterface $avtoreferats,
         private readonly ContributorService $contributors,
+        private readonly ChunkedUploadService $chunkedUploads,
     ) {}
 
     /**
@@ -66,8 +69,8 @@ class AvtoreferatService
         return DB::transaction(function () use ($data) {
             $attributes = $data->toAttributes();
 
-            if ($data->electronic_file) {
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+            if ($path = $this->resolveElectronicFile($data)) {
+                $attributes['electronic_file'] = $path;
             }
 
             $avtoreferat = $this->avtoreferats->create($attributes); // slug — Observer
@@ -84,9 +87,9 @@ class AvtoreferatService
         return DB::transaction(function () use ($avtoreferat, $data) {
             $attributes = $data->toAttributes();
 
-            if ($data->electronic_file) {
+            if ($path = $this->resolveElectronicFile($data)) {
                 $this->deleteFile($avtoreferat->electronic_file);
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+                $attributes['electronic_file'] = $path;
             }
 
             $avtoreferat = $this->avtoreferats->update($avtoreferat, $attributes);
@@ -105,6 +108,25 @@ class AvtoreferatService
 
             $this->avtoreferats->delete($avtoreferat);
         });
+    }
+
+    /**
+     * Either a direct upload (electronic_file) or one assembled via chunked
+     * upload (electronic_file_token) — never both, the FormRequest guards
+     * that. Null when neither was given (e.g. an update leaving the file be).
+     */
+    private function resolveElectronicFile(AvtoreferatData $data): ?string
+    {
+        if ($data->electronic_file_token) {
+            return $this->chunkedUploads->claimAndMove(
+                $data->electronic_file_token,
+                ChunkedUploadKind::Pdf,
+                Auth::guard('web')->user(),
+                self::ELECTRONIC_DIR
+            );
+        }
+
+        return $data->electronic_file ? $this->storeProtected($data->electronic_file) : null;
     }
 
     private function storeProtected(UploadedFile $file): string

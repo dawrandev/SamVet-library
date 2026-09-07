@@ -150,15 +150,6 @@ class ServerLimitsService
     }
 
     /**
-     * The practical verdict: what the server really accepts, versus what the
-     * application's own validation currently promises. A validation rule that
-     * allows more than the server does is not a safety net — the request dies
-     * before Laravel ever sees it, which is exactly how a friendly "fayl juda
-     * katta" message turns into a raw 503.
-     *
-     * @return array{effective_upload: int, app_allows: int, mismatch: bool, memory: int, sapi: string}
-     */
-    /**
      * The largest upload this server will actually accept, in bytes.
      *
      * Public and static because validation rules read it too: a `max:` rule
@@ -175,6 +166,43 @@ class ServerLimitsService
         ]);
     }
 
+    /**
+     * The `max:` value (in kilobytes, as Laravel's rule expects) for a file
+     * field that is uploaded in ONE request: the smaller of the form's own
+     * ceiling and what the server will physically accept.
+     *
+     * Promising more than the server takes is not a harmless overestimate.
+     * PHP discards an oversized request before Laravel runs, so the librarian
+     * gets a bare 503 from the web server with nothing in any log, instead of
+     * the rule's "file too big" message. That is precisely how the reader
+     * import failed on production, where upload_max_filesize was 2M while the
+     * rule advertised 100M.
+     *
+     * Fields that go through ChunkedUploadService must NOT use this — their
+     * file never travels as a single request, so the server's per-request
+     * limit does not apply to them and clamping would cost real capability.
+     *
+     * @param  int  $appCapKilobytes  what this form allows regardless of the host
+     */
+    public static function uploadMaxKilobytes(int $appCapKilobytes): int
+    {
+        $serverBytes = self::effectiveUploadBytes();
+
+        if ($serverBytes <= 0) {
+            return $appCapKilobytes; // unlimited server — the form's own cap stands
+        }
+
+        return min($appCapKilobytes, intdiv($serverBytes, 1024));
+    }
+
+    /**
+     * The practical verdict: what the server really accepts, versus what the
+     * application's own validation promises. A rule allowing more than the
+     * server does is not a safety net — the request dies before Laravel ever
+     * sees it, which is how a friendly "fayl juda katta" turns into a raw 503.
+     *
+     * @return array{effective_upload: int, app_allows: int, mismatch: bool, memory: int, sapi: string}
+     */
     public function verdict(): array
     {
         $effective = self::effectiveUploadBytes();

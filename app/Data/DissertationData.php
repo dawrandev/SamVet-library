@@ -33,6 +33,8 @@ class DissertationData
         public readonly ?string $disposal_act_at,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
+        /** Set instead of $electronic_file when the PDF went through chunked upload — see ChunkedUploadService. */
+        public readonly ?string $electronic_file_token = null,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
         /** @var array<int, string> */
@@ -63,6 +65,7 @@ class DissertationData
             disposal_act_at: $request->input('disposal_act_at') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
+            electronic_file_token: $request->input('electronic_file_token') ?: null,
             contributors: $request->input('contributors', []),
             condition: $request->input('condition', []),
         );

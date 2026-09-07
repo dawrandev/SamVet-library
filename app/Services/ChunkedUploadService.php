@@ -66,7 +66,7 @@ class ChunkedUploadService
     }
 
     /**
-     * @throws \RuntimeException  chunk arrived out of order, or the session is already assembled
+     * @throws \RuntimeException chunk arrived out of order, or the session is already assembled
      */
     public function storeChunk(UploadSession $session, int $index, UploadedFile $chunk): UploadSession
     {
@@ -93,7 +93,7 @@ class ChunkedUploadService
     }
 
     /**
-     * @throws \RuntimeException  not all chunks arrived yet, or the assembled file fails re-validation
+     * @throws \RuntimeException not all chunks arrived yet, or the assembled file fails re-validation
      */
     public function finish(UploadSession $session): UploadSession
     {
@@ -107,8 +107,16 @@ class ChunkedUploadService
         // Real, post-assembly validation against the actual file content —
         // stronger than a client-declared filename/MIME, and mirrors the
         // matching FormRequest's rule for this field (see ChunkedUploadKind).
+        //
+        // Built as an UploadedFile (test mode: the bytes are already on disk,
+        // there is no PHP upload to inspect) rather than a plain File, because
+        // the Audio kind validates with `extensions:` — deliberately, since
+        // libmagic misreads some ID3v2-tagged MP3s — and that rule reads
+        // getClientOriginalExtension(), which a plain File does not carry. With
+        // one it silently failed every audio assembly. `mimes:` for Pdf/Video
+        // still inspects the content, so nothing is weakened here.
         $validator = Validator::make(
-            ['file' => new File($absolutePath)],
+            ['file' => new UploadedFile($absolutePath, $session->original_filename, null, null, true)],
             ['file' => [$session->kind->validationRule()]],
         );
 
@@ -129,7 +137,7 @@ class ChunkedUploadService
      * consumed and cleans up its now-empty chunk directory; a token is
      * usable exactly once.
      *
-     * @throws \RuntimeException  token unknown, belongs to someone else, wrong kind, or not yet assembled
+     * @throws \RuntimeException token unknown, belongs to someone else, wrong kind, or not yet assembled
      */
     public function claimAndMove(string $token, ChunkedUploadKind $expectedKind, User $admin, string $destinationDir): string
     {

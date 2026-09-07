@@ -12,7 +12,7 @@
     "src": "node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D04ZBvN-.css",
+    "file": "assets/app-DXmiIfdR.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -35,7 +35,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DEqKJxPW.js",
+    "file": "assets/app-Bf9_m2vG.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

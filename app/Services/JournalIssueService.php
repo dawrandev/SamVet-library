@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Data\JournalIssueData;
+use App\Enums\ChunkedUploadKind;
 use App\Models\Journal;
 use App\Models\JournalIssue;
 use App\Repositories\Contracts\JournalIssueRepositoryInterface;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,7 +22,27 @@ class JournalIssueService
 
     public function __construct(
         private readonly JournalIssueRepositoryInterface $issues,
+        private readonly ChunkedUploadService $chunkedUploads,
     ) {}
+
+    /**
+     * Either a direct upload (electronic_file) or one assembled via chunked
+     * upload (electronic_file_token) — never both, the FormRequest guards
+     * that. Null when neither was given (e.g. an update leaving the file be).
+     */
+    private function resolveElectronicFile(JournalIssueData $data): ?string
+    {
+        if ($data->electronic_file_token) {
+            return $this->chunkedUploads->claimAndMove(
+                $data->electronic_file_token,
+                ChunkedUploadKind::Pdf,
+                Auth::guard('web')->user(),
+                self::ELECTRONIC_DIR
+            );
+        }
+
+        return $data->electronic_file ? $this->storeProtected($data->electronic_file) : null;
+    }
 
     public function create(Journal $journal, JournalIssueData $data): JournalIssue
     {
@@ -31,8 +53,8 @@ class JournalIssueService
             if ($data->cover) {
                 $attributes['cover_image'] = $this->storePublic($data->cover);
             }
-            if ($data->electronic_file) {
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+            if ($path = $this->resolveElectronicFile($data)) {
+                $attributes['electronic_file'] = $path;
             }
 
             return $this->issues->create($attributes);
@@ -48,9 +70,9 @@ class JournalIssueService
                 $this->deleteFile('public', $issue->cover_image);
                 $attributes['cover_image'] = $this->storePublic($data->cover);
             }
-            if ($data->electronic_file) {
+            if ($path = $this->resolveElectronicFile($data)) {
                 $this->deleteFile('local', $issue->electronic_file);
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+                $attributes['electronic_file'] = $path;
             }
 
             return $this->issues->update($issue, $attributes);

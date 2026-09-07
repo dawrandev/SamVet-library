@@ -17,6 +17,8 @@ class JournalIssueData
         public readonly ?int $pages,
         public readonly ?UploadedFile $cover,
         public readonly ?UploadedFile $electronic_file,
+        /** Set instead of $electronic_file when the PDF went through chunked upload — see ChunkedUploadService. */
+        public readonly ?string $electronic_file_token = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -28,6 +30,7 @@ class JournalIssueData
             pages: $request->integer('pages') ?: null,
             cover: $request->file('cover'),
             electronic_file: $request->file('electronic_file'),
+            electronic_file_token: $request->input('electronic_file_token') ?: null,
         );
     }
 

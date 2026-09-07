@@ -25,6 +25,8 @@ class ArticleData
         public readonly ?string $pages,
         public readonly ?string $annotation,
         public readonly ?UploadedFile $electronic_file,
+        /** Set instead of $electronic_file when the PDF went through chunked upload — see ChunkedUploadService. */
+        public readonly ?string $electronic_file_token = null,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
     ) {}
@@ -44,6 +46,7 @@ class ArticleData
             pages: $request->input('pages') ?: null,
             annotation: $request->input('annotation') ?: null,
             electronic_file: $request->file('electronic_file'),
+            electronic_file_token: $request->input('electronic_file_token') ?: null,
             contributors: $request->input('contributors', []),
         );
     }

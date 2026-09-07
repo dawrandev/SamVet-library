@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\DissertationData;
+use App\Enums\ChunkedUploadKind;
 use App\Enums\CopyCondition;
 use App\Enums\DissertationType;
 use App\Models\Category;
@@ -17,6 +18,7 @@ use App\Repositories\Contracts\DissertationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,6 +30,7 @@ class DissertationService
     public function __construct(
         private readonly DissertationRepositoryInterface $dissertations,
         private readonly ContributorService $contributors,
+        private readonly ChunkedUploadService $chunkedUploads,
     ) {}
 
     /**
@@ -74,8 +77,8 @@ class DissertationService
         return DB::transaction(function () use ($data) {
             $attributes = $data->toAttributes();
 
-            if ($data->electronic_file) {
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+            if ($path = $this->resolveElectronicFile($data)) {
+                $attributes['electronic_file'] = $path;
             }
 
             $dissertation = $this->dissertations->create($attributes); // slug — Observer
@@ -91,9 +94,9 @@ class DissertationService
         return DB::transaction(function () use ($dissertation, $data) {
             $attributes = $data->toAttributes();
 
-            if ($data->electronic_file) {
+            if ($path = $this->resolveElectronicFile($data)) {
                 $this->deleteFile($dissertation->electronic_file);
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+                $attributes['electronic_file'] = $path;
             }
 
             $dissertation = $this->dissertations->update($dissertation, $attributes);
@@ -111,6 +114,26 @@ class DissertationService
 
             $this->dissertations->delete($dissertation);
         });
+    }
+
+    /**
+     * Either a direct upload (electronic_file) or one assembled via chunked
+     * upload (electronic_file_token) — never both, the FormRequest guards
+     * that. Returns null when neither was given (e.g. an update that didn't
+     * touch the file).
+     */
+    private function resolveElectronicFile(DissertationData $data): ?string
+    {
+        if ($data->electronic_file_token) {
+            return $this->chunkedUploads->claimAndMove(
+                $data->electronic_file_token,
+                ChunkedUploadKind::Pdf,
+                Auth::guard('web')->user(),
+                self::ELECTRONIC_DIR
+            );
+        }
+
+        return $data->electronic_file ? $this->storeProtected($data->electronic_file) : null;
     }
 
     private function storeProtected(UploadedFile $file): string

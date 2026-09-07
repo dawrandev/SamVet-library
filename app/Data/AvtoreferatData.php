@@ -30,6 +30,8 @@ class AvtoreferatData
         public readonly ?string $annotation,
         public readonly ?string $keywords,
         public readonly ?UploadedFile $electronic_file,
+        /** Set instead of $electronic_file when the PDF went through chunked upload — see ChunkedUploadService. */
+        public readonly ?string $electronic_file_token = null,
         /** @var array<int, array{contributor_role_id: int, name: string}> */
         public readonly array $contributors = [],
         /** @var array<int, int> */
@@ -56,6 +58,7 @@ class AvtoreferatData
             annotation: $request->input('annotation') ?: null,
             keywords: $request->input('keywords') ?: null,
             electronic_file: $request->file('electronic_file'),
+            electronic_file_token: $request->input('electronic_file_token') ?: null,
             contributors: $request->input('contributors', []),
             language_ids: $request->input('language_ids', []),
         );

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\ArticleData;
+use App\Enums\ChunkedUploadKind;
 use App\Enums\PublicationKind;
 use App\Models\Article;
 use App\Models\ContributorRole;
@@ -13,6 +14,7 @@ use App\Models\ResourceField;
 use App\Repositories\Contracts\ArticleRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +26,7 @@ class ArticleService
     public function __construct(
         private readonly ArticleRepositoryInterface $articles,
         private readonly ContributorService $contributors,
+        private readonly ChunkedUploadService $chunkedUploads,
     ) {}
 
     /**
@@ -96,8 +99,8 @@ class ArticleService
         return DB::transaction(function () use ($data) {
             $attributes = $this->clearDoiForNewspaper($data->toAttributes());
 
-            if ($data->electronic_file) {
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+            if ($path = $this->resolveElectronicFile($data)) {
+                $attributes['electronic_file'] = $path;
             }
 
             $article = $this->articles->create($attributes); // slug — Observer
@@ -113,9 +116,9 @@ class ArticleService
         return DB::transaction(function () use ($article, $data) {
             $attributes = $this->clearDoiForNewspaper($data->toAttributes());
 
-            if ($data->electronic_file) {
+            if ($path = $this->resolveElectronicFile($data)) {
                 $this->deleteFile($article->electronic_file);
-                $attributes['electronic_file'] = $this->storeProtected($data->electronic_file);
+                $attributes['electronic_file'] = $path;
             }
 
             $article = $this->articles->update($article, $attributes);
@@ -153,6 +156,25 @@ class ArticleService
         }
 
         return $attributes;
+    }
+
+    /**
+     * Either a direct upload (electronic_file) or one assembled via chunked
+     * upload (electronic_file_token) — never both, the FormRequest guards
+     * that. Null when neither was given (e.g. an update leaving the file be).
+     */
+    private function resolveElectronicFile(ArticleData $data): ?string
+    {
+        if ($data->electronic_file_token) {
+            return $this->chunkedUploads->claimAndMove(
+                $data->electronic_file_token,
+                ChunkedUploadKind::Pdf,
+                Auth::guard('web')->user(),
+                self::ELECTRONIC_DIR
+            );
+        }
+
+        return $data->electronic_file ? $this->storeProtected($data->electronic_file) : null;
     }
 
     private function storeProtected(UploadedFile $file): string

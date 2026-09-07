@@ -16,6 +16,8 @@ class AudioTrackData
     public function __construct(
         public readonly string $title,
         public readonly ?UploadedFile $audio_file,
+        /** Set instead of $audio_file when the track went through chunked upload — see ChunkedUploadService. */
+        public readonly ?string $audio_file_token = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -23,6 +25,7 @@ class AudioTrackData
         return new self(
             title: $request->string('title')->toString(),
             audio_file: $request->file('audio_file'),
+            audio_file_token: $request->input('audio_file_token') ?: null,
         );
     }
 

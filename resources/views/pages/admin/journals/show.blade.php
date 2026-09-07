@@ -105,7 +105,7 @@
                             <button type="button" @click="showStore = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                         </div>
                         <form method="POST" action="{{ route('admin.journals.issues.store', $journal) }}" enctype="multipart/form-data" class="space-y-4"
-                              x-data="uploadForm" @submit="submitUpload($event)">
+                              x-data="uploadForm({ chunked: { electronic_file: 'pdf' } })" @submit="submitUpload($event)">
                             @csrf
                             <input type="hidden" name="_issue_form" value="store" />
                             <x-admin.form.upload-errors />
@@ -143,7 +143,7 @@
                                 <button type="button" @click="editId = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
                             </div>
                             <form method="POST" action="{{ route('admin.journals.issues.update', [$journal, $issue]) }}" enctype="multipart/form-data" class="space-y-4"
-                                  x-data="uploadForm" @submit="submitUpload($event)">
+                                  x-data="uploadForm({ chunked: { electronic_file: 'pdf' } })" @submit="submitUpload($event)">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="_issue_form" value="edit" />
                                 <input type="hidden" name="_issue_id" value="{{ $issue->id }}" />

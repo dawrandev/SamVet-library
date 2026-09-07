@@ -36,26 +36,10 @@ class ImportReadersRequest extends FormRequest
         ];
     }
 
-    /**
-     * The smaller of what this form allows and what the server will physically
-     * accept.
-     *
-     * Promising more than the server takes is not a harmless overestimate: PHP
-     * discards an oversized request before Laravel runs, so the librarian gets
-     * a bare 503 from the web server with nothing in any log, instead of the
-     * message below telling them the file is too big. That is exactly how the
-     * reader import failed on production, where upload_max_filesize was 2M
-     * while this rule advertised 100M.
-     */
+    /** The smaller of this form's ceiling and what the server accepts. */
     private function maxKilobytes(): int
     {
-        $serverBytes = ServerLimitsService::effectiveUploadBytes();
-
-        if ($serverBytes <= 0) {
-            return self::APP_MAX_KILOBYTES; // unlimited server — the app's own cap stands
-        }
-
-        return min(self::APP_MAX_KILOBYTES, intdiv($serverBytes, 1024));
+        return ServerLimitsService::uploadMaxKilobytes(self::APP_MAX_KILOBYTES);
     }
 
     /**
