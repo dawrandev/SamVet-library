@@ -14,6 +14,10 @@
 # under cPanel's Git Version Control. If it is not, ignore it and use the cron
 # entry instead — see the "Deploy" section in CLAUDE.md.
 
+# cPanel runs these tasks with the working directory set to the repository
+# root, so the relative path is the reliable form here — $0 inside a task is
+# the shell, not this file, and dirname on it points somewhere else entirely.
+# The absolute fallback covers a cPanel version that does not chdir first.
 deployment:
   tasks:
-    - /bin/bash "$(dirname "$0")/deploy.sh" 2>/dev/null || /bin/bash deploy.sh
+    - /bin/bash deploy.sh || /bin/bash /home/sdvunf/arm.sdvunf.uz/deploy.sh
