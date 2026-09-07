@@ -105,14 +105,14 @@ class ReaderImportService
         'member_year' => 15,
     ];
 
-    /** @var callable|null Progress callback: fn(string $sheet, string $message): void */
+    /** @var callable|null Progress callback: fn(string, string): void */
     private $onSheet = null;
 
     /** @var Collection<string, int>|null Lazily-resolved reader_types.name => id, see typeId(). */
     private ?Collection $typeIdsByName = null;
 
     public function __construct(
-        private readonly ReaderPhotoExtractor $photos = new ReaderPhotoExtractor(),
+        private readonly ReaderPhotoExtractor $photos = new ReaderPhotoExtractor,
     ) {}
 
     /** Resolves a reader_types.name to its id (cached for the whole import run). */
@@ -159,7 +159,20 @@ class ReaderImportService
      */
     public function import(string $path): array
     {
-        ini_set('memory_limit', '-1');
+        // NOTE: memory_limit is deliberately NOT raised here.
+        //
+        // This used to be ini_set('memory_limit', '-1'), which did not make the
+        // import cheaper — it only removed the one thing that would have
+        // reported the cost. With no ceiling PHP never stops itself, so the
+        // host's own limit is what ends the request: the worker is killed
+        // outright, Apache answers a bare 503, and nothing reaches Laravel's
+        // log. A real ceiling turns the same failure into an "Allowed memory
+        // size exhausted" error with a stack trace and a log line.
+        //
+        // Staying inside the server's budget is now the importer's job, not
+        // the ini setting's: images are read one row at a time (SheetPhotos)
+        // rather than all at once, which is what made the old code need an
+        // unbounded heap in the first place.
 
         $reader = IOFactory::createReaderForFile($path);
         $reader->setReadDataOnly(true);
@@ -252,7 +265,8 @@ class ReaderImportService
             ? self::ST_POSITIONS
             : $this->buildHeaderMap($rows[0]);
 
-        // Images in the sheet: absolute row index (0-based) => image.
+        // Row -> image binding for this sheet. Bytes are read one row at a
+        // time (see SheetPhotos), never all at once.
         $sheetPhotos = $this->photos->photosForSheet($path, $sheetName);
 
         // Skip the header row.
@@ -260,7 +274,7 @@ class ReaderImportService
 
         foreach ($dataRows as $index => $row) {
             // dataRows[$index] = rows[$index + 1] (absolute index) — matches the image anchor.
-            $photo = $sheetPhotos[$index + 1] ?? null;
+            $photo = $sheetPhotos->get($index + 1);
 
             try {
                 $result = $this->importRow($row, $columnMap, $context, $photo);
@@ -280,6 +294,9 @@ class ReaderImportService
                 $photoCount++;
             }
         }
+
+        // Releases the archive handle SheetPhotos has been reading images from.
+        $sheetPhotos->close();
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
@@ -355,7 +372,7 @@ class ReaderImportService
 
         // Remove o'/o' variants and apostrophes
         $value = str_replace(
-            ["o‘", "o'", "o`", "g‘", "g'", "g`", '‘', '’', '`', "'"],
+            ['o‘', "o'", 'o`', 'g‘', "g'", 'g`', '‘', '’', '`', "'"],
             ['o', 'o', 'o', 'g', 'g', 'g', '', '', '', ''],
             $value
         );
@@ -486,7 +503,7 @@ class ReaderImportService
         $safe = preg_replace('/[^A-Za-z0-9_-]+/', '', $key);
         $safe = $safe !== '' ? $safe : (string) $reader->id;
 
-        $path = 'readers/photos/' . $safe . '.' . $photo['ext'];
+        $path = 'readers/photos/'.$safe.'.'.$photo['ext'];
 
         Storage::disk('public')->put($path, $photo['bytes']);
 

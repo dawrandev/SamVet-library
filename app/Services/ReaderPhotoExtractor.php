@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\SheetPhotos;
 use SimpleXMLElement;
 use ZipArchive;
 
@@ -17,86 +18,88 @@ use ZipArchive;
 class ReaderPhotoExtractor
 {
     private const XDR = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
+
     private const A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+
     private const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+
     private const MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 
     /**
-     * Images in the sheet: 0-based ABSOLUTE row index => image.
-     * (Same index as toArray(null,true,false,false) — header = 0.)
+     * Row -> image binding for one sheet, as a lazy reader.
      *
-     * @return array<int, Photo>
+     * Only the anchor map (a few KB of XML) is parsed here; the image bytes
+     * themselves are read one at a time by SheetPhotos::get(), as each row is
+     * imported. Returning every image at once — which this used to do — meant
+     * a sheet with a thousand photos put a few hundred megabytes on the heap
+     * before the first row was touched, and the host killed the PHP worker
+     * for it.
+     *
+     * The archive handle is handed to the returned object, which owns it from
+     * that point on; the caller must close() it when the sheet is done.
      */
-    public function photosForSheet(string $path, string $sheetName): array
+    public function photosForSheet(string $path, string $sheetName): SheetPhotos
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($path) !== true) {
-            return [];
+            return SheetPhotos::empty();
         }
 
-        try {
-            $sheetTarget = $this->resolveSheetTarget($zip, $sheetName);
-            if ($sheetTarget === null) {
-                return [];
-            }
+        $sheetTarget = $this->resolveSheetTarget($zip, $sheetName);
+        $drawingFile = $sheetTarget === null ? null : $this->resolveDrawingFile($zip, $sheetTarget);
 
-            $drawingFile = $this->resolveDrawingFile($zip, $sheetTarget);
-            if ($drawingFile === null) {
-                return [];
-            }
-
-            $drawRaw = $zip->getFromName('xl/drawings/' . $drawingFile);
-            $relsRaw = $zip->getFromName('xl/drawings/_rels/' . $drawingFile . '.rels');
-            if ($drawRaw === false || $relsRaw === false) {
-                return []; // empty drawing (no images)
-            }
-
-            // rId => media file name
-            $media = [];
-            foreach ((new SimpleXMLElement($relsRaw))->Relationship as $rel) {
-                $media[(string) $rel['Id']] = basename((string) $rel['Target']);
-            }
-
-            // anchor: row => rId => media bytes
-            $photos = [];
-            $dx = new SimpleXMLElement($drawRaw);
-            foreach (['oneCellAnchor', 'twoCellAnchor'] as $type) {
-                foreach ($dx->children(self::XDR)->{$type} as $anchor) {
-                    $pic = $anchor->children(self::XDR)->pic;
-                    if (! $pic) {
-                        continue;
-                    }
-
-                    $row = (int) $anchor->children(self::XDR)->from->children(self::XDR)->row;
-                    $rid = (string) $pic->children(self::XDR)->blipFill
-                        ->children(self::A)->blip->attributes(self::R)->embed;
-
-                    $file = $media[$rid] ?? null;
-                    if ($file === null) {
-                        continue;
-                    }
-
-                    $bytes = $zip->getFromName('xl/media/' . $file);
-                    if ($bytes === false || $bytes === '') {
-                        continue;
-                    }
-
-                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                    $ext = $ext === 'jpeg' ? 'jpg' : $ext;
-
-                    // Only raster images (png/jpg/gif) — drop emf/wmf and the like.
-                    if (! in_array($ext, ['png', 'jpg', 'gif'], true)) {
-                        continue;
-                    }
-
-                    $photos[$row] = ['bytes' => $bytes, 'ext' => $ext];
-                }
-            }
-
-            return $photos;
-        } finally {
+        if ($drawingFile === null) {
             $zip->close();
+
+            return SheetPhotos::empty();
         }
+
+        $drawRaw = $zip->getFromName('xl/drawings/'.$drawingFile);
+        $relsRaw = $zip->getFromName('xl/drawings/_rels/'.$drawingFile.'.rels');
+
+        if ($drawRaw === false || $relsRaw === false) {
+            $zip->close();
+
+            return SheetPhotos::empty(); // empty drawing (no images)
+        }
+
+        // rId => media file name
+        $media = [];
+        foreach ((new SimpleXMLElement($relsRaw))->Relationship as $rel) {
+            $media[(string) $rel['Id']] = basename((string) $rel['Target']);
+        }
+
+        // anchor: 0-based absolute row => media file name (NOT its bytes)
+        $rowMedia = [];
+        $dx = new SimpleXMLElement($drawRaw);
+        foreach (['oneCellAnchor', 'twoCellAnchor'] as $type) {
+            foreach ($dx->children(self::XDR)->{$type} as $anchor) {
+                $pic = $anchor->children(self::XDR)->pic;
+                if (! $pic) {
+                    continue;
+                }
+
+                $row = (int) $anchor->children(self::XDR)->from->children(self::XDR)->row;
+                $rid = (string) $pic->children(self::XDR)->blipFill
+                    ->children(self::A)->blip->attributes(self::R)->embed;
+
+                $file = $media[$rid] ?? null;
+                if ($file === null) {
+                    continue;
+                }
+
+                // Only raster images (png/jpg/gif) — drop emf/wmf and the like,
+                // here rather than on read, so count() reflects what's importable.
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (! in_array($ext === 'jpeg' ? 'jpg' : $ext, ['png', 'jpg', 'gif'], true)) {
+                    continue;
+                }
+
+                $rowMedia[$row] = $file;
+            }
+        }
+
+        return new SheetPhotos($zip, $rowMedia);
     }
 
     /**
@@ -138,7 +141,7 @@ class ReaderPhotoExtractor
     private function resolveDrawingFile(ZipArchive $zip, string $sheetTarget): ?string
     {
         $base = basename($sheetTarget); // sheetN.xml
-        $relRaw = $zip->getFromName('xl/worksheets/_rels/' . $base . '.rels');
+        $relRaw = $zip->getFromName('xl/worksheets/_rels/'.$base.'.rels');
         if ($relRaw === false) {
             return null;
         }
