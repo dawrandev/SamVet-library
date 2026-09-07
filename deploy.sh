@@ -69,13 +69,33 @@ run() {
     fi
 }
 
-# Dependencies. Only matters when composer.lock changed, but skipping it
-# silently breaks a release that bumped a package. Composer is not always on
-# PATH here, so a missing binary is reported rather than ignored.
-if [ -f composer.phar ]; then
-    run "$PHP" composer.phar install --no-dev --optimize-autoloader --no-interaction
-elif command -v composer >/dev/null 2>&1; then
-    run "$PHP" "$(command -v composer)" install --no-dev --optimize-autoloader --no-interaction
+# Composer is rarely on cron's PATH on a cPanel account — it ships at a fixed
+# location outside it — so the usual `command -v composer` finds nothing and
+# dependencies silently never update. That is not a cosmetic miss: it is how a
+# release that bumped a package (the league/commonmark security update) can
+# look successful while production keeps running the vulnerable version.
+find_composer() {
+    local candidate
+    for candidate in \
+        "$APP_DIR/composer.phar" \
+        /opt/cpanel/composer/bin/composer \
+        /usr/local/bin/composer \
+        "$HOME/composer.phar" \
+        "$(command -v composer 2>/dev/null)"
+    do
+        [ -n "$candidate" ] && [ -f "$candidate" ] && { echo "$candidate"; return 0; }
+    done
+
+    return 1
+}
+
+COMPOSER="$(find_composer)"
+
+if [ -n "${COMPOSER:-}" ]; then
+    log "composer: $COMPOSER"
+    # Always invoked through the PHP chosen above: cPanel's composer wrapper
+    # picks its own PHP otherwise, which is not necessarily the site's.
+    run "$PHP" "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction
 else
     log "DIQQAT: composer topilmadi — paketlar yangilanmadi. composer.lock o'zgargan bo'lsa, buni qo'lda hal qiling."
 fi
