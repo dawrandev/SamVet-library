@@ -1,30 +1,52 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\AudiobookController;
 use App\Http\Controllers\Admin\AudioTrackController;
 use App\Http\Controllers\Admin\AvtoreferatController;
 use App\Http\Controllers\Admin\AvtoreferatCopyController;
-use App\Http\Controllers\Admin\AdminActivityLogController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BookImportController;
 use App\Http\Controllers\Admin\ChunkedUploadController;
-use App\Http\Controllers\Admin\ComputerSessionController;
 use App\Http\Controllers\Admin\ComputerController;
+use App\Http\Controllers\Admin\ComputerSessionController;
 use App\Http\Controllers\Admin\CopyController;
 use App\Http\Controllers\Admin\CopyLookupController;
-use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DissertationController;
 use App\Http\Controllers\Admin\DistrictLookupController;
 use App\Http\Controllers\Admin\EditorFileController;
 use App\Http\Controllers\Admin\EditorImageController;
+use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\JournalController;
 use App\Http\Controllers\Admin\JournalCopyController;
 use App\Http\Controllers\Admin\JournalIssueController;
 use App\Http\Controllers\Admin\JournalLookupController;
 use App\Http\Controllers\Admin\LoanController;
 use App\Http\Controllers\Admin\LookupController;
+use App\Http\Controllers\Admin\Lookups\AffiliationGroupController;
+use App\Http\Controllers\Admin\Lookups\AffiliationPlaceController;
+use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
+use App\Http\Controllers\Admin\Lookups\BookTypeController;
+use App\Http\Controllers\Admin\Lookups\CategoryController;
+use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
+use App\Http\Controllers\Admin\Lookups\DeliveryLocationController;
+use App\Http\Controllers\Admin\Lookups\DepartmentCoverageController;
+use App\Http\Controllers\Admin\Lookups\DistrictController;
+use App\Http\Controllers\Admin\Lookups\DoctoralSpecialtyController;
+use App\Http\Controllers\Admin\Lookups\EventLocationController;
+use App\Http\Controllers\Admin\Lookups\JournalTypeController;
+use App\Http\Controllers\Admin\Lookups\LanguageController;
+use App\Http\Controllers\Admin\Lookups\LocationController;
+use App\Http\Controllers\Admin\Lookups\MasterSpecialtyController;
+use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
+use App\Http\Controllers\Admin\Lookups\PostBranchController;
+use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
+use App\Http\Controllers\Admin\Lookups\ReaderTypeController;
+use App\Http\Controllers\Admin\Lookups\RegionController;
+use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
+use App\Http\Controllers\Admin\Lookups\ScienceFieldController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\PageController;
@@ -34,42 +56,22 @@ use App\Http\Controllers\Admin\ReaderController;
 use App\Http\Controllers\Admin\ReaderImportController;
 use App\Http\Controllers\Admin\ReaderLookupController;
 use App\Http\Controllers\Admin\ReaderStatusController;
+use App\Http\Controllers\Admin\ServerLimitsController;
 use App\Http\Controllers\Admin\SubscriptionCatalogController;
 use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\VideoTrackController;
 use App\Http\Controllers\Admin\WarningController;
-use App\Http\Controllers\Admin\Lookups\AffiliationGroupController;
-use App\Http\Controllers\Admin\Lookups\AffiliationPlaceController;
-use App\Http\Controllers\Admin\Lookups\AffiliationUnitController;
-use App\Http\Controllers\Admin\Lookups\BookTypeController;
-use App\Http\Controllers\Admin\Lookups\DepartmentCoverageController;
-use App\Http\Controllers\Admin\Lookups\CategoryController;
-use App\Http\Controllers\Admin\Lookups\ContributorRoleController;
-use App\Http\Controllers\Admin\Lookups\ReaderTypeController;
-use App\Http\Controllers\Admin\Lookups\DeliveryLocationController;
-use App\Http\Controllers\Admin\Lookups\DistrictController;
-use App\Http\Controllers\Admin\Lookups\EventLocationController;
-use App\Http\Controllers\Admin\Lookups\JournalTypeController;
-use App\Http\Controllers\Admin\Lookups\LanguageController;
-use App\Http\Controllers\Admin\Lookups\LocationController;
-use App\Http\Controllers\Admin\Lookups\NewsCategoryController;
-use App\Http\Controllers\Admin\Lookups\DoctoralSpecialtyController;
-use App\Http\Controllers\Admin\Lookups\MasterSpecialtyController;
-use App\Http\Controllers\Admin\Lookups\PostBranchController;
-use App\Http\Controllers\Admin\Lookups\ScienceFieldController;
-use App\Http\Controllers\Admin\Lookups\PublicationPlaceController;
-use App\Http\Controllers\Admin\Lookups\RegionController;
-use App\Http\Controllers\Admin\Lookups\ResourceFieldController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Site\ArticleController as SiteArticleController;
 use App\Http\Controllers\Site\AudiobookController as SiteAudiobookController;
 use App\Http\Controllers\Site\AudioReaderController;
 use App\Http\Controllers\Site\AvtoreferatController as SiteAvtoreferatController;
 use App\Http\Controllers\Site\BookController as SiteBookController;
 use App\Http\Controllers\Site\CatalogController;
-use App\Http\Controllers\Site\DissertationController as SiteDissertationController;
 use App\Http\Controllers\Site\ComputerAvailabilityController;
+use App\Http\Controllers\Site\DissertationController as SiteDissertationController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\JournalController as SiteJournalController;
 use App\Http\Controllers\Site\NewsController as SiteNewsController;
@@ -81,7 +83,6 @@ use App\Http\Controllers\Site\SectionController;
 use App\Http\Controllers\Site\StatisticsController as SiteStatisticsController;
 use App\Http\Controllers\Site\VideoController as SiteVideoController;
 use App\Http\Controllers\Site\VideoReaderController;
-use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -292,6 +293,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Admin activity log (audit trail)
     Route::get('activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log.index');
+
+    // Effective PHP limits, read inside a real web request — the CLI's php.ini
+    // differs from FPM's, so `php -i` on the server does not answer this.
+    Route::get('server-limits', [ServerLimitsController::class, 'index'])->name('server-limits.index');
 
     // Chunked upload — generic, not tied to any entity (see App\Services\ChunkedUploadService)
     Route::post('uploads/start', [ChunkedUploadController::class, 'start'])->name('uploads.start');
