@@ -226,14 +226,26 @@ u ilgarigi boshqa serverga ulangan va ishlamay qolgan. Uni ko'rib "push = deploy
 o'ylash mumkin edi — shuning uchun o'sha job **butunlay olib tashlandi**. CI endi faqat
 testdan iborat: **yashil build = kod yaxshi, "jonli" degani EMAS.**
 
-Deploy ketma-ketligi (cPanel → Git Version Control):
-1. **Update from Remote** — repodan tortib oladi.
-2. **Deploy HEAD Commit** — repo ildizidagi `.cpanel.yml` vazifalarini bajaradi:
-   `composer install --no-dev` → `migrate --force` → `search:reindex` → kesh.
+Production akkauntida **terminal ham, root ham yo'q**. Buyruq ishlatishning ikki yo'li bor,
+va **ikkalasi ham bitta `deploy.sh` skriptini chaqiradi** — qadamlar bir joyda tursin,
+cron'da unutilgan `search:reindex` butun qidiruvni jimgina o'ldirmasin:
 
-Production akkauntida **terminal ham, root ham yo'q** — `.cpanel.yml` bu hostda buyruq
-ishlatish mumkin bo'lgan yagona joy. Yangi deploy qadami kerak bo'lsa, u **shu faylga**
-qo'shiladi; `ci.yml`ga qo'shilgani ishlamaydi.
+1. **Cron (asosiy, ishlashi tasdiqlangan)** — cPanel → Cron Jobs, buyruq:
+   ```
+   /bin/bash /home/sdvunf/<APP_PATH>/deploy.sh
+   ```
+   Bir marta ishga tushirib, keyin cron yozuvini o'chirasiz.
+2. **Git Version Control** — agar repo o'sha yerda sozlangan bo'lsa: **Update from Remote**
+   → **Deploy HEAD Commit** (`.cpanel.yml` xuddi shu skriptni chaqiradi). Sozlanmagan
+   bo'lsa — e'tibor bermang, cron yetarli.
+
+`deploy.sh` o'z joyini o'zi topadi (yo'l sozlash shart emas), cPanel'dagi bir nechta PHP
+ichidan 8.2+ bo'lganini tanlaydi (cron'ning `php`si ko'pincha eski versiyaga ishora
+qiladi — klassik tuzoq), va hamma narsani `storage/logs/deploy.log` ga yozadi — bu yerda
+kuzatib turadigan konsol yo'q.
+
+Yangi deploy qadami kerak bo'lsa — **`deploy.sh` ga** qo'shiladi. `ci.yml`ga qo'shilgani
+ishlamaydi.
 
 Alohida eslatma: **har qanday ommaviy importdan keyin (kitobxon, kitob) `search:reindex`
 qo'lda ishlatilishi kerak** — model observer'laridan chetlab yozilgan qatorlar
