@@ -203,7 +203,7 @@ Muhim tafsilotlar:
 
 Loyiha tugallanish arafasida o'tkazilgan system design auditda (2026-07-30) topilgan, lekin **hozircha qurilmagan** narsalar — halollik uchun aniq yozib qo'yilgan, kerak bo'lganda shu ro'yxatdan qaytariladi:
 
-- **Backup (DB + `storage/app`)** — **hosting hali tanlanmagani sababli qurilmagan**. Hosting aniqlangach birinchi galda bajarilishi kerak (ma'lumot yo'qolishi bilan bog'liq real xavf).
+- **Backup (DB + `storage/app`)** — hali qurilmagan. Hosting endi aniq (cPanel, `arm.sdvunf.uz`), shuning uchun bu to'siq yo'q — qolgani bajarilmagani uchun. Migration chiqaradigan har bir deploy oldidan hech bo'lmasa qo'lda `mysqldump` olinishi kerak (ma'lumot yo'qolishi bilan bog'liq real xavf).
 - **Production PHP yuklash limitlari** (`upload_max_filesize`/`post_max_size`) — **chunked upload** (pastga, "Katta fayl yuklash" bo'limiga qarang) buni katta darajada dastur qatlamida hal qildi (Kitob + Video trek uchun) — endi bitta katta so'rov emas, kichik bo'laklar POST qilinadi, shuning uchun bu ikkala joy uchun server limitini bilish/o'zgartirish endi shart emas. Qolgan 5 ta joy (Dissertatsiya, Avtoreferat, Maqola, Audio trek, Jurnal soni) hali eski to'g'ridan-to'g'ri yo'lda — ular uchun bu xavf hali ochiq.
 - **Xato monitoring** (masalan Sentry) — foydalanuvchi hozircha kerak emas dedi (o'quvchi PII'siga aloqador tashqi servis masalasi tufayli ehtiyot bo'lish kerak — kelajakda qaytilsa, xato kontekstidan PII scrub qilinishi shart).
 - **CSP (Content-Security-Policy)** — Alpine.js inline ishlatgani sababli alohida, ehtiyotkor audit talab qiladi (yuqoridagi Xavfsizlik bo'limiga qarang).
@@ -216,6 +216,32 @@ Loyiha tugallanish arafasida o'tkazilgan system design auditda (2026-07-30) topi
 - `npm run dev` — Vite (CSS/JS jonli kompilyatsiya, hot reload). Saytни ko'rsatmaydi.
 - Sayt: Laragon virtual host (`samvet-library.test`) yoki `php artisan serve` (localhost:8000).
 - Production: `npm run build` (dev EMAS).
+
+## Deploy — QO'LDA, cPanel orqali (avtomatik EMAS)
+
+**Production: `arm.sdvunf.uz`. `main`ga push qilish productionga HECH NARSA chiqarmaydi.**
+
+Bu chalkashlik bir marta real xatoga olib kelgan: `ci.yml`da SSH deploy jobi turgan edi,
+u ilgarigi boshqa serverga ulangan va ishlamay qolgan. Uni ko'rib "push = deploy" deb
+o'ylash mumkin edi — shuning uchun o'sha job **butunlay olib tashlandi**. CI endi faqat
+testdan iborat: **yashil build = kod yaxshi, "jonli" degani EMAS.**
+
+Deploy ketma-ketligi (cPanel → Git Version Control):
+1. **Update from Remote** — repodan tortib oladi.
+2. **Deploy HEAD Commit** — repo ildizidagi `.cpanel.yml` vazifalarini bajaradi:
+   `composer install --no-dev` → `migrate --force` → `search:reindex` → kesh.
+
+Production akkauntida **terminal ham, root ham yo'q** — `.cpanel.yml` bu hostda buyruq
+ishlatish mumkin bo'lgan yagona joy. Yangi deploy qadami kerak bo'lsa, u **shu faylga**
+qo'shiladi; `ci.yml`ga qo'shilgani ishlamaydi.
+
+Alohida eslatma: **har qanday ommaviy importdan keyin (kitobxon, kitob) `search:reindex`
+qo'lda ishlatilishi kerak** — model observer'laridan chetlab yozilgan qatorlar
+indekslanmaydi va qidiruvda ko'rinmaydi.
+
+`php-fpm reload` yo'q (root kerak). Yangi kod darrov ishlaydimi —
+`opcache.validate_timestamps`ga bog'liq; `/admin/server-limits` shuni ko'rsatadi. O'chiq
+bo'lsa, hosting panelidagi "Restart PHP".
 
 ## Test login
 

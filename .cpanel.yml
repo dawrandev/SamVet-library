@@ -1,0 +1,54 @@
+---
+# cPanel Git Version Control — tasks run by the "Deploy HEAD Commit" button.
+#
+# This is the project's real deploy mechanism. The SSH deploy job that used to
+# live in .github/workflows/ci.yml pointed at an earlier server and no longer
+# runs, so nothing about a push reaches production on its own: the sequence
+# below is what actually applies a release.
+#
+# The production account has no terminal and no root, which is why these steps
+# live here — this file is the one place on the host where commands can be run.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# BEFORE THE FIRST DEPLOY, CHECK APP_PATH BELOW.
+#
+# It must be the directory the site actually runs from — the one holding
+# `artisan` and `.env`. cPanel shows it as the "Repository Path" under Git
+# Version Control. If the repository is cloned somewhere else (e.g.
+# ~/repositories/...) and the site is served from a separate document root,
+# these tasks need a copy step first; ask before adding one, since copying to
+# the wrong path is destructive.
+# ─────────────────────────────────────────────────────────────────────────────
+
+deployment:
+  tasks:
+    - export APP_PATH="$HOME/arm.sdvunf.uz"
+
+    # Dependencies. Only does real work when composer.lock changed, but it is
+    # cheap otherwise and skipping it silently breaks a release that bumped a
+    # package (as the league/commonmark security update did).
+    - cd "$APP_PATH" && php composer.phar install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || cd "$APP_PATH" && composer install --no-dev --optimize-autoloader --no-interaction
+
+    # Schema. --force because there is no TTY here to answer the confirmation.
+    - cd "$APP_PATH" && php artisan migrate --force
+
+    # Normalized search columns. NOT optional: a migration that adds them
+    # leaves every existing row empty, and search matches on them — skipping
+    # this does not error, it just makes every search on the site and in the
+    # admin panel return nothing. Re-running on an already-indexed fund is
+    # harmless, so it stays unconditional.
+    #
+    # Also run this by hand after any bulk import (readers, books): rows
+    # written outside the app's own models are not indexed by the observers.
+    - cd "$APP_PATH" && php artisan search:reindex
+
+    # Caches. Cleared before being rebuilt so a stale compiled view or config
+    # from the previous release cannot survive.
+    - cd "$APP_PATH" && php artisan config:clear
+    - cd "$APP_PATH" && php artisan view:clear
+    - cd "$APP_PATH" && php artisan config:cache
+
+    # No php-fpm reload: that needs root, which this account does not have.
+    # Whether new code takes effect immediately depends on
+    # opcache.validate_timestamps — /admin/server-limits reports it. If it is
+    # off, use the hosting panel's "Restart PHP" after deploying.
