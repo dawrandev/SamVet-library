@@ -232,9 +232,19 @@ cron'da unutilgan `search:reindex` butun qidiruvni jimgina o'ldirmasin:
 
 1. **Cron (asosiy, ishlashi tasdiqlangan)** — cPanel → Cron Jobs, buyruq:
    ```
-   /bin/bash /home/sdvunf/<APP_PATH>/deploy.sh
+   /bin/bash /home/sdvunf/arm.sdvunf.uz/deploy.sh
    ```
-   Bir marta ishga tushirib, keyin cron yozuvini o'chirasiz.
+   Bir marta ishga tushirib (masalan `* * * * *`), keyin cron yozuvini **darrov
+   o'chirasiz** — aks holda `search:reindex` har daqiqada qayta ishlaydi.
+
+   Server tuzilmasi (2026-09-07 da File Manager orqali tasdiqlangan):
+   - cPanel foydalanuvchi: `sdvunf`, home: `/home/sdvunf`
+   - **Ilova ildizi: `/home/sdvunf/arm.sdvunf.uz`** (Laravel to'g'ridan-to'g'ri shu yerda —
+     `artisan`, `.env`, `vendor`, `public` shu papkada; alohida `repositories/` yo'q)
+   - Serverda `.git` bor, ya'ni kod git orqali tortiladi
+   - Bir akkauntda boshqa saytlar ham bor (`kpi.`, `service.`, `test.`, `test1.`,
+     `public_html`) — **buyruqda yo'lni aniq yozing**, aks holda boshqa saytga tegib
+     ketishingiz mumkin
 2. **Git Version Control** — agar repo o'sha yerda sozlangan bo'lsa: **Update from Remote**
    → **Deploy HEAD Commit** (`.cpanel.yml` xuddi shu skriptni chaqiradi). Sozlanmagan
    bo'lsa — e'tibor bermang, cron yetarli.
