@@ -296,6 +296,20 @@ serverdagi `composer.lock` bilan solishtiradi va farq boʻlsa deploy logiga
 ogohlantirish yozadi — “lock oʻzgardi, vendor esa eski” holatini boshqa jimgina
 oʻtkazib yubormaslik uchun.
 
+**Kutilgan “iflos” holat.** Oxirgi `composer install`dan keyin `git status` doim
+shu 6 ta faylni oʻzgargan deb koʻrsatadi:
+
+```
+vendor/composer/autoload_classmap.php   autoload_files.php   autoload_psr4.php
+vendor/composer/autoload_static.php     installed.json       installed.php
+```
+
+Bu normal — dev paketlar qoʻshilgani uchun autoload qayta yozildi. **Ularni commit
+qilmang** (`git add -A` dan ehtiyot boʻling): serverga dev rejimidagi autoload
+tushsa, u yerda mavjud boʻlmagan klasslarga ishora qiladi. Faqat
+`tools/build-vendor.php` stage qilgan holat commit boʻlishi kerak. Agar shunday
+xato boʻlsa, `deploy.sh` buni aniqlaydi va deploy logiga yozadi.
+
 Ikki eslatma:
 - `vendor/bin/*` fayllari Windows’da qurilgani uchun ijro (executable) bitisiz
   commit boʻladi. Ilova ularni ishlatmaydi (kirish nuqtasi — `artisan`), shuning

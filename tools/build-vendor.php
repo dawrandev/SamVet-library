@@ -22,7 +22,6 @@
  * untracked and cannot end up in a release. Only the files this script staged
  * are tracked.
  */
-
 const ROOT = __DIR__.'/..';
 
 function fail(string $message): never
@@ -87,7 +86,7 @@ file_put_contents('vendor/.lock-sha1', sha1_file('composer.lock')."\n");
 run('vendor/ git‘ga qo‘shilmoqda', ['git', 'add', '-f', '-A', 'vendor']);
 
 echo "\n";
-echo "Tayyor. Paketlar: ".count($installed['versions'])."\n";
+echo 'Tayyor. Paketlar: '.count($installed['versions'])."\n";
 echo "Endi:\n";
 echo "  git commit -m \"chore(deps): ...\"\n";
 echo "  composer install     # dev paketlarni qaytaradi (testlar uchun)\n";

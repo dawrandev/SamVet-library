@@ -94,6 +94,17 @@ if [ -f vendor/.lock-sha1 ]; then
     fi
 fi
 
+# The other way vendor/ can be wrong: someone ran a plain `composer install`
+# locally (which restores pest/phpunit/dusk and rewrites the autoload files)
+# and committed those six files along with unrelated work. The dev packages
+# themselves are gitignored, so what lands here is an autoloader pointing at
+# classes that do not exist on this machine. Cheap to detect, impossible to
+# guess from the symptoms.
+if "$PHP" -r 'exit((require "vendor/composer/installed.php")["root"]["dev"] ? 0 : 1);' 2>/dev/null; then
+    log "DIQQAT: vendor/ dev rejimida qurilgan autoload bilan kelgan (pest/phpunit yo'q, lekin autoload ularni qidiradi)."
+    log "        Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni qayta commit qiling."
+fi
+
 # --force: there is no TTY here to answer the confirmation prompt.
 run "$PHP" artisan migrate --force
 
