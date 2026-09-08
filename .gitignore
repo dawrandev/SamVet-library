@@ -6,9 +6,13 @@
 /storage/pail
 /vendor
 
-# Built by tools/build-vendor.php and uploaded to the server by hand, because
-# that host has no composer. See CLAUDE.md, "Bogʻliqliklar (vendor)".
+# Built by tools/build-vendor.php and uploaded to the server by hand, for as
+# long as the host has no composer. See CLAUDE.md, "Bogʻliqliklar (vendor)".
 /vendor-prod.zip
+
+# Installed per-machine by tools/install-composer.sh — a binary, and each host
+# gets its own.
+/composer.phar
 .env
 .env.backup
 .env.production
