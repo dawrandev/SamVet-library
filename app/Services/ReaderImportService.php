@@ -580,31 +580,86 @@ class ReaderImportService
             'note' => $get('note'),
         ];
 
-        // If id_number exists it is the key, otherwise pinfl.
+        // Only carry id_number when the row actually has one: a sheet that
+        // omits the column (ST) must not blank out an ID a previous import
+        // established.
         if ($idNumber !== null) {
             $attributes['id_number'] = $idNumber;
-            $reader = $this->upsert(['id_number' => $idNumber], $attributes);
-            $key = $idNumber;
-        } else {
-            $attributes['pinfl'] = $pinfl;
-            $reader = $this->upsert(['pinfl' => $pinfl], $attributes);
-            $key = (string) $pinfl;
         }
+
+        $existing = $this->findExisting($idNumber, $pinfl);
+        $isNew = $existing === null;
+
+        $reader = $this->upsert($existing, $attributes);
+        $key = $idNumber ?? (string) $pinfl;
 
         if ($photo !== null) {
             $this->attachPhoto($reader, $key, $photo);
         }
 
-        return $reader->wasRecentlyCreated ? ReaderImportOutcome::Imported : ReaderImportOutcome::Updated;
+        return $isNew ? ReaderImportOutcome::Imported : ReaderImportOutcome::Updated;
     }
 
     /**
-     * @param  array<string, mixed>  $keys
+     * Finds the person this row already refers to, by either identifier.
+     *
+     * `id_number` is unique in the schema and `pinfl` is not, so matching on
+     * id_number alone was enough to prevent duplicates only while every sheet
+     * carried it. The ST sheet has no ID column: a reader created from ST (keyed
+     * on PINFL) and then met again in a sheet that does have an ID would not be
+     * found, and a second row for the same person would be created — with the
+     * same PINFL, which the database does not forbid. Falling back to PINFL
+     * merges the two instead.
+     *
+     * Order matters: id_number is the unique, authoritative key, so a match on
+     * it wins. Only when it finds nothing does PINFL get a say.
+     */
+    private function findExisting(?string $idNumber, ?string $pinfl): ?Reader
+    {
+        if ($idNumber !== null) {
+            $byIdNumber = Reader::query()->where('id_number', $idNumber)->first();
+
+            if ($byIdNumber !== null) {
+                return $byIdNumber;
+            }
+        }
+
+        if ($pinfl !== null) {
+            return Reader::query()->where('pinfl', $pinfl)->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Creates the reader, or updates an existing one WITHOUT letting empty
+     * cells erase what is already stored.
+     *
+     * An import used to write every field verbatim, nulls included, so a blank
+     * cell in the workbook silently wiped a phone number or an address a
+     * librarian had entered by hand. Re-importing the same file to pick up a
+     * few fixed rows would undo that work across every row it touched, with
+     * nothing on screen to say so.
+     *
+     * The workbook is therefore treated as authoritative for what it states,
+     * and silent about what it leaves blank. Clearing a field stays a job for
+     * the admin panel, where it is deliberate.
+     *
      * @param  array<string, mixed>  $attributes
      */
-    private function upsert(array $keys, array $attributes): Reader
+    private function upsert(?Reader $existing, array $attributes): Reader
     {
-        return Reader::updateOrCreate($keys, $attributes);
+        if ($existing === null) {
+            return Reader::create($attributes);
+        }
+
+        // Not array_filter()'s default callback: that would also drop "0",
+        // an empty string and false, which are real values here.
+        $stated = array_filter($attributes, static fn (mixed $value): bool => $value !== null);
+
+        $existing->fill($stated)->save();
+
+        return $existing;
     }
 
     /**
