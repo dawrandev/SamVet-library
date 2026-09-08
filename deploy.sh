@@ -32,6 +32,32 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"
 }
 
+# Only one deploy at a time. The trigger here is a cron entry, which fires
+# every minute for as long as it is enabled, while a deploy that has packages
+# to install takes longer than that — and two composer runs writing the same
+# vendor/ is how a dependency tree gets torn in half. Two search:reindex runs
+# over the same rows is merely wasteful.
+#
+# mkdir is the lock: it is atomic on every filesystem and needs no flock, which
+# is not guaranteed to be here.
+LOCK_DIR="$APP_DIR/storage/deploy.lock"
+LOCK_MAX_AGE_MINUTES=30
+
+# A deploy killed outright (a hosting process limit, say) leaves the directory
+# behind and would block every deploy from then on, silently. Nothing here runs
+# anywhere near half an hour, so an older lock is wreckage, not a live run.
+if [ -d "$LOCK_DIR" ] && [ -z "$(find "$LOCK_DIR" -maxdepth 0 -mmin "-$LOCK_MAX_AGE_MINUTES" 2>/dev/null)" ]; then
+    log "DIQQAT: eski qulf topildi (${LOCK_MAX_AGE_MINUTES} daqiqadan oshgan) — olib tashlandi."
+    rmdir "$LOCK_DIR" 2>/dev/null
+fi
+
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    log "Oldingi deploy hali tugamagan — bu ishga tushirish o'tkazib yuborildi."
+    exit 0
+fi
+
+trap 'rmdir "$LOCK_DIR" 2>/dev/null' EXIT
+
 # cPanel accounts usually have several PHP builds installed, and cron's PATH
 # often resolves `php` to an old default (5.x/7.x) rather than the one the
 # site runs on. Picking explicitly avoids a confusing "syntax error" that is

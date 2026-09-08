@@ -4,6 +4,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/deploy.lock
 /vendor
 
 # Built by tools/build-vendor.php and uploaded to the server by hand, for as
