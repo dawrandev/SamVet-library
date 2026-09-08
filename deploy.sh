@@ -71,43 +71,94 @@ run() {
 
 
 # Laravel caches the list of discovered packages in bootstrap/cache/. Those
-# files are written by composer's post-autoload-dump hook, which never runs on
-# this host, so they are absent from the repository and they outlive any
-# replacement of vendor/ — still naming providers from the tree that is gone.
+# files are written by composer's post-autoload-dump hook, so they belong to
+# whichever vendor/ was in place when they were written — and they are not in
+# the repository, so they outlive a vendor/ that gets replaced underneath them,
+# still naming providers from the tree that is gone.
 #
 # That is not a subtle failure. A production vendor/ has no laravel/dusk, the
 # stale manifest still lists DuskServiceProvider, and every request and every
 # artisan command then dies with "Class not found" before the framework
 # finishes booting. It took this site down on 2026-09-08.
 #
-# Deleting them is the entire fix — Laravel rebuilds them on the next run — and
-# rm works even when the application cannot boot at all, which is exactly the
-# state it has to recover from. So it runs BEFORE any artisan call below.
+# It also has to happen BEFORE composer runs, not just before artisan: the
+# post-autoload-dump hook is itself an artisan command, so a stale manifest
+# would take down the very install that was going to fix it. rm is the right
+# tool precisely because it works when nothing can boot.
 log "bootstrap/cache tozalanmoqda"
 rm -f bootstrap/cache/packages.php \
       bootstrap/cache/services.php \
       bootstrap/cache/config.php \
       bootstrap/cache/routes-*.php
 
-# Dependencies do not arrive with the code. This host has no composer, so
-# vendor/ is uploaded by hand as vendor-prod.zip (built by
-# tools/build-vendor.php). Nothing here can install anything; it can only
-# refuse to deploy against a tree that is missing, and complain about one that
-# is out of date.
+# Composer is not on cron's PATH here — it lives in the application root,
+# installed once by tools/install-composer.sh — so `command -v composer` finds
+# nothing and dependencies would silently never update. That is not cosmetic:
+# it is how a release that bumped a package (the league/commonmark security
+# update) can look successful while production keeps running the vulnerable
+# version, for weeks.
+find_composer() {
+    local candidate
+    for candidate in \
+        "$APP_DIR/composer.phar" \
+        /opt/cpanel/composer/bin/composer \
+        /usr/local/bin/composer \
+        "${HOME:-}/composer.phar" \
+        "$(command -v composer 2>/dev/null)"
+    do
+        [ -n "$candidate" ] && [ -f "$candidate" ] && { echo "$candidate"; return 0; }
+    done
+
+    return 1
+}
+
+COMPOSER="$(find_composer)"
+
+if [ -n "${COMPOSER:-}" ]; then
+    log "composer: $COMPOSER"
+
+    # -d allow_url_fopen=1: off on this host, and composer's own bootstrap
+    # refuses to start without it even though it downloads through curl. The
+    # override lives and dies with this process; the ini is left as the host
+    # set it.
+    #
+    # COMPOSER_MEMORY_LIMIT: the CLI limit here is 128M, which a resolve can
+    # exceed, and this account cannot edit the ini.
+    #
+    # COMPOSER_HOME: without it composer falls back to guessing a cache
+    # directory, which under cron can land somewhere unwritable and turn every
+    # deploy into a full re-download.
+    log "-> composer install --no-dev --optimize-autoloader"
+    if ! COMPOSER_MEMORY_LIMIT=-1 COMPOSER_HOME="${HOME:-/tmp}/.composer" \
+        "$PHP" -d allow_url_fopen=1 "$COMPOSER" install \
+        --no-dev --optimize-autoloader --no-interaction >>"$LOG" 2>&1
+    then
+        log "XATO: composer install muvaffaqiyatsiz tugadi — yuqoridagi logga qarang."
+        log "      Deploy to'xtatildi: yarim yangilangan vendor/ bilan migratsiya qilish xavfli."
+        exit 1
+    fi
+else
+    # Fallback for a host without composer: vendor/ is uploaded by hand as
+    # vendor-prod.zip (built by tools/build-vendor.php). Nothing here can
+    # install anything then — it can only refuse to deploy against a missing
+    # tree, and complain about an outdated one.
+    log "DIQQAT: composer topilmadi — vendor/ qo'lda yuklanishi kerak."
+    log "        O'rnatish: /bin/bash $APP_DIR/tools/install-composer.sh"
+fi
+
 if [ ! -f vendor/autoload.php ]; then
-    log "XATO: vendor/autoload.php yo'q — vendor/ yuklanmagan yoki to'liq emas."
-    log "      Loyihada 'php tools/build-vendor.php' ishlating, so'ng vendor-prod.zip'ni serverga yuklang."
+    log "XATO: vendor/autoload.php yo'q — bog'liqliklar o'rnatilmagan."
     exit 1
 fi
 
-# The failure mode of a manual step is that it gets skipped, and a skipped
-# vendor upload breaks nothing visibly: the site keeps serving the packages it
+# Belt and braces after composer has run, and the only check there is when it
+# has not. The failure mode of a manual upload is that it gets skipped, and a
+# skipped upload breaks nothing visibly: the site keeps serving the packages it
 # already has. That is precisely how the league/commonmark security update sat
 # in composer.lock, passed CI, and never reached production. Non-fatal on
 # purpose — an outdated tree still runs — but it must not pass in silence.
 if ! "$PHP" tools/check-vendor.php >>"$LOG" 2>&1; then
     log "DIQQAT: vendor/ composer.lock ga mos emas — yuqorida ro'yxati bor."
-    log "        Yangi vendor-prod.zip tayyorlab, serverga yuklash kerak."
 fi
 
 

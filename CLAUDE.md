@@ -130,7 +130,7 @@ Bu loyiha kutubxona tizimi — xavfsizlikка **juda katta e'tibor**. Har bir ko
 - **HTTP xavfsizlik headerlari:** barcha web so'rovlariga `app/Http/Middleware/SecurityHeaders.php` orqali qo'llaniladi (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, production+HTTPS'da `Strict-Transport-Security`). CSP (Content-Security-Policy) hali YO'Q — Alpine.js inline `x-data`/`@click` ishlatgani sababli ehtiyotkorlik bilan alohida audit qilinishi kerak (bo'lim 12'ga qarang).
 - **`auth()` — guard'ni HAR DOIM aniq ko'rsating (`auth('web')`), guard'siz emas.** Loyihada 2 ta guard bor (`web` — admin/User, `reader` — kutubxonachi mijozi/Reader). Laravel'ning `actingAs($reader, 'reader')` (yoki production'da reader-tomonidagi har qanday auth) **standart guard'ni almashtiradi** (`Auth::shouldUse()`), shuning uchun guard'siz `auth()->check()`/`auth()->id()` reader kontekstida READER ID'sini qaytarib, uni "admin" deb noto'g'ri talqin qilishi mumkin. Bu haqiqiy xato sifatida topilgan va tuzatilgan (`AdminActivityLogService::logChange()` — pastga qarang), shuning uchun BARCHA yangi kodда shunday joylarда guard aniq yozilishi shart.
 - **Adminlar faoliyat jurnali (audit trail):** `admin_activity_logs` jadvali — kim (`admin_id`), qachon, qaysi modelга (`Reader`, `Book`, `BookCopy`, `Subscription`, `Loan`) nima o'zgartirdi (`changes` JSON, parol kabi maydonlar `[hidden]` bilan yashiriladi). Observer'lar orqali avtomatik yoziladi (`AdminActivityLogService::logChange()`), `/admin/activity-log` sahifasida ko'rinadi. Rol tizimi hali yo'qligi sababli (pastga qarang) hozircha "faqat superadmin" emas — har qanday signed-in admin ko'ra oladi, oddiy `auth` middleware bilan himoyalangan.
-- **`composer audit` CI'da** — har bir push/PR'da bloklovchi qadam sifatida ishlaydi (`.github/workflows/ci.yml`), ma'lum zaifliklarni (masalan dompdf CVE'lari) darhol topadi. **Lekin yashil audit — production yamalgan degani EMAS:** u `composer.lock`ni tekshiradi, serverdagi `vendor/`ni emas. Yangilanish jonli saytga yetib borishi uchun "Bogʻliqliklar (vendor)" boʻlimiga qarang.
+- **`composer audit` CI'da** — har bir push/PR'da bloklovchi qadam sifatida ishlaydi (`.github/workflows/ci.yml`), ma'lum zaifliklarni (masalan dompdf CVE'lari) darhol topadi. **Lekin yashil audit — production yamalgan degani EMAS:** u `composer.lock`ni tekshiradi, serverdagi `vendor/`ni emas. Yangilanish jonli saytga faqat `deploy.sh` ishlagach yetib boradi (u yerda `composer install` bor) — "Bogʻliqliklar (vendor)" boʻlimiga qarang. Bir marta shu farq tufayli `league/commonmark` zaifligi CI'da yopilgan, production'da esa ochiq turdi.
 
 ## Ishlash va interaktivlik (performance — loyiha qotmasligi kerak)
 
@@ -265,76 +265,104 @@ indekslanmaydi va qidiruvda ko'rinmaydi.
 `opcache.validate_timestamps`ga bog'liq; `/admin/server-limits` shuni ko'rsatadi. O'chiq
 bo'lsa, hosting panelidagi "Restart PHP".
 
-## Bogʻliqliklar (vendor) — qoʻlda zip bilan
+## Bogʻliqliklar (vendor) — composer serverda
 
-Production hostida **composer yoʻq**, shuning uchun `vendor/` u yerga qoʻlda,
-zip sifatida yuklanadi. `vendor/` git'ga **kirmaydi** (`.gitignore`).
+`vendor/` git'ga **kirmaydi**. Production hostida composer **bor** va `deploy.sh`
+uni oʻzi ishlatadi — ya'ni oddiy holat:
 
-**`composer.json` yoki `composer.lock` oʻzgargan har safar:**
-
-```bash
-php tools/build-vendor.php     # --no-dev + optimize-autoloader, soʻng vendor-prod.zip
+```
+Обновить из удалённого  →  deploy.sh (cron)  →  tayyor
 ```
 
-Skript avval daraxt haqiqatan dev-siz va ishlaydigan autoloaderga ega ekanini
-tekshiradi, keyingina zip yasaydi.
+`deploy.sh` ichida:
 
-**Serverda, aynan shu tartibda:**
+```
+composer install --no-dev --optimize-autoloader --no-interaction
+```
 
-1. `vendor-prod.zip` ni `/home/sdvunf/arm.sdvunf.uz` ga yuklang (hali extract qilmang)
-2. Mavjud `vendor` ni **`vendor_old`** deb nomlang — bu sizning orqaga qaytish nuqtangiz
-3. Zip'ni **Extract** qiling (ilova ildizida; ichida `vendor/` prefiksi bor)
-4. **`bootstrap/cache/` ichidagi barcha `.php` fayllarni oʻchiring** ← MAJBURIY, pastga qarang
-5. Saytni oching, ishlashiga ishonch hosil qiling
-6. Shundan keyin `vendor_old` va zip'ni oʻchiring
+Uch xil sozlama bilan chaqiriladi, uchalasi ham shu hostga tegishli:
 
-Lokalda oxirida `composer install` — dev asboblarni (pest, phpunit, dusk, pint)
-qaytaradi, ularsiz test toʻplami ishlamaydi.
+| Sozlama | Nega |
+|---|---|
+| `-d allow_url_fopen=1` | Bu hostda **oʻchirilgan**, composer esa usiz umuman ishga tushmaydi (yuklashni `curl` bilan qilsa ham). Faqat shu jarayonga taʼsir qiladi, `php.ini` tegilmaydi |
+| `COMPOSER_MEMORY_LIMIT=-1` | CLI `memory_limit = 128M`, resolve unga sigʻmasligi mumkin, ini'ni oʻzgartira olmaymiz |
+| `COMPOSER_HOME=$HOME/.composer` | Cron ostida composer kesh papkasini topa olmay, har deploy'da hammasini qaytadan yuklab olishi mumkin |
 
-### 4-qadam nega majburiy (real avariya)
+### Composer serverga qanday tushgan
 
-`bootstrap/cache/packages.php` — Laravel topgan paketlar roʻyxati keshi. Uni
-composer'ning `post-autoload-dump` hooki yozadi, ya'ni **bu serverda hech qachon
-yangilanmaydi** va git'da ham yoʻq. Natijada u eski `vendor`dan qolib ketadi.
+`tools/install-composer.sh`, bir marta cron orqali. Rasmiy installer'ni yuklaydi,
+**SHA-384 imzosini tekshiradi**, mos kelmasa ishga tushirmaydi. Installer rad
+etsa — tayyor phar'ni toʻgʻridan-toʻgʻri yuklab, **SHA-256** bilan solishtiradi.
+Faqat `composer.phar` yaratadi, boshqa hech narsaga tegmaydi.
 
-2026-09-08 da aynan shu sayt ni yiqitdi: yangi (production) `vendor`da
-`laravel/dusk` yoʻq, eski keshda esa `DuskServiceProvider` yozilgan edi —
-`Class "Laravel\Dusk\DuskServiceProvider" not found`, va **framework
-koʻtarilishdayoq** oʻlgani uchun na sayt, na `artisan` ishladi. Yechim faqat
-shu fayllarni oʻchirish.
+Qayta oʻrnatish kerak boʻlsa: `composer.phar` ni oʻchirib, skriptni qayta
+ishlating.
 
-`deploy.sh` endi buni har safar avtomatik qiladi (birinchi qadam sifatida,
-`artisan`gacha), lekin agar deploy'gacha saytga kirsangiz — qoʻlda oʻchirishingiz
-kerak boʻladi.
+### ⚠️ bootstrap/cache — vendor almashganda MAJBURIY
 
-### Nazorat: yuklashni unutib boʻlmaydi
+`bootstrap/cache/packages.php` — Laravel topgan paketlar roʻyxati. Uni
+composer'ning `post-autoload-dump` hooki yozadi, ya'ni u **qaysi `vendor/`
+oʻrnida boʻlsa, oʻshanikidir**. `vendor/` ostidan almashtirilsa, kesh eski
+daraxtdagi provayderlarni koʻrsatib turaveradi.
 
-Qoʻlda qadamning kamchiligi — uni **unutish** mumkin, va unutilsa hech narsa
-buzilmaydi: sayt eski paketlar bilan ishlayveradi. `league/commonmark` xavfsizlik
-yangilanishi (6 ta advisory) aynan shunday: `composer.lock`da bor edi, CI yashil,
-deploy "muvaffaqiyatli" — lekin production zaif versiyada turdi.
+2026-09-08 da aynan shu saytni yiqitdi: yangi production `vendor`da
+`laravel/dusk` yoʻq, eski keshda `DuskServiceProvider` yozilgan edi —
+`Class not found`, va **framework koʻtarilishdayoq** oʻlgani uchun na sayt, na
+`artisan` ishladi.
 
-Shuning uchun `deploy.sh` har safar `tools/check-vendor.php` ni ishlatadi. U
-`composer.lock` dagi har bir production paketni serverdagi
-`vendor/composer/installed.php` bilan solishtiradi va farqni deploy logiga aniq
-yozadi:
+`deploy.sh` endi bu fayllarni **eng birinchi** oʻchiradi — composer'dan ham
+oldin, chunki `post-autoload-dump` hookining oʻzi `artisan` buyrugʻi: eskirgan
+kesh uni tuzatmoqchi boʻlgan install'ning oʻzini oʻldiradi. `rm` aynan shuning
+uchun toʻgʻri vosita — hech narsa ishga tushmayotgan holatda ham ishlaydi.
+
+Deploy'dan tashqarida `vendor/` ni qoʻlda almashtirsangiz — bu fayllarni oʻzingiz
+oʻchiring.
+
+### Nazorat
+
+`deploy.sh` har safar `tools/check-vendor.php` ni ishlatadi: `composer.lock`
+dagi har bir production paketni `vendor/composer/installed.php` bilan
+solishtiradi va farqni deploy logiga yozadi:
 
 ```
 vendor/ composer.lock ga MOS EMAS — 2 ta farq:
   - league/commonmark: lock 2.10.0, vendor 2.8.2
-  - mews/purifier: lock 3.4.4, vendor'da YO'Q
 ```
 
-Deploy toʻxtamaydi (eski daraxt ham ishlaydi), lekin endi **jim** oʻtmaydi.
+Composer ishlagan holatda bu odatda jim oʻtadi. Kerakligining sababi — u ishlamay
+qolgan holat: `composer.lock` oʻzgardi, `vendor/` esa eski qoldi va **hech narsa
+buzilmadi** — sayt eski paketlar bilan ishlayveradi. `league/commonmark`
+xavfsizlik yangilanishi (6 ta advisory) aynan shunday haftalab production'ga
+yetib bormay turdi. Endi jim oʻtmaydi.
 
-`vendor/autoload.php` umuman yoʻq boʻlsa — deploy **toʻxtaydi**, chunki bunda
-migratsiya ham, hech narsa ham ishlamaydi.
+`vendor/autoload.php` umuman yoʻq boʻlsa — deploy **toʻxtaydi**.
 
-### Kelajakda
+### Zaxira yoʻl: qoʻlda zip (composer ishlamay qolsa)
 
-Hostingdan **composer** va **tashqi tarmoqqa chiqish** soʻralsa va berilsa, bu
-butun tartib keraksiz boʻladi: `deploy.sh` ga `composer install --no-dev` qadamini
-qaytarish yetarli.
+`tools/build-vendor.php` lokalda `composer install --no-dev --optimize-autoloader`
+qilib `vendor-prod.zip` yasaydi. Serverda tartib:
+
+1. Zip'ni ilova ildiziga yuklang (hali extract qilmang)
+2. `vendor` ni **`vendor_old`** deb nomlang — orqaga qaytish nuqtasi
+3. Extract qiling
+4. `bootstrap/cache/` ichidagi barcha `.php` fayllarni oʻchiring
+5. Saytni tekshiring, keyin `vendor_old` va zip'ni oʻchiring
+
+Diqqat: cPanel'ning Extract'i papkani **almashtirmaydi, ustiga qoʻshadi** —
+shuning uchun 2-qadam shart, aks holda eski paketlar aralashib qoladi.
+
+Lokalda oxirida `composer install` — dev asboblarni qaytaradi, ularsiz test
+toʻplami ishlamaydi.
+
+### Server holatini koʻrish
+
+`tools/check-server.php` — faqat oʻqiydigan diagnostika (PHP/ini, `.env` ning
+xavfsiz kalitlari, `vendor` versiyalari, `bootstrap/cache`, git holati, tarmoq,
+composer talablari, loglar oxiri). Terminal yoʻqligi uchun cron orqali:
+
+```
+/usr/local/bin/ea-php83 /home/sdvunf/arm.sdvunf.uz/tools/check-server.php > /home/sdvunf/arm.sdvunf.uz/server-report.txt 2>&1
+```
 
 ## Test login
 
