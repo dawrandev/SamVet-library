@@ -4,6 +4,16 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# vendor/ stays listed here ON PURPOSE even though the production tree IS
+# committed. The production host (cPanel, arm.sdvunf.uz) has no composer and no
+# outbound network, so `git pull` is the only way dependencies can reach it, and
+# the tree is force-added (`git add -f vendor`) by tools/build-vendor.php.
+#
+# Keeping the ignore rule is what makes that workable day to day: files already
+# tracked are unaffected by it, while the dev-only packages a plain
+# `composer install` adds afterwards (pest, phpunit, dusk, faker, pint...) stay
+# ignored and can never leak into a release.
+# See CLAUDE.md, section "Bogʻliqliklar (vendor) — git orqali".
 /vendor
 .env
 .env.backup

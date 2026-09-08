@@ -130,7 +130,7 @@ Bu loyiha kutubxona tizimi — xavfsizlikка **juda katta e'tibor**. Har bir ko
 - **HTTP xavfsizlik headerlari:** barcha web so'rovlariga `app/Http/Middleware/SecurityHeaders.php` orqali qo'llaniladi (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, production+HTTPS'da `Strict-Transport-Security`). CSP (Content-Security-Policy) hali YO'Q — Alpine.js inline `x-data`/`@click` ishlatgani sababli ehtiyotkorlik bilan alohida audit qilinishi kerak (bo'lim 12'ga qarang).
 - **`auth()` — guard'ni HAR DOIM aniq ko'rsating (`auth('web')`), guard'siz emas.** Loyihada 2 ta guard bor (`web` — admin/User, `reader` — kutubxonachi mijozi/Reader). Laravel'ning `actingAs($reader, 'reader')` (yoki production'da reader-tomonidagi har qanday auth) **standart guard'ni almashtiradi** (`Auth::shouldUse()`), shuning uchun guard'siz `auth()->check()`/`auth()->id()` reader kontekstida READER ID'sini qaytarib, uni "admin" deb noto'g'ri talqin qilishi mumkin. Bu haqiqiy xato sifatida topilgan va tuzatilgan (`AdminActivityLogService::logChange()` — pastga qarang), shuning uchun BARCHA yangi kodда shunday joylarда guard aniq yozilishi shart.
 - **Adminlar faoliyat jurnali (audit trail):** `admin_activity_logs` jadvali — kim (`admin_id`), qachon, qaysi modelга (`Reader`, `Book`, `BookCopy`, `Subscription`, `Loan`) nima o'zgartirdi (`changes` JSON, parol kabi maydonlar `[hidden]` bilan yashiriladi). Observer'lar orqali avtomatik yoziladi (`AdminActivityLogService::logChange()`), `/admin/activity-log` sahifasida ko'rinadi. Rol tizimi hali yo'qligi sababli (pastga qarang) hozircha "faqat superadmin" emas — har qanday signed-in admin ko'ra oladi, oddiy `auth` middleware bilan himoyalangan.
-- **`composer audit` CI'da** — har bir push/PR'da bloklovchi qadam sifatida ishlaydi (`.github/workflows/ci.yml`), ma'lum zaifliklarni (masalan dompdf CVE'lari) darhol topadi.
+- **`composer audit` CI'da** — har bir push/PR'da bloklovchi qadam sifatida ishlaydi (`.github/workflows/ci.yml`), ma'lum zaifliklarni (masalan dompdf CVE'lari) darhol topadi. **Lekin yashil audit — production yamalgan degani EMAS:** u `composer.lock`ni tekshiradi, serverdagi `vendor/`ni emas. Yangilanish jonli saytga yetib borishi uchun "Bogʻliqliklar (vendor)" boʻlimiga qarang.
 
 ## Ishlash va interaktivlik (performance — loyiha qotmasligi kerak)
 
@@ -264,6 +264,45 @@ indekslanmaydi va qidiruvda ko'rinmaydi.
 `php-fpm reload` yo'q (root kerak). Yangi kod darrov ishlaydimi —
 `opcache.validate_timestamps`ga bog'liq; `/admin/server-limits` shuni ko'rsatadi. O'chiq
 bo'lsa, hosting panelidagi "Restart PHP".
+
+## Bogʻliqliklar (vendor) — git orqali, composersiz
+
+**`vendor/` shu repozitoriyga commit qilinadi.** Bu odatda anti-pattern, lekin bu
+yerda tanlov emas: production hostida composer ham, **tashqi internet ham yoʻq** —
+buni deploy oʻzi isbotladi, `copy('https://getcomposer.org/composer-stable.phar', ...)`
+oddiygina `false` qaytardi. Demak paketlar u yerga faqat `git pull` bilan yetib
+boradi.
+
+Bu qogʻozdagi xavf emas: `league/commonmark` xavfsizlik yangilanishi (6 ta advisory)
+`composer.lock`da bor edi, CI yashil edi, deploy “muvaffaqiyatli” koʻrinardi — va
+production shu vaqt davomida zaif versiyani ishlatib turardi. Yangilanish server
+uchun **koʻrinmas** edi.
+
+**`composer.json` yoki `composer.lock` oʻzgargan har safar:**
+
+```bash
+php tools/build-vendor.php     # --no-dev + optimize-autoloader, soʻng git add -f
+git commit -m "chore(deps): ..."
+composer install               # dev asboblarni qaytaradi (testlar shusiz ishlamaydi)
+```
+
+Oxirgi qadam xavfsiz: `/vendor` `.gitignore`da **atayin qoldirilgan**. Git allaqachon
+kuzatilayotgan fayllarga bu qoida taʼsir qilmaydi, lekin keyin `composer install`
+qoʻshadigan dev paketlar (pest, phpunit, dusk, faker, pint) kuzatilmaydi — yaʼni
+ular relizga hech qachon tushmaydi. Faqat skript stage qilgan daraxt commit boʻladi.
+
+`tools/build-vendor.php` yana `vendor/.lock-sha1` faylini yozadi. `deploy.sh` uni
+serverdagi `composer.lock` bilan solishtiradi va farq boʻlsa deploy logiga
+ogohlantirish yozadi — “lock oʻzgardi, vendor esa eski” holatini boshqa jimgina
+oʻtkazib yubormaslik uchun.
+
+Ikki eslatma:
+- `vendor/bin/*` fayllari Windows’da qurilgani uchun ijro (executable) bitisiz
+  commit boʻladi. Ilova ularni ishlatmaydi (kirish nuqtasi — `artisan`), shuning
+  uchun muammo emas.
+- `.gitattributes`da `/vendor/** -text -diff` bor: bu daraxt generatsiya qilinadi,
+  qoʻlda tahrirlanmaydi va ichida binar fayllar (shrift, sertifikat) bor — ular
+  `* text=auto eol=lf` qoidasidan oʻtkazilmasligi kerak.
 
 ## Test login
 

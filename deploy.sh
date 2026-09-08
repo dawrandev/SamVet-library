@@ -69,35 +69,29 @@ run() {
     fi
 }
 
-# Composer is rarely on cron's PATH on a cPanel account — it ships at a fixed
-# location outside it — so the usual `command -v composer` finds nothing and
-# dependencies silently never update. That is not a cosmetic miss: it is how a
-# release that bumped a package (the league/commonmark security update) can
-# look successful while production keeps running the vulnerable version.
-find_composer() {
-    local candidate
-    for candidate in \
-        "$APP_DIR/composer.phar" \
-        /opt/cpanel/composer/bin/composer \
-        /usr/local/bin/composer \
-        "$HOME/composer.phar" \
-        "$(command -v composer 2>/dev/null)"
-    do
-        [ -n "$candidate" ] && [ -f "$candidate" ] && { echo "$candidate"; return 0; }
-    done
+# Dependencies arrive with the code, not from composer. This host has neither
+# composer nor outbound network — a deploy proved the second one: downloading
+# composer.phar from getcomposer.org simply returned false. So vendor/ is
+# committed to the repository (see tools/build-vendor.php and .gitignore) and
+# `git pull` delivers it like any other file.
+#
+# The one failure this cannot prevent is a composer.lock that moved without
+# vendor/ being rebuilt: the site keeps running, quietly, on the old packages.
+# That is exactly how the league/commonmark security update stayed unapplied
+# here for weeks, so it gets checked out loud rather than assumed.
+if [ ! -f vendor/autoload.php ]; then
+    log "XATO: vendor/autoload.php yo'q — bog'liqliklar yetib kelmagan. Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni commit qiling."
+    exit 1
+fi
 
-    return 1
-}
+if [ -f vendor/.lock-sha1 ]; then
+    LOCK_NOW="$(sha1sum composer.lock 2>/dev/null | cut -d' ' -f1)"
+    LOCK_BUILT="$(cat vendor/.lock-sha1)"
 
-COMPOSER="$(find_composer)"
-
-if [ -n "${COMPOSER:-}" ]; then
-    log "composer: $COMPOSER"
-    # Always invoked through the PHP chosen above: cPanel's composer wrapper
-    # picks its own PHP otherwise, which is not necessarily the site's.
-    run "$PHP" "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction
-else
-    log "DIQQAT: composer topilmadi — paketlar yangilanmadi. composer.lock o'zgargan bo'lsa, buni qo'lda hal qiling."
+    if [ -n "$LOCK_NOW" ] && [ "$LOCK_NOW" != "$LOCK_BUILT" ]; then
+        log "DIQQAT: composer.lock o'zgargan, lekin vendor/ eski holatda qurilgan."
+        log "        Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni qayta commit qiling."
+    fi
 fi
 
 # --force: there is no TTY here to answer the confirmation prompt.

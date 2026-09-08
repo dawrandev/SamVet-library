@@ -44,17 +44,24 @@ jobs:
           extensions: mbstring, pdo_mysql, gd, zip, bcmath, intl
           coverage: none
 
-      - name: Cache Composer packages
+      # vendor/ is committed to this repository (the production host has no
+      # composer and no network - see CLAUDE.md), so it already arrives with the
+      # checkout. Caching the directory itself would restore a stale tree over
+      # it; cache composer's download cache instead, which is what actually
+      # makes the dev-only install below fast.
+      - name: Cache Composer downloads
         uses: actions/cache@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          path: ~/.cache/composer/files
+          key: composer-files-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-files-
 
+      # Adds the dev tooling (pest, phpunit, ...) on top of the committed
+      # production tree.
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # Fails the build on any known CVE/advisory in a locked dependency вЂ”
+      # Fails the build on any known CVE/advisory in a locked dependency —
       # catches issues like the dompdf 2026 CVEs before they ship, instead of
       # relying on someone remembering to check manually.
       - name: Audit Composer dependencies for known vulnerabilities
