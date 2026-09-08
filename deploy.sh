@@ -69,41 +69,47 @@ run() {
     fi
 }
 
-# Dependencies arrive with the code, not from composer. This host has neither
-# composer nor outbound network — a deploy proved the second one: downloading
-# composer.phar from getcomposer.org simply returned false. So vendor/ is
-# committed to the repository (see tools/build-vendor.php and .gitignore) and
-# `git pull` delivers it like any other file.
+
+# Laravel caches the list of discovered packages in bootstrap/cache/. Those
+# files are written by composer's post-autoload-dump hook, which never runs on
+# this host, so they are absent from the repository and they outlive any
+# replacement of vendor/ — still naming providers from the tree that is gone.
 #
-# The one failure this cannot prevent is a composer.lock that moved without
-# vendor/ being rebuilt: the site keeps running, quietly, on the old packages.
-# That is exactly how the league/commonmark security update stayed unapplied
-# here for weeks, so it gets checked out loud rather than assumed.
+# That is not a subtle failure. A production vendor/ has no laravel/dusk, the
+# stale manifest still lists DuskServiceProvider, and every request and every
+# artisan command then dies with "Class not found" before the framework
+# finishes booting. It took this site down on 2026-09-08.
+#
+# Deleting them is the entire fix — Laravel rebuilds them on the next run — and
+# rm works even when the application cannot boot at all, which is exactly the
+# state it has to recover from. So it runs BEFORE any artisan call below.
+log "bootstrap/cache tozalanmoqda"
+rm -f bootstrap/cache/packages.php \
+      bootstrap/cache/services.php \
+      bootstrap/cache/config.php \
+      bootstrap/cache/routes-*.php
+
+# Dependencies do not arrive with the code. This host has no composer, so
+# vendor/ is uploaded by hand as vendor-prod.zip (built by
+# tools/build-vendor.php). Nothing here can install anything; it can only
+# refuse to deploy against a tree that is missing, and complain about one that
+# is out of date.
 if [ ! -f vendor/autoload.php ]; then
-    log "XATO: vendor/autoload.php yo'q — bog'liqliklar yetib kelmagan. Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni commit qiling."
+    log "XATO: vendor/autoload.php yo'q — vendor/ yuklanmagan yoki to'liq emas."
+    log "      Loyihada 'php tools/build-vendor.php' ishlating, so'ng vendor-prod.zip'ni serverga yuklang."
     exit 1
 fi
 
-if [ -f vendor/.lock-sha1 ]; then
-    LOCK_NOW="$(sha1sum composer.lock 2>/dev/null | cut -d' ' -f1)"
-    LOCK_BUILT="$(cat vendor/.lock-sha1)"
-
-    if [ -n "$LOCK_NOW" ] && [ "$LOCK_NOW" != "$LOCK_BUILT" ]; then
-        log "DIQQAT: composer.lock o'zgargan, lekin vendor/ eski holatda qurilgan."
-        log "        Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni qayta commit qiling."
-    fi
+# The failure mode of a manual step is that it gets skipped, and a skipped
+# vendor upload breaks nothing visibly: the site keeps serving the packages it
+# already has. That is precisely how the league/commonmark security update sat
+# in composer.lock, passed CI, and never reached production. Non-fatal on
+# purpose — an outdated tree still runs — but it must not pass in silence.
+if ! "$PHP" tools/check-vendor.php >>"$LOG" 2>&1; then
+    log "DIQQAT: vendor/ composer.lock ga mos emas — yuqorida ro'yxati bor."
+    log "        Yangi vendor-prod.zip tayyorlab, serverga yuklash kerak."
 fi
 
-# The other way vendor/ can be wrong: someone ran a plain `composer install`
-# locally (which restores pest/phpunit/dusk and rewrites the autoload files)
-# and committed those six files along with unrelated work. The dev packages
-# themselves are gitignored, so what lands here is an autoloader pointing at
-# classes that do not exist on this machine. Cheap to detect, impossible to
-# guess from the symptoms.
-if "$PHP" -r 'exit((require "vendor/composer/installed.php")["root"]["dev"] ? 0 : 1);' 2>/dev/null; then
-    log "DIQQAT: vendor/ dev rejimida qurilgan autoload bilan kelgan (pest/phpunit yo'q, lekin autoload ularni qidiradi)."
-    log "        Loyihada 'php tools/build-vendor.php' ishlatib, vendor'ni qayta commit qiling."
-fi
 
 # --force: there is no TTY here to answer the confirmation prompt.
 run "$PHP" artisan migrate --force

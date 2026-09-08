@@ -9,10 +9,3 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
-
-# vendor/ is committed to this repository (the production host has no composer
-# and no outbound network — see the "Bog'liqliklar" section in CLAUDE.md).
-# Store those files byte-for-byte: the tree is generated, never hand-edited, and
-# it contains binaries (fonts, certificates, images) that must not be run
-# through the `* text=auto eol=lf` rule above.
-/vendor/** -text -diff

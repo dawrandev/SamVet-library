@@ -265,58 +265,76 @@ indekslanmaydi va qidiruvda ko'rinmaydi.
 `opcache.validate_timestamps`ga bog'liq; `/admin/server-limits` shuni ko'rsatadi. O'chiq
 bo'lsa, hosting panelidagi "Restart PHP".
 
-## Bogʻliqliklar (vendor) — git orqali, composersiz
+## Bogʻliqliklar (vendor) — qoʻlda zip bilan
 
-**`vendor/` shu repozitoriyga commit qilinadi.** Bu odatda anti-pattern, lekin bu
-yerda tanlov emas: production hostida composer ham, **tashqi internet ham yoʻq** —
-buni deploy oʻzi isbotladi, `copy('https://getcomposer.org/composer-stable.phar', ...)`
-oddiygina `false` qaytardi. Demak paketlar u yerga faqat `git pull` bilan yetib
-boradi.
-
-Bu qogʻozdagi xavf emas: `league/commonmark` xavfsizlik yangilanishi (6 ta advisory)
-`composer.lock`da bor edi, CI yashil edi, deploy “muvaffaqiyatli” koʻrinardi — va
-production shu vaqt davomida zaif versiyani ishlatib turardi. Yangilanish server
-uchun **koʻrinmas** edi.
+Production hostida **composer yoʻq**, shuning uchun `vendor/` u yerga qoʻlda,
+zip sifatida yuklanadi. `vendor/` git'ga **kirmaydi** (`.gitignore`).
 
 **`composer.json` yoki `composer.lock` oʻzgargan har safar:**
 
 ```bash
-php tools/build-vendor.php     # --no-dev + optimize-autoloader, soʻng git add -f
-git commit -m "chore(deps): ..."
-composer install               # dev asboblarni qaytaradi (testlar shusiz ishlamaydi)
+php tools/build-vendor.php     # --no-dev + optimize-autoloader, soʻng vendor-prod.zip
 ```
 
-Oxirgi qadam xavfsiz: `/vendor` `.gitignore`da **atayin qoldirilgan**. Git allaqachon
-kuzatilayotgan fayllarga bu qoida taʼsir qilmaydi, lekin keyin `composer install`
-qoʻshadigan dev paketlar (pest, phpunit, dusk, faker, pint) kuzatilmaydi — yaʼni
-ular relizga hech qachon tushmaydi. Faqat skript stage qilgan daraxt commit boʻladi.
+Skript avval daraxt haqiqatan dev-siz va ishlaydigan autoloaderga ega ekanini
+tekshiradi, keyingina zip yasaydi.
 
-`tools/build-vendor.php` yana `vendor/.lock-sha1` faylini yozadi. `deploy.sh` uni
-serverdagi `composer.lock` bilan solishtiradi va farq boʻlsa deploy logiga
-ogohlantirish yozadi — “lock oʻzgardi, vendor esa eski” holatini boshqa jimgina
-oʻtkazib yubormaslik uchun.
+**Serverda, aynan shu tartibda:**
 
-**Kutilgan “iflos” holat.** Oxirgi `composer install`dan keyin `git status` doim
-shu 6 ta faylni oʻzgargan deb koʻrsatadi:
+1. `vendor-prod.zip` ni `/home/sdvunf/arm.sdvunf.uz` ga yuklang (hali extract qilmang)
+2. Mavjud `vendor` ni **`vendor_old`** deb nomlang — bu sizning orqaga qaytish nuqtangiz
+3. Zip'ni **Extract** qiling (ilova ildizida; ichida `vendor/` prefiksi bor)
+4. **`bootstrap/cache/` ichidagi barcha `.php` fayllarni oʻchiring** ← MAJBURIY, pastga qarang
+5. Saytni oching, ishlashiga ishonch hosil qiling
+6. Shundan keyin `vendor_old` va zip'ni oʻchiring
+
+Lokalda oxirida `composer install` — dev asboblarni (pest, phpunit, dusk, pint)
+qaytaradi, ularsiz test toʻplami ishlamaydi.
+
+### 4-qadam nega majburiy (real avariya)
+
+`bootstrap/cache/packages.php` — Laravel topgan paketlar roʻyxati keshi. Uni
+composer'ning `post-autoload-dump` hooki yozadi, ya'ni **bu serverda hech qachon
+yangilanmaydi** va git'da ham yoʻq. Natijada u eski `vendor`dan qolib ketadi.
+
+2026-09-08 da aynan shu sayt ni yiqitdi: yangi (production) `vendor`da
+`laravel/dusk` yoʻq, eski keshda esa `DuskServiceProvider` yozilgan edi —
+`Class "Laravel\Dusk\DuskServiceProvider" not found`, va **framework
+koʻtarilishdayoq** oʻlgani uchun na sayt, na `artisan` ishladi. Yechim faqat
+shu fayllarni oʻchirish.
+
+`deploy.sh` endi buni har safar avtomatik qiladi (birinchi qadam sifatida,
+`artisan`gacha), lekin agar deploy'gacha saytga kirsangiz — qoʻlda oʻchirishingiz
+kerak boʻladi.
+
+### Nazorat: yuklashni unutib boʻlmaydi
+
+Qoʻlda qadamning kamchiligi — uni **unutish** mumkin, va unutilsa hech narsa
+buzilmaydi: sayt eski paketlar bilan ishlayveradi. `league/commonmark` xavfsizlik
+yangilanishi (6 ta advisory) aynan shunday: `composer.lock`da bor edi, CI yashil,
+deploy "muvaffaqiyatli" — lekin production zaif versiyada turdi.
+
+Shuning uchun `deploy.sh` har safar `tools/check-vendor.php` ni ishlatadi. U
+`composer.lock` dagi har bir production paketni serverdagi
+`vendor/composer/installed.php` bilan solishtiradi va farqni deploy logiga aniq
+yozadi:
 
 ```
-vendor/composer/autoload_classmap.php   autoload_files.php   autoload_psr4.php
-vendor/composer/autoload_static.php     installed.json       installed.php
+vendor/ composer.lock ga MOS EMAS — 2 ta farq:
+  - league/commonmark: lock 2.10.0, vendor 2.8.2
+  - mews/purifier: lock 3.4.4, vendor'da YO'Q
 ```
 
-Bu normal — dev paketlar qoʻshilgani uchun autoload qayta yozildi. **Ularni commit
-qilmang** (`git add -A` dan ehtiyot boʻling): serverga dev rejimidagi autoload
-tushsa, u yerda mavjud boʻlmagan klasslarga ishora qiladi. Faqat
-`tools/build-vendor.php` stage qilgan holat commit boʻlishi kerak. Agar shunday
-xato boʻlsa, `deploy.sh` buni aniqlaydi va deploy logiga yozadi.
+Deploy toʻxtamaydi (eski daraxt ham ishlaydi), lekin endi **jim** oʻtmaydi.
 
-Ikki eslatma:
-- `vendor/bin/*` fayllari Windows’da qurilgani uchun ijro (executable) bitisiz
-  commit boʻladi. Ilova ularni ishlatmaydi (kirish nuqtasi — `artisan`), shuning
-  uchun muammo emas.
-- `.gitattributes`da `/vendor/** -text -diff` bor: bu daraxt generatsiya qilinadi,
-  qoʻlda tahrirlanmaydi va ichida binar fayllar (shrift, sertifikat) bor — ular
-  `* text=auto eol=lf` qoidasidan oʻtkazilmasligi kerak.
+`vendor/autoload.php` umuman yoʻq boʻlsa — deploy **toʻxtaydi**, chunki bunda
+migratsiya ham, hech narsa ham ishlamaydi.
+
+### Kelajakda
+
+Hostingdan **composer** va **tashqi tarmoqqa chiqish** soʻralsa va berilsa, bu
+butun tartib keraksiz boʻladi: `deploy.sh` ga `composer install --no-dev` qadamini
+qaytarish yetarli.
 
 ## Test login
 

@@ -44,11 +44,9 @@ jobs:
           extensions: mbstring, pdo_mysql, gd, zip, bcmath, intl
           coverage: none
 
-      # vendor/ is committed to this repository (the production host has no
-      # composer and no network - see CLAUDE.md), so it already arrives with the
-      # checkout. Caching the directory itself would restore a stale tree over
-      # it; cache composer's download cache instead, which is what actually
-      # makes the dev-only install below fast.
+      # Composer's download cache rather than vendor/ itself: it is keyed by the
+      # lock file but still useful on a miss (unchanged packages are reused),
+      # and it cannot leave a stale tree behind for the install to work around.
       - name: Cache Composer downloads
         uses: actions/cache@v4
         with:
@@ -56,8 +54,6 @@ jobs:
           key: composer-files-${{ hashFiles('composer.lock') }}
           restore-keys: composer-files-
 
-      # Adds the dev tooling (pest, phpunit, ...) on top of the committed
-      # production tree.
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
