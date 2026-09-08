@@ -87,6 +87,14 @@ PHP="$(find_php)" || {
 
 log "=== Deploy boshlandi ($APP_DIR) — $($PHP -r 'echo PHP_VERSION;') ==="
 
+# Which revision this deploy is actually applying. Without it the log proves
+# only that a deploy ran, not what it shipped — and "is the new code live?"
+# then has no answer short of hunting for a file in File Manager. `git` may be
+# absent, so this is best-effort and never fatal.
+if command -v git >/dev/null 2>&1 && [ -d .git ]; then
+    log "kod: $(git --no-optional-locks log -1 --format='%h %ad %s' --date=short 2>/dev/null || echo 'aniqlanmadi')"
+fi
+
 run() {
     log "-> $*"
     if ! "$@" >>"$LOG" 2>&1; then
