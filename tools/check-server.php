@@ -242,6 +242,30 @@ foreach ([$root.'/composer.phar', '/opt/cpanel/composer/bin/composer', '/usr/loc
 
 kv('command -v composer', sh('command -v composer') ?: 'topilmadi');
 
+// Whether composer *could* run here at all. Reaching the network is only one
+// of its requirements, and the others are the ones shared hosts actually
+// disable: composer shells out for git and unzip, so a blocked proc_open
+// stops it dead no matter how good the connection is.
+echo "\n-- composer ishlay oladimi --\n";
+
+$disabled = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+
+foreach (['proc_open', 'proc_close', 'exec', 'putenv'] as $function) {
+    $ok = function_exists($function) && ! in_array($function, $disabled, true);
+    kv('  '.$function.'()', $ok ? 'BOR' : 'OCHIRILGAN');
+}
+
+foreach (['zip', 'openssl', 'mbstring', 'phar', 'filter', 'iconv'] as $extension) {
+    kv('  ext-'.$extension, extension_loaded($extension));
+}
+
+kv('  CLI memory_limit', ini_get('memory_limit'));
+kv('  phar.readonly', ini_get('phar.readonly') ? 'ON' : 'OFF');
+kv('  git', sh('git --version'));
+kv('  unzip', sh('command -v unzip') ?: 'topilmadi');
+kv('  HOME', (string) getenv('HOME'));
+kv('  yozish huquqi (HOME)', is_writable((string) getenv('HOME')));
+
 h('10. storage/logs/laravel.log (oxirgi 40 qator)');
 $laravelLog = $root.'/storage/logs/laravel.log';
 kv('olchami', is_file($laravelLog) ? human((int) filesize($laravelLog)) : '(yoq)');
