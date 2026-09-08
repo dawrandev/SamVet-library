@@ -137,6 +137,14 @@ export function initReader() {
             state.doc = await pdfjsLib.getDocument({
                 url: root.dataset.reader,
                 withCredentials: true,
+                // Range requests are on by default and the stream endpoint
+                // advertises them, so only the pages being read are fetched
+                // rather than the whole file. The chunk is raised from the
+                // 64 KB default because every one of these is a full
+                // authenticated request on a host that allows 20 concurrent
+                // entry processes — fewer, larger reads suit that better,
+                // while still being a tiny fraction of a 100 MB book.
+                rangeChunkSize: 262144,
             }).promise;
 
             el.total.textContent = state.doc.numPages;

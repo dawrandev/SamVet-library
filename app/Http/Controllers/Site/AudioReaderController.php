@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Http\Controllers\Concerns\StreamsPrivateFiles;
 use App\Http\Controllers\Controller;
 use App\Services\OnlineReadService;
 use App\Services\Site\AudioReaderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AudioReaderController extends Controller
 {
+    use StreamsPrivateFiles;
+
     public function __construct(
         private readonly AudioReaderService $reader,
         private readonly OnlineReadService $onlineReads,
@@ -46,59 +48,12 @@ class AudioReaderController extends Controller
     }
 
     /**
-     * Streams a private audio file, honoring HTTP Range requests (206 Partial
-     * Content) so the player can seek without downloading the whole file
-     * first. Reads/flushes in manual chunks — same rationale as the PDF
-     * reader's stream(): fpassthru() doesn't reliably flush PHP's own output
-     * buffer on this stack, so a large file would silently accumulate in memory.
+     * Streams a private audio file. Range handling, bounds checking and the
+     * chunked read all live in the shared trait — this used to be a third copy
+     * of them, and the copies had already drifted apart.
      */
     private function stream(Request $request, string $path): StreamedResponse
     {
-        $disk = Storage::disk('local');
-
-        abort_unless($disk->exists($path), 404);
-
-        $size = $disk->size($path);
-        $mime = $disk->mimeType($path) ?: 'audio/mpeg';
-
-        $start = 0;
-        $end = $size - 1;
-        $status = 200;
-
-        $range = $request->header('Range');
-        if ($range && preg_match('/bytes=(\d*)-(\d*)/', $range, $matches)) {
-            $start = $matches[1] === '' ? 0 : (int) $matches[1];
-            $end = $matches[2] === '' ? $size - 1 : min((int) $matches[2], $size - 1);
-            $status = 206;
-        }
-
-        $length = $end - $start + 1;
-
-        $headers = [
-            'Content-Type' => $mime,
-            'Content-Length' => $length,
-            'Accept-Ranges' => 'bytes',
-            'Content-Disposition' => 'inline; filename="audio"',
-            'Cache-Control' => 'private, no-store, max-age=0',
-            'X-Content-Type-Options' => 'nosniff',
-        ];
-
-        if ($status === 206) {
-            $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
-        }
-
-        return response()->stream(function () use ($disk, $path, $start, $length) {
-            $stream = $disk->readStream($path);
-            fseek($stream, $start);
-
-            $remaining = $length;
-            while ($remaining > 0 && ! feof($stream)) {
-                $chunk = min(1024 * 1024, $remaining); // 1 MB chunks
-                echo fread($stream, $chunk);
-                flush();
-                $remaining -= $chunk;
-            }
-            fclose($stream);
-        }, $status, $headers);
+        return $this->streamPrivateFile($request, $path, 'audio', 'audio/mpeg', detectMime: true);
     }
 }

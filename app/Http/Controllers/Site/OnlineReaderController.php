@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Http\Controllers\Concerns\StreamsPrivateFiles;
 use App\Http\Controllers\Controller;
 use App\Services\OnlineReadService;
 use App\Services\Site\OnlineReaderService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class OnlineReaderController extends Controller
 {
+    use StreamsPrivateFiles;
+
     public function __construct(
         private readonly OnlineReaderService $reader,
         private readonly OnlineReadService $onlineReads,
@@ -37,9 +40,9 @@ class OnlineReaderController extends Controller
         ]);
     }
 
-    public function bookFile(string $slug): StreamedResponse
+    public function bookFile(Request $request, string $slug): StreamedResponse
     {
-        return $this->stream($this->reader->book($slug)->electronic_file);
+        return $this->streamPdf($request, $this->reader->book($slug)->electronic_file);
     }
 
     public function article(string $slug): View
@@ -54,9 +57,9 @@ class OnlineReaderController extends Controller
         ]);
     }
 
-    public function articleFile(string $slug): StreamedResponse
+    public function articleFile(Request $request, string $slug): StreamedResponse
     {
-        return $this->stream($this->reader->article($slug)->electronic_file);
+        return $this->streamPdf($request, $this->reader->article($slug)->electronic_file);
     }
 
     public function dissertation(string $slug): View
@@ -73,9 +76,9 @@ class OnlineReaderController extends Controller
         ]);
     }
 
-    public function dissertationFile(string $slug): StreamedResponse
+    public function dissertationFile(Request $request, string $slug): StreamedResponse
     {
-        return $this->stream($this->reader->dissertation($slug)->electronic_file);
+        return $this->streamPdf($request, $this->reader->dissertation($slug)->electronic_file);
     }
 
     public function avtoreferat(string $slug): View
@@ -92,9 +95,9 @@ class OnlineReaderController extends Controller
         ]);
     }
 
-    public function avtoreferatFile(string $slug): StreamedResponse
+    public function avtoreferatFile(Request $request, string $slug): StreamedResponse
     {
-        return $this->stream($this->reader->avtoreferat($slug)->electronic_file);
+        return $this->streamPdf($request, $this->reader->avtoreferat($slug)->electronic_file);
     }
 
     public function journalIssue(int $id): View
@@ -109,41 +112,19 @@ class OnlineReaderController extends Controller
         ]);
     }
 
-    public function journalIssueFile(int $id): StreamedResponse
+    public function journalIssueFile(Request $request, int $id): StreamedResponse
     {
-        return $this->stream($this->reader->journalIssue($id)->electronic_file);
+        return $this->streamPdf($request, $this->reader->journalIssue($id)->electronic_file);
     }
 
     /**
      * Stream a private PDF for in-browser rendering. `inline` plus a private,
-     * no-store cache keeps it out of the browser's download flow and disk cache.
-     *
-     * Reads and flushes in manual chunks instead of Storage::response()
-     * (fpassthru): verified that on this stack, fpassthru() doesn't reliably
-     * flush PHP's own output buffer, so the whole file silently accumulates
-     * in memory — a 600MB PDF crashed a 512MB memory_limit worker outright.
-     * The explicit flush() after every chunk keeps memory flat regardless of
-     * file size (confirmed on the same 600MB file, no crash).
+     * no-store cache keeps it out of the browser's download flow and disk
+     * cache; the shared trait adds Range support, which is what lets PDF.js
+     * fetch only the pages being read instead of the entire file.
      */
-    private function stream(string $path): StreamedResponse
+    private function streamPdf(Request $request, string $path): StreamedResponse
     {
-        $disk = Storage::disk('local');
-
-        abort_unless($disk->exists($path), 404);
-
-        return response()->stream(function () use ($disk, $path) {
-            $stream = $disk->readStream($path);
-            while (! feof($stream)) {
-                echo fread($stream, 1024 * 1024); // 1 MB chunks
-                flush();
-            }
-            fclose($stream);
-        }, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Length' => $disk->size($path),
-            'Content-Disposition' => 'inline; filename="document.pdf"',
-            'Cache-Control' => 'private, no-store, max-age=0',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return $this->streamPrivateFile($request, $path, 'document.pdf', 'application/pdf');
     }
 }
