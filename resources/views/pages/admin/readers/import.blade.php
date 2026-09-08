@@ -119,10 +119,32 @@
 
     {{-- Import result --}}
     @if ($stats)
-        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="mb-4 flex items-center gap-2">
-                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500">✓</span>
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Import yakunlandi') }}</h3>
+        @php($problems = $stats['problems'] ?? [])
+        @php($needsAttention = (bool) ($stats['needs_attention'] ?? false))
+
+        {{--
+            The modal opens by itself only when something is actually wrong with
+            the file. Trailing blank rows are normal and must not nag; a name
+            column the importer could not find is what silently dropped 563 rows
+            once, and that has to be impossible to miss.
+        --}}
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+             x-data="{ showProblems: @js($needsAttention) }">
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+                @if ($needsAttention)
+                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">!</span>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Import yakunlandi — diqqat talab qiladi') }}</h3>
+                @else
+                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500">✓</span>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">{{ __('Import yakunlandi') }}</h3>
+                @endif
+
+                @if ($problems)
+                    <button type="button" @click="showProblems = true"
+                            class="text-theme-sm text-brand-600 dark:text-brand-400 ml-auto font-medium underline-offset-2 hover:underline">
+                        {{ __('Nega o‘tkazib yuborildi?') }}
+                    </button>
+                @endif
             </div>
 
             <div class="overflow-x-auto">
@@ -165,6 +187,99 @@
                class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 mt-5 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
                 {{ __('Foydalanuvchilar ro‘yxatini ko‘rish') }} →
             </a>
+
+            {{-- Why rows were skipped --}}
+            @if ($problems)
+                <template x-teleport="body">
+                    <div x-show="showProblems" x-cloak
+                         @keydown.escape.window="showProblems = false"
+                         class="z-999999 fixed inset-0 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
+                        <div @click.outside="showProblems = false"
+                             class="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
+                            <div class="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">
+                                        {{ __('Qatorlar nega o‘tkazib yuborildi?') }}
+                                    </h3>
+                                    <p class="text-theme-sm mt-1 text-gray-500 dark:text-gray-400">
+                                        {{ __('Har bir varaq bo‘yicha sabablar. Bo‘sh qatorlar odatiy holat.') }}
+                                    </p>
+                                </div>
+                                <button type="button" @click="showProblems = false"
+                                        class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/[0.06]">
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div class="space-y-5">
+                                @foreach ($problems as $problem)
+                                    <div class="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+                                        <h4 class="mb-3 text-sm font-semibold text-gray-800 dark:text-white/90">
+                                            {{ __('Varaq') }}: {{ $problem['sheet'] }}
+                                        </h4>
+
+                                        @if ($problem['error'])
+                                            <x-alert type="error" class="mb-3">
+                                                {{ __('Varaqni o‘qib bo‘lmadi') }}: {{ $problem['error'] }}
+                                            </x-alert>
+                                        @endif
+
+                                        {{-- The one failure a librarian can fix in Excel without help. --}}
+                                        @if ($problem['missing_columns'])
+                                            <x-alert type="error" class="mb-3">
+                                                <p class="font-medium">{{ __('Faylda quyidagi ustun topilmadi:') }}</p>
+                                                <ul class="mt-1 list-inside list-disc">
+                                                    @foreach ($problem['missing_columns'] as $column)
+                                                        <li>{{ $column }}</li>
+                                                    @endforeach
+                                                </ul>
+                                                <p class="mt-2">
+                                                    {{ __('Excel’da ustun sarlavhasini to‘g‘rilab, faylni qayta yuklang.') }}
+                                                </p>
+                                            </x-alert>
+
+                                            @if ($problem['headers'])
+                                                <div class="mb-3">
+                                                    <p class="text-theme-xs mb-1 font-medium text-gray-500 dark:text-gray-400">
+                                                        {{ __('Fayldagi mavjud ustunlar') }}:
+                                                    </p>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        @foreach ($problem['headers'] as $header)
+                                                            <span class="text-theme-xs rounded-md bg-gray-100 px-2 py-1 text-gray-600 dark:bg-white/[0.06] dark:text-gray-300">{{ $header }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @endif
+
+                                        @if ($problem['issues'])
+                                            <table class="min-w-full text-sm">
+                                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                                    @foreach ($problem['issues'] as $issue)
+                                                        <tr>
+                                                            <td class="py-2 pr-4 {{ $issue['attention'] ? 'text-warning-600 dark:text-warning-500 font-medium' : 'text-gray-600 dark:text-gray-300' }}">
+                                                                {{ $issue['label'] }}
+                                                            </td>
+                                                            <td class="py-2 text-right tabular-nums text-gray-700 dark:text-gray-300">
+                                                                {{ $issue['count'] }}
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <button type="button" @click="showProblems = false"
+                                    class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 mt-5 inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-white transition">
+                                {{ __('Yopish') }}
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            @endif
         </div>
     @endif
 @endsection

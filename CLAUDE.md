@@ -210,6 +210,7 @@ Loyiha tugallanish arafasida o'tkazilgan system design auditda (2026-07-30) topi
 - **Admin panel + Jurnal/Maqola qidiruvi** — hali oddiy `LIKE` (public katalogdagi kabi MySQL FULLTEXT emas). Kichik ma'lumotlar bazasi va faqat xodimlar foydalangani uchun hozircha muammo emas.
 - **Navbat (queue) infratuzilmasi** — `app/Jobs/` bo'sh, hech narsa navbatga qo'yilmayapti — real ehtiyoj yo'q. Kelajakda `ShouldQueue` kerak bo'lsa, root/sudo yo'qligi sababli worker masalasi alohida hal qilinishi kerak.
 - **`ReaderImportService`/bulk import'lardagi tranzaksiya siyosati** — qisman import muvaffaqiyati (partial success) qasddan bo'lishi mumkin, lekin tasdiqlanmagan — yaqinroq ko'rib chiqish tavsiya etiladi.
+  - **O'tkazib yuborilgan qatorlar endi sababi bilan aytiladi** (`app/Enums/ReaderImportOutcome.php`). Sabab: haqiqiy import 563 qatorning hammasini "o'tkazildi" deb ko'rsatgan — varaqda ism ustuni `F.I.Sh.` deb nomlangan, alias jadvalida esa faqat `To'liq ismi` bor edi, shuning uchun har bir qator ismsiz kelib, bo'sh qator kabi tashlab yuborilgan. Son to'g'ri, lekin hech narsa demaydi. Endi import natijasida **modal** ochiladi: qaysi ustun topilmadi, fayldagi mavjud sarlavhalar qanday, va qaysi sabab necha marta uchradi. Modal faqat **haqiqiy muammo** bo'lganda o'zi ochiladi — oxiridagi bo'sh qatorlar odatiy holat va bezovta qilmaydi. Faylni tekshirish uchun: `php artisan readers:explain <fayl.xlsx>` (hech narsa yozmaydi).
 
 ## Buyruqlar
 

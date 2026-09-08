@@ -33,8 +33,11 @@ yarn-error.log
 # Vaqtinchalik TailAdmin manba (port tugagach o'chiriladi)
 /_tailadmin
 
-# Import manba fayllari (Excel) — git'ga kirmaydi
+# Import manba fayllari (Excel) — git'ga kirmaydi.
+# Ikkala nom ham: papka amalda "import" deb ham yaratilgan, ichida esa
+# kitobxonlarning shaxsiy ma'lumotlari (JSHSHIR, pasport) bor.
 /_import
+/import
 
 # Claude Design reference exports (not app code)
 /*.html

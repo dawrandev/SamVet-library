@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\Gender;
+use App\Enums\ReaderImportOutcome;
 use App\Enums\ReaderStatus;
 use App\Models\AffiliationGroup;
 use App\Models\AffiliationPlace;
@@ -23,7 +24,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
  * Each sheet is loaded separately (to avoid loading the full 76MB), images are not read.
  * Idempotent: updateOrCreate by id_number or pinfl.
  *
- * @phpstan-type SheetStat array{imported:int, updated:int, skipped:int, photos:int, type:?string}
+ * @phpstan-type SheetStat array{imported:int, updated:int, skipped:int, photos:int, type:?string, issues:array<string,int>, missing_columns:array<int,string>, headers:array<int,string>, error?:string}
  */
 class ReaderImportService
 {
@@ -201,7 +202,20 @@ class ReaderImportService
                 $stats[$sheetName] = $this->importSheet($path, $sheetName, $context);
             } catch (\Throwable $e) {
                 Log::error("readers:import — '{$sheetName}' varag'i o'qishda xato: {$e->getMessage()}");
-                $stats[$sheetName] = ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => 'XATO'];
+                $stats[$sheetName] = [
+                    'imported' => 0,
+                    'updated' => 0,
+                    'skipped' => 0,
+                    'photos' => 0,
+                    'type' => 'XATO',
+                    'issues' => [],
+                    'missing_columns' => [],
+                    'headers' => [],
+                    // Shown on screen: a sheet that could not be read at all is
+                    // a different failure from one whose rows were skipped, and
+                    // the two used to be indistinguishable in the results table.
+                    'error' => $e->getMessage(),
+                ];
             }
         }
 
@@ -257,7 +271,7 @@ class ReaderImportService
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
 
-            return ['imported' => 0, 'updated' => 0, 'skipped' => 0, 'photos' => 0, 'type' => $this->typeName($context['type'])];
+            return $this->sheetStat($context, 0, 0, 0, 0);
         }
 
         // ST — positional; others — header map.
@@ -265,12 +279,27 @@ class ReaderImportService
             ? self::ST_POSITIONS
             : $this->buildHeaderMap($rows[0]);
 
+        // Which columns the mapper could not find, and what the sheet actually
+        // calls its columns. Both go back to the screen: a heading the aliases
+        // do not know is the one import failure a librarian can fix without a
+        // developer, and it is invisible from the counts alone.
+        $missingColumns = $context['mode'] === 'st'
+            ? []
+            : $this->missingColumns($columnMap);
+
+        $headers = $context['mode'] === 'st'
+            ? []
+            : $this->headerLabels($rows[0]);
+
         // Row -> image binding for this sheet. Bytes are read one row at a
         // time (see SheetPhotos), never all at once.
         $sheetPhotos = $this->photos->photosForSheet($path, $sheetName);
 
         // Skip the header row.
         $dataRows = array_slice($rows, 1);
+
+        /** @var array<string, int> $issues outcome value => rows */
+        $issues = [];
 
         foreach ($dataRows as $index => $row) {
             // dataRows[$index] = rows[$index + 1] (absolute index) — matches the image anchor.
@@ -281,16 +310,20 @@ class ReaderImportService
             } catch (\Throwable $e) {
                 $rowNo = $index + 2; // 1-based + header
                 Log::warning("readers:import — '{$sheetName}' {$rowNo}-qator xato: {$e->getMessage()}");
-                $result = 'skipped';
+                $result = ReaderImportOutcome::SkippedError;
             }
 
             match ($result) {
-                'imported' => $imported++,
-                'updated' => $updated++,
+                ReaderImportOutcome::Imported => $imported++,
+                ReaderImportOutcome::Updated => $updated++,
                 default => $skipped++,
             };
 
-            if ($photo !== null && $result !== 'skipped') {
+            if ($result->isSkipped()) {
+                $issues[$result->value] = ($issues[$result->value] ?? 0) + 1;
+            }
+
+            if ($photo !== null && ! $result->isSkipped()) {
                 $photoCount++;
             }
         }
@@ -301,7 +334,83 @@ class ReaderImportService
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
 
-        return ['imported' => $imported, 'updated' => $updated, 'skipped' => $skipped, 'photos' => $photoCount, 'type' => $this->typeName($context['type'])];
+        return $this->sheetStat($context, $imported, $updated, $skipped, $photoCount, $issues, $missingColumns, $headers);
+    }
+
+    /**
+     * @param  array{mode:string, type:?int, status:ReaderStatus}  $context
+     * @param  array<string, int>  $issues
+     * @param  array<int, string>  $missingColumns
+     * @param  array<int, string>  $headers
+     * @return SheetStat
+     */
+    private function sheetStat(
+        array $context,
+        int $imported,
+        int $updated,
+        int $skipped,
+        int $photos,
+        array $issues = [],
+        array $missingColumns = [],
+        array $headers = [],
+    ): array {
+        return [
+            'imported' => $imported,
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'photos' => $photos,
+            'type' => $this->typeName($context['type']),
+            'issues' => $issues,
+            'missing_columns' => $missingColumns,
+            'headers' => $headers,
+        ];
+    }
+
+    /**
+     * Columns without which the sheet cannot produce a reader.
+     *
+     * `full_name` is mandatory outright. For the deduplication key either
+     * `id_number` or `pinfl` will do, so it is only missing when neither was
+     * recognised.
+     *
+     * @param  array<string, int>  $columnMap
+     * @return array<int, string> human-readable names of what is missing
+     */
+    private function missingColumns(array $columnMap): array
+    {
+        $missing = [];
+
+        if (! isset($columnMap['full_name'])) {
+            $missing[] = __('F.I.Sh. (ism-familiya)');
+        }
+
+        if (! isset($columnMap['id_number']) && ! isset($columnMap['pinfl'])) {
+            $missing[] = __('ID raqam yoki JSHSHIR');
+        }
+
+        return $missing;
+    }
+
+    /**
+     * The sheet's own column headings, so the screen can show what it found
+     * next to what it needed.
+     *
+     * @param  array<int, mixed>  $headerRow
+     * @return array<int, string>
+     */
+    private function headerLabels(array $headerRow): array
+    {
+        $labels = [];
+
+        foreach ($headerRow as $value) {
+            $text = trim((string) $value);
+
+            if ($text !== '') {
+                $labels[] = $text;
+            }
+        }
+
+        return $labels;
     }
 
     /**
@@ -320,6 +429,16 @@ class ReaderImportService
             'registratsiyaraqami' => 'registration_number',
             'berilgansana' => 'issued_date',
             'toliqismi' => 'full_name',
+            'toliqism' => 'full_name',
+            // "F.I.Sh." normalizes to "fish" once the dots are stripped. This
+            // is the heading the real workbooks actually use, and its absence
+            // meant full_name was never mapped — which skipped every single
+            // row of a 563-row sheet while reporting no error at all, since a
+            // row with no name is indistinguishable from a group header.
+            'fish' => 'full_name',
+            'fio' => 'full_name',
+            'фио' => 'full_name',
+            'familiyaismisharifi' => 'full_name',
             'oqishjoyi' => 'affiliation_place',
             'ishjoyi' => 'affiliation_place',
             'ishjoyioqishjoyi' => 'affiliation_place',
@@ -390,9 +509,8 @@ class ReaderImportService
      * @param  array<string, int>  $columnMap  field => 0-based column index
      * @param  array{mode:string, type:?int, status:ReaderStatus}  $context
      * @param  array{bytes:string, ext:string}|null  $photo  image attached to this row
-     * @return 'imported'|'updated'|'skipped'
      */
-    private function importRow(array $row, array $columnMap, array $context, ?array $photo = null): string
+    private function importRow(array $row, array $columnMap, array $context, ?array $photo = null): ReaderImportOutcome
     {
         $get = function (string $field) use ($row, $columnMap): ?string {
             if (! isset($columnMap[$field])) {
@@ -408,14 +526,27 @@ class ReaderImportService
         $passport = $get('passport');
         $pinfl = $this->cleanPinfl($get('pinfl'));
 
-        // Skip group-header / empty rows.
+        // Skip group-header / empty rows. Which of the three it is decides
+        // what the screen can tell the librarian afterwards: a wholly blank
+        // row is Excel padding and expected, whereas a row carrying an ID but
+        // no name almost always means the name column was not recognised.
         if (! $this->isPersonRow($fullName, $idNumber, $passport, $pinfl)) {
-            return 'skipped';
+            $hasAnything = $fullName !== null || $idNumber !== null || $passport !== null || $pinfl !== null;
+
+            if (! $hasAnything) {
+                return ReaderImportOutcome::SkippedEmptyRow;
+            }
+
+            if ($fullName === null || $fullName === '') {
+                return ReaderImportOutcome::SkippedNoName;
+            }
+
+            return ReaderImportOutcome::SkippedGroupHeader;
         }
 
         // A dedup key is required: id_number or pinfl.
         if ($idNumber === null && $pinfl === null) {
-            return 'skipped';
+            return ReaderImportOutcome::SkippedNoIdentifier;
         }
 
         // Determine type: in Ketkenler from the ID prefix; otherwise the context type.
@@ -423,7 +554,7 @@ class ReaderImportService
         if ($context['mode'] === 'left') {
             $type = $this->typeFromIdNumber($idNumber);
             if ($type === null) {
-                return 'skipped'; // prefix not found -> drop
+                return ReaderImportOutcome::SkippedUnknownType; // prefix not found -> drop
             }
         }
 
@@ -464,7 +595,7 @@ class ReaderImportService
             $this->attachPhoto($reader, $key, $photo);
         }
 
-        return $reader->wasRecentlyCreated ? 'imported' : 'updated';
+        return $reader->wasRecentlyCreated ? ReaderImportOutcome::Imported : ReaderImportOutcome::Updated;
     }
 
     /**
