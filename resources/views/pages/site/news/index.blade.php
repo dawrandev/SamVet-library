@@ -35,10 +35,7 @@
         @endif
 
         @if ($news->isEmpty())
-            <div class="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-                <p class="text-sm font-semibold text-gray-900">{{ __('Hozircha yangiliklar yo‘q') }}</p>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Tez orada shu yerda e‘lonlar paydo bo‘ladi.') }}</p>
-            </div>
+            <x-site.empty-state :title="__('Hozircha yangiliklar yo‘q')" :description="__('Tez orada shu yerda e‘lonlar paydo bo‘ladi.')" />
         @else
             <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($news as $item)

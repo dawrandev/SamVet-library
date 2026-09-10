@@ -32,10 +32,7 @@
         </form>
 
         @if ($avtoreferats->isEmpty())
-            <div class="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-                <p class="text-sm font-semibold text-gray-900">{{ __('Hozircha avtoreferatlar yo‘q') }}</p>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Avtoreferatlar qo‘shilgach shu yerda ko‘rinadi.') }}</p>
-            </div>
+            <x-site.empty-state :title="__('Hozircha avtoreferatlar yo‘q')" :description="__('Avtoreferatlar qo‘shilgach shu yerda ko‘rinadi.')" />
         @else
             <div class="mt-7 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white">
                 @foreach ($avtoreferats as $avtoreferat)

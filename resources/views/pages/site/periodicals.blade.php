@@ -7,11 +7,6 @@
         default => __('Jurnal va gazetalar'),
     };
 
-    $filters = [
-        ['label' => __('Barchasi'), 'kind' => null],
-        ['label' => __('Jurnallar'), 'kind' => \App\Enums\PublicationKind::Journal],
-        ['label' => __('Gazetalar'), 'kind' => \App\Enums\PublicationKind::Newspaper],
-    ];
 @endphp
 
 @section('title', $heading)
@@ -37,24 +32,11 @@
             </span>
         </div>
 
-        {{-- Kind filter --}}
-        <div class="mt-6 flex flex-wrap gap-2">
-            @foreach ($filters as $filter)
-                @php $active = $activeKind === $filter['kind']; @endphp
-                <a href="{{ route('periodicals.index', $filter['kind'] ? ['kind' => $filter['kind']->value] : []) }}"
-                   @class([
-                       'rounded-full px-4 py-2 text-sm font-medium transition',
-                       'bg-blue-700 text-white' => $active,
-                       'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50' => ! $active,
-                   ])>{{ $filter['label'] }}</a>
-            @endforeach
-        </div>
+        {{-- Kind filter, plus the articles those periodicals carry --}}
+        <x-site.periodical-tabs :active="$activeKind?->value ?? 'all'" />
 
         @if ($periodicals->isEmpty())
-            <div class="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-                <p class="text-sm font-semibold text-gray-900">{{ __('Hozircha nashrlar yo‘q') }}</p>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Davriy nashrlar qo‘shilgach shu yerda ko‘rinadi.') }}</p>
-            </div>
+            <x-site.empty-state :title="__('Hozircha nashrlar yo‘q')" :description="__('Davriy nashrlar qo‘shilgach shu yerda ko‘rinadi.')" />
         @else
             <div class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($periodicals as $periodical)

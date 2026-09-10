@@ -27,11 +27,18 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-outfit min-h-screen bg-gray-50 text-gray-700 antialiased">
+{{--
+    flex column + flex-1 on main is what keeps the footer at the bottom of the
+    viewport. min-h-screen alone only sized the body: on a short page (an empty
+    listing, a 404) the footer rode up right under the content and left the
+    page background showing beneath it, which reads as a broken layout rather
+    than an empty section.
+--}}
+<body class="font-outfit flex min-h-screen flex-col bg-gray-50 text-gray-700 antialiased">
     @include('partials.site.topbar')
     @include('partials.site.header')
 
-    <main>
+    <main class="flex-1">
         @yield('content')
     </main>
 

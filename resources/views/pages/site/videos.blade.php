@@ -32,10 +32,7 @@
         </form>
 
         @if ($videos->isEmpty())
-            <div class="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center">
-                <p class="text-sm font-semibold text-gray-900">{{ __('Hozircha videolar yo‘q') }}</p>
-                <p class="mt-1 text-sm text-gray-500">{{ __('Videolar qo‘shilgach shu yerda ko‘rinadi.') }}</p>
-            </div>
+            <x-site.empty-state :title="__('Hozircha videolar yo‘q')" :description="__('Videolar qo‘shilgach shu yerda ko‘rinadi.')" />
         @else
             <div class="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($videos as $video)
