@@ -49,6 +49,8 @@ class OnlineReaderController extends Controller
     {
         $article = $this->reader->article($slug);
 
+        $this->onlineReads->log(Auth::guard('reader')->user(), $article);
+
         return view('pages.site.reader', [
             'title' => $article->title,
             'subtitle' => $article->author,

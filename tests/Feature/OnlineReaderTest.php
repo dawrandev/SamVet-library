@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\Article;
+use App\Models\Avtoreferat;
 use App\Models\Book;
+use App\Models\Dissertation;
 use App\Models\OnlineRead;
 use Illuminate\Support\Facades\Storage;
 
@@ -81,3 +84,38 @@ it('does not log a read for a guest (redirected before the book is resolved)', f
 
     expect(OnlineRead::count())->toBe(0);
 });
+
+/**
+ * The guard for the whole class of bug, not just the one that was found.
+ *
+ * Adding a reader action is five lines of controller, and the log() call is the
+ * one line that changes nothing visible when it is left out: the page opens,
+ * the PDF streams, the reader notices nothing — only the librarian's dashboard
+ * is quietly missing the row. That is exactly how articles shipped unlogged
+ * while every other type was fine. This asserts the whole set at once, so the
+ * next type added has to be added here too.
+ *
+ * Journal issues are deliberately absent: JournalIssue is not in the morph map
+ * (and not a CatalogResourceType), so it cannot be logged without first
+ * deciding what the dashboard's "Turi" column and admin link should be for it.
+ * Reading a journal issue is therefore still uncounted — a known gap, not an
+ * oversight of this test.
+ */
+it('logs an online read for every readable type a reader can open', function (string $route, string $morphType, string $factory) {
+    $reader = actingAsReader();
+    $resource = $factory::factory()->withPdf()->create();
+
+    $this->get(route($route, $resource->slug))->assertOk();
+
+    expect(
+        OnlineRead::where('reader_id', $reader->id)
+            ->where('readable_type', $morphType)
+            ->where('readable_id', $resource->id)
+            ->count()
+    )->toBe(1);
+})->with([
+    'book' => ['read.book', 'book', Book::class],
+    'article' => ['read.article', 'article', Article::class],
+    'dissertation' => ['read.dissertation', 'dissertation', Dissertation::class],
+    'avtoreferat' => ['read.avtoreferat', 'avtoreferat', Avtoreferat::class],
+]);
