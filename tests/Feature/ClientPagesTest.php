@@ -25,6 +25,7 @@ it('renders the core public pages', function (string $path) {
     'periodicals' => '/jurnallar',
     'audiobooks' => '/audiokitoblar',
     'videos' => '/videolar',
+    'articles' => '/maqolalar',
     'statistics' => '/statistika',
     'news' => '/yangiliklar',
     'login' => '/kirish',

@@ -97,6 +97,7 @@ Route::get('/kitob/{slug}', [SiteBookController::class, 'show'])->name('book.sho
 Route::get('/bolimlar', [SectionController::class, 'index'])->name('sections');
 Route::get('/jurnallar', [PeriodicalController::class, 'index'])->name('periodicals.index');
 Route::get('/jurnal/{slug}', [SiteJournalController::class, 'show'])->name('journal.show');
+Route::get('/maqolalar', [SiteArticleController::class, 'index'])->name('articles.index');
 Route::get('/maqola/{slug}', [SiteArticleController::class, 'show'])->name('article.show');
 Route::get('/audiokitoblar', [SiteAudiobookController::class, 'index'])->name('audiobooks.index');
 Route::get('/audiokitob/{slug}', [SiteAudiobookController::class, 'show'])->name('audiobook.show');

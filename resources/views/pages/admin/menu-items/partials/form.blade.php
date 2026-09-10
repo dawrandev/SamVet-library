@@ -65,7 +65,10 @@
                     {{-- URL (only for module/external) --}}
                     <div x-show="type === 'module' || type === 'external'" x-cloak>
                         <x-admin.form.input name="url" :label="__('Havola')" :value="$preUrl"
-                            :placeholder="__('masalan: /katalog yoki https://...')" />
+                            :placeholder="__('masalan: articles.index, /katalog yoki https://...')" />
+                        <p class="mt-1 text-theme-xs text-gray-400" x-show="type === 'module'" x-cloak>
+                            {{ __('Bo‘lim nomi (masalan articles.index) yoki «/» bilan boshlanadigan yo‘l.') }}
+                        </p>
                     </div>
                 </div>
             </x-admin.form.section>

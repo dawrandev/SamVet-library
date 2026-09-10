@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Route;
 use Spatie\Translatable\HasTranslations;
 
 #[ObservedBy([MenuItemObserver::class])]
@@ -83,10 +84,28 @@ class MenuItem extends Model
     {
         return match ($this->type) {
             MenuItemType::External => $this->url ?: '#',
-            MenuItemType::Module => $this->url && \Illuminate\Support\Facades\Route::has($this->url)
-                ? route($this->url)
-                : '#',
+            MenuItemType::Module => $this->moduleUrl(),
             default => route('page.show', $this->id),
         };
+    }
+
+    /**
+     * A module item stores a route NAME, but the admin form asks for a
+     * "Havola" and offers "/katalog" as its example — so a path is what gets
+     * typed, and used to resolve to a silent "#" that looked like a bug in the
+     * page rather than a wrong value in the field. Both spellings are accepted
+     * now; a route name still wins, so nothing that already worked changes.
+     */
+    private function moduleUrl(): string
+    {
+        if (! $this->url) {
+            return '#';
+        }
+
+        if (Route::has($this->url)) {
+            return route($this->url);
+        }
+
+        return str_starts_with($this->url, '/') ? $this->url : '#';
     }
 }

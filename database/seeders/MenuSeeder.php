@@ -38,7 +38,14 @@ class MenuSeeder extends Seeder
                     ['title' => ['uz' => 'Avtoreferatlar', 'ru' => 'Авторефераты', 'kk' => 'Avtoreferatlar']],
                     ['title' => ['uz' => 'Monografiyalar', 'ru' => 'Монографии', 'kk' => 'Monografiyalar']],
                     ['title' => ['uz' => 'Konferensiya materiallari', 'ru' => 'Материалы конференций', 'kk' => 'Konferenciya materialları']],
-                    ['title' => ['uz' => 'Maqolalar', 'ru' => 'Статьи', 'kk' => 'Maqalalar']],
+                    // The one node here with a real page behind it. Its
+                    // siblings are still placeholders — they have public
+                    // listings too, but wiring those up is a separate change.
+                    [
+                        'title' => ['uz' => 'Maqolalar', 'ru' => 'Статьи', 'kk' => 'Maqalalar'],
+                        'type' => 'module',
+                        'url' => 'articles.index',
+                    ],
                 ],
             ],
             [
