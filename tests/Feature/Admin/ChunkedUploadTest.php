@@ -14,6 +14,7 @@ use App\Models\UploadSession;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoTrack;
+use App\Services\ChunkedUploadService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -338,4 +339,106 @@ it('rejects a book form submitted with a token for a wrong/unclaimed session', f
             'electronic_file_token' => (string) Str::uuid(), // never started
         ])
         ->assertSessionHasErrors('electronic_file_token');
+});
+
+/**
+ * Disk-full handling.
+ *
+ * stream_copy_to_stream() does not raise when the filesystem runs out of room —
+ * it returns a short count. That number used to be discarded, so the chunk
+ * "succeeded", next_chunk_index advanced, and the truncation was sealed in at a
+ * byte offset nothing downstream looked at: finish() re-validates the type, and
+ * a truncated PDF still starts with %PDF.
+ *
+ * UploadedFile::fake()->create() reproduces it exactly — it reports a declared
+ * size while the file behind it is empty, which is the same mismatch a full
+ * disk produces.
+ */
+it('rejects a chunk that could not be written in full, instead of storing a truncated file', function () {
+    $content = chunkedUploadFakeContent('pdf');
+
+    $start = test()->post(route('admin.uploads.start'), [
+        'filename' => 'kitob.pdf',
+        'total_size' => strlen($content),
+        'kind' => 'pdf',
+    ])->json();
+
+    $response = test()->post(route('admin.uploads.chunk', $start['token']), [
+        'index' => 0,
+        // Declares 64 KB, carries nothing — a write that came up short.
+        'file' => UploadedFile::fake()->create('chunk-0', 64),
+    ]);
+
+    $response->assertStatus(409);
+    expect($response->json('message'))->toContain('joy yetmadi');
+
+    // The session must not have moved on: the browser retries the same index
+    // up to three times, and it can only do that if the server did not count
+    // the failed attempt.
+    expect(UploadSession::where('token', $start['token'])->value('next_chunk_index'))->toBe(0);
+});
+
+it('cuts a half-written chunk back off, so a retry cannot double-append', function () {
+    // Driven through the service rather than the endpoint: the point of this
+    // test is a chunk that reports one size and carries fewer bytes, and
+    // sizeToReport does not survive the HTTP test client's file marshalling.
+    // A hand-built session keeps total_chunks above 1 so finish() — and its
+    // own size check — stays out of the way.
+    $admin = actingAsAdmin();
+
+    $session = UploadSession::create([
+        'token' => (string) Str::uuid(),
+        'admin_id' => $admin->id,
+        'kind' => 'pdf',
+        'original_filename' => 'kitob.pdf',
+        'total_size' => 20_000_000,
+        'total_chunks' => 4,
+        'next_chunk_index' => 0,
+        'status' => 'uploading',
+    ]);
+
+    $dir = "chunk-uploads/{$admin->id}/{$session->token}";
+    Storage::disk('local')->makeDirectory($dir);
+
+    $service = app(ChunkedUploadService::class);
+
+    $good = str_repeat('A', 4096);
+    $service->storeChunk($session->fresh(), 0, UploadedFile::fake()->createWithContent('chunk-0', $good));
+
+    $partPath = $dir.'/assembling.part';
+    expect(Storage::disk('local')->size($partPath))->toBe(strlen($good));
+
+    // Real bytes, but fewer than the chunk claims — what a full disk produces.
+    $short = UploadedFile::fake()->createWithContent('chunk-1', str_repeat('B', 100));
+    $short->sizeToReport = 4096;
+
+    expect(fn () => $service->storeChunk($session->fresh(), 1, $short))
+        ->toThrow(RuntimeException::class);
+
+    // Those 100 bytes must be gone: the handle appends, so leaving them behind
+    // would mean the browser's retry stacks another copy on top of them.
+    expect(Storage::disk('local')->size($partPath))->toBe(strlen($good))
+        ->and($session->fresh()->next_chunk_index)->toBe(1);
+});
+it('refuses to assemble a file whose bytes fall short of the declared size', function () {
+    // The chunk count can be right while the bytes are not: one chunk is
+    // expected here, and one arrives — just a much smaller one.
+    $start = test()->post(route('admin.uploads.start'), [
+        'filename' => 'kitob.pdf',
+        'total_size' => 500_000,
+        'kind' => 'pdf',
+    ])->json();
+
+    expect($start['total_chunks'])->toBe(1);
+
+    $response = test()->post(route('admin.uploads.chunk', $start['token']), [
+        'index' => 0,
+        'file' => UploadedFile::fake()->createWithContent('chunk-0', chunkedUploadFakeContent('pdf')),
+    ]);
+
+    $response->assertStatus(409);
+    expect($response->json('message'))->toContain('to\'liq yig\'ilmadi');
+
+    // Nothing half-finished is left lying around to be claimed later.
+    expect(UploadSession::where('token', $start['token'])->exists())->toBeFalse();
 });

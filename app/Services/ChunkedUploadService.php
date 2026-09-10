@@ -79,17 +79,75 @@ class ChunkedUploadService
         }
 
         $target = Storage::disk(self::DISK)->path($this->assemblingPath($session));
-        $in = fopen($chunk->getRealPath(), 'rb');
-        $out = fopen($target, 'ab');
+
+        // Where the file ends before this chunk. A short write has to be undone
+        // back to exactly here: the browser re-sends a failed chunk up to three
+        // times (upload-form.js), the handle is opened in append mode, and
+        // without a rewind each retry would stack its partial bytes on top of
+        // the last one — turning a recoverable failure into a corrupt file.
+        $offsetBefore = is_file($target) ? (int) filesize($target) : 0;
+
+        $expected = (int) $chunk->getSize();
+
+        $in = @fopen($chunk->getRealPath(), 'rb');
+        $out = @fopen($target, 'ab');
+
+        if ($in === false || $out === false) {
+            if (is_resource($in)) {
+                fclose($in);
+            }
+
+            if (is_resource($out)) {
+                fclose($out);
+            }
+
+            throw new \RuntimeException('Faylni yozib bo\'lmadi — serverda joy yoki ruxsat yetishmayapti.');
+        }
 
         try {
-            stream_copy_to_stream($in, $out);
+            $written = stream_copy_to_stream($in, $out);
         } finally {
             fclose($in);
             fclose($out);
         }
 
+        // The failure this exists for: a full disk. stream_copy_to_stream()
+        // reports a short count rather than raising, and the old code discarded
+        // that number entirely — so the chunk "succeeded", next_chunk_index
+        // advanced, and the truncation was baked in at a byte offset nothing
+        // downstream could detect. finish() re-validates the type, but a
+        // truncated PDF still begins with %PDF and passes.
+        if ($written !== $expected) {
+            $this->rewind($target, $offsetBefore);
+
+            throw new \RuntimeException(sprintf(
+                'Serverda joy yetmadi — bo\'lak to\'liq yozilmadi (kutilgan: %s, yozilgan: %s). Fayl saqlanmadi.',
+                $this->formatBytes($expected),
+                $this->formatBytes(max(0, (int) $written)),
+            ));
+        }
+
         return $this->sessions->update($session, ['next_chunk_index' => $session->next_chunk_index + 1]);
+    }
+
+    /** Cuts a half-written chunk back off, so the client's retry starts clean. */
+    private function rewind(string $path, int $length): void
+    {
+        $handle = @fopen($path, 'r+b');
+
+        if ($handle === false) {
+            return;
+        }
+
+        ftruncate($handle, $length);
+        fclose($handle);
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        return $bytes >= 1048576
+            ? round($bytes / 1048576, 1).' MB'
+            : round($bytes / 1024, 1).' KB';
     }
 
     /**
@@ -103,6 +161,23 @@ class ChunkedUploadService
 
         $relativePath = $this->assemblingPath($session);
         $absolutePath = Storage::disk(self::DISK)->path($relativePath);
+
+        // The count of chunks matching is not the same as the bytes matching.
+        // storeChunk() catches a short write as it happens, but only for the
+        // chunk in front of it; this compares the finished file against the
+        // size the browser declared at start(), which also catches a client
+        // that sent the right number of undersized pieces.
+        $assembledSize = is_file($absolutePath) ? (int) filesize($absolutePath) : 0;
+
+        if ($assembledSize !== (int) $session->total_size) {
+            $this->discard($session);
+
+            throw new \RuntimeException(sprintf(
+                'Fayl to\'liq yig\'ilmadi (kutilgan: %s, yig\'ilgan: %s). Qayta yuklang.',
+                $this->formatBytes((int) $session->total_size),
+                $this->formatBytes($assembledSize),
+            ));
+        }
 
         // Real, post-assembly validation against the actual file content —
         // stronger than a client-declared filename/MIME, and mirrors the
