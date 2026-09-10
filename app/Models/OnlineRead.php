@@ -69,6 +69,11 @@ class OnlineRead extends Model
             CatalogResourceType::Audiobook => 'audiobooks',
             CatalogResourceType::Dissertation => 'dissertations',
             CatalogResourceType::Avtoreferat => 'avtoreferats',
+            // Unreachable until Article became a CatalogResourceType case: the
+            // morph alias 'article' used to resolve to null here, so this match
+            // was never asked about it. It is asked now, and a match with no
+            // default throws rather than degrades.
+            CatalogResourceType::Article => 'articles',
         };
     }
 }

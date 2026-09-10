@@ -10,6 +10,7 @@ use App\Enums\CatalogResourceType;
 use App\Enums\CatalogSearchScope;
 use App\Enums\CatalogSort;
 use App\Enums\CopyStatus;
+use App\Models\Article;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
@@ -159,6 +160,7 @@ class CatalogRepository implements CatalogRepositoryInterface
                 CatalogResourceType::Video => Video::query(),
                 CatalogResourceType::Dissertation => Dissertation::query(),
                 CatalogResourceType::Avtoreferat => Avtoreferat::query(),
+                CatalogResourceType::Article => Article::query(),
             };
 
             $this->applySmartSearch($query, $term);
@@ -233,7 +235,24 @@ class CatalogRepository implements CatalogRepositoryInterface
             // take the categorized variant on top of the shared shape.
             CatalogResourceType::Dissertation => $this->categorizedQuery(Dissertation::query(), $filters),
             CatalogResourceType::Avtoreferat => $this->categorizedQuery(Avtoreferat::query(), $filters),
+            CatalogResourceType::Article => $this->articleQuery($filters),
         };
+    }
+
+    /**
+     * Articles differ from the other non-book types in one way that matters
+     * here: a full text is optional. An article with no `electronic_file` is a
+     * legitimate catalogue record and belongs in the unfiltered list, the same
+     * way a book with no e-copy does — but it must not answer "Shakli:
+     * Elektron", which is a promise that the text can be opened.
+     */
+    private function articleQuery(CatalogFilters $filters): Builder
+    {
+        return $this->nonBookQuery(Article::query(), $filters)
+            ->when(
+                in_array(CatalogFormat::Electronic, $filters->formatCases(), true),
+                fn (Builder $q) => $q->whereNotNull('electronic_file')
+            );
     }
 
     /**
@@ -412,7 +431,7 @@ class CatalogRepository implements CatalogRepositoryInterface
      * outranks one matching a single word.
      *
      * @param  array<int, string>  $words
-     * @return array{0: string, 1: array<int, string>}  [raw SQL, bindings] for selectRaw()
+     * @return array{0: string, 1: array<int, string>} [raw SQL, bindings] for selectRaw()
      */
     private function relevanceExpression(string $normalized, array $words): array
     {
@@ -510,6 +529,9 @@ class CatalogRepository implements CatalogRepositoryInterface
             CatalogResourceType::Video => Video::query()->withCount('tracks')->whereIn('id', $ids)->get(),
             CatalogResourceType::Dissertation => Dissertation::query()->whereIn('id', $ids)->get(),
             CatalogResourceType::Avtoreferat => Avtoreferat::query()->whereIn('id', $ids)->get(),
+            // The issue is eager-loaded for its year: an article has no
+            // publication year of its own, and an external one has none at all.
+            CatalogResourceType::Article => Article::query()->with('journalIssue')->whereIn('id', $ids)->get(),
         };
     }
 
@@ -521,6 +543,7 @@ class CatalogRepository implements CatalogRepositoryInterface
             $model instanceof Video => CatalogItem::fromVideo($model),
             $model instanceof Dissertation => CatalogItem::fromDissertation($model),
             $model instanceof Avtoreferat => CatalogItem::fromAvtoreferat($model),
+            $model instanceof Article => CatalogItem::fromArticle($model),
         };
     }
 
@@ -624,7 +647,10 @@ class CatalogRepository implements CatalogRepositoryInterface
             CatalogFormat::Braille->value => $bookCopyCount(BookFormat::Braille),
             CatalogFormat::Electronic->value => $electronicBookCount
                 + Dissertation::count()
-                + Avtoreferat::count(),
+                + Avtoreferat::count()
+                // Same condition articleQuery() applies, so the facet's number
+                // and the list it opens cannot disagree.
+                + Article::whereNotNull('electronic_file')->count(),
             CatalogFormat::Audio->value => Audiobook::count(),
             CatalogFormat::Video->value => Video::count(),
         ];

@@ -31,6 +31,7 @@ it('maps each option to its resource types', function () {
             CatalogResourceType::Book,
             CatalogResourceType::Dissertation,
             CatalogResourceType::Avtoreferat,
+            CatalogResourceType::Article,
         ])
         ->and(CatalogFormat::Audio->resourceTypes())->toBe([CatalogResourceType::Audiobook])
         ->and(CatalogFormat::Video->resourceTypes())->toBe([CatalogResourceType::Video]);
@@ -43,6 +44,7 @@ it('unions resourceTypesFor() across multiple selected options without duplicate
         CatalogResourceType::Book,
         CatalogResourceType::Dissertation,
         CatalogResourceType::Avtoreferat,
+        CatalogResourceType::Article,
         CatalogResourceType::Audiobook,
     ]);
 });

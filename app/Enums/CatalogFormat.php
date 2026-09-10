@@ -52,10 +52,16 @@ enum CatalogFormat: string
         return match ($this) {
             self::Print, self::Braille => [CatalogResourceType::Book],
             // Dissertations/avtoreferats are always electronic — they ride along here.
+            // Articles are not: `electronic_file` is nullable, so plenty of them
+            // are bibliographic records with no full text. They belong to this
+            // option, but CatalogRepository narrows them to the ones that
+            // actually have a file — otherwise "Elektron" would list works whose
+            // text nobody can open.
             self::Electronic => [
                 CatalogResourceType::Book,
                 CatalogResourceType::Dissertation,
                 CatalogResourceType::Avtoreferat,
+                CatalogResourceType::Article,
             ],
             self::Audio => [CatalogResourceType::Audiobook],
             self::Video => [CatalogResourceType::Video],
@@ -82,7 +88,7 @@ enum CatalogFormat: string
      * means "no book-copy constraint at all" (e.g. only Audio/Video chosen).
      *
      * @param  array<int, self>  $formats
-     * @return array<int, string>  BookFormat backing values
+     * @return array<int, string> BookFormat backing values
      */
     public static function bookFormatValuesFor(array $formats): array
     {

@@ -4,6 +4,7 @@ namespace App\Data;
 
 use App\Enums\BookFormat;
 use App\Enums\CatalogResourceType;
+use App\Models\Article;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
@@ -12,13 +13,14 @@ use App\Models\Video;
 
 /**
  * One row of the unified catalog result list — a normalized, render-ready
- * projection of a Book, Audiobook, Video, Dissertation or Avtoreferat.
+ * projection of a Book, Audiobook, Video, Dissertation, Avtoreferat or
+ * Article.
  * Built in CatalogRepository, consumed by <x-site.catalog-card>.
  */
 final class CatalogItem
 {
     /**
-     * @param  array<int, \App\Enums\BookFormat>  $formats  book copy formats (books only)
+     * @param  array<int, BookFormat>  $formats  book copy formats (books only)
      */
     public function __construct(
         public readonly CatalogResourceType $type,
@@ -129,6 +131,22 @@ final class CatalogItem
             viewsCount: (int) $avtoreferat->views_count,
             year: $avtoreferat->defense_year,
             hasFile: filled($avtoreferat->electronic_file),
+        );
+    }
+
+    public static function fromArticle(Article $article): self
+    {
+        return new self(
+            type: CatalogResourceType::Article,
+            id: $article->id,
+            title: (string) $article->title,
+            slug: $article->slug,
+            author: $article->author,
+            viewsCount: (int) $article->views_count,
+            // An article has no year of its own — it inherits the issue's.
+            // An external one has no issue either, so the card simply omits it.
+            year: $article->journalIssue?->year,
+            hasFile: filled($article->electronic_file),
         );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Models\Article;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
@@ -9,7 +10,7 @@ use App\Models\Dissertation;
 use App\Models\Video;
 use Illuminate\Database\Eloquent\Model;
 
-/** Which of the five catalogued resource types a merged catalog row is. */
+/** Which of the six catalogued resource types a merged catalog row is. */
 enum CatalogResourceType: string
 {
     case Book = 'book';
@@ -17,6 +18,8 @@ enum CatalogResourceType: string
     case Video = 'video';
     case Dissertation = 'dissertation';
     case Avtoreferat = 'avtoreferat';
+    // Same value as the morph alias, so an OnlineRead row resolves to it.
+    case Article = 'article';
 
     public function label(): string
     {
@@ -26,6 +29,7 @@ enum CatalogResourceType: string
             self::Video => __('Video'),
             self::Dissertation => __('Dissertatsiya'),
             self::Avtoreferat => __('Avtoreferat'),
+            self::Article => __('Maqola'),
         };
     }
 
@@ -38,6 +42,7 @@ enum CatalogResourceType: string
             self::Video => Video::class,
             self::Dissertation => Dissertation::class,
             self::Avtoreferat => Avtoreferat::class,
+            self::Article => Article::class,
         };
     }
 
@@ -50,6 +55,7 @@ enum CatalogResourceType: string
             self::Video => 'video.show',
             self::Dissertation => 'dissertation.show',
             self::Avtoreferat => 'avtoreferat.show',
+            self::Article => 'article.show',
         };
     }
 

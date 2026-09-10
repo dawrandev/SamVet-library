@@ -2,6 +2,7 @@
 
 use App\Enums\BookFormat;
 use App\Enums\CatalogResourceType;
+use App\Models\Article;
 use App\Models\Audiobook;
 use App\Models\Avtoreferat;
 use App\Models\Book;
@@ -59,22 +60,23 @@ it('still shows the green "N nusxa mavjud" pill when copies are available', func
     $this->get(route('catalog'))->assertSee(__('ARMda :n nusxa mavjud', ['n' => 1]));
 });
 
-it('includes one of each of the 5 resource types by default, each linking to its own show route', function () {
+it('includes one of each of the 6 resource types by default, each linking to its own show route', function () {
     $book = Book::factory()->create();
     $audiobook = Audiobook::factory()->create();
     $video = Video::factory()->create();
     $dissertation = Dissertation::factory()->create();
     $avtoreferat = Avtoreferat::factory()->create();
+    $article = Article::factory()->create();
 
     $res = $this->get(route('catalog'));
 
     $res->assertOk();
-    expect($res->viewData('total'))->toBe(5);
+    expect($res->viewData('total'))->toBe(6);
 
     $items = $res->viewData('items')->getCollection();
     $slugs = $items->pluck('slug')->all();
 
-    expect($slugs)->toContain($book->slug, $audiobook->slug, $video->slug, $dissertation->slug, $avtoreferat->slug);
+    expect($slugs)->toContain($book->slug, $audiobook->slug, $video->slug, $dissertation->slug, $avtoreferat->slug, $article->slug);
 
     $bookItem = $items->firstWhere('slug', $book->slug);
     expect($bookItem->url())->toBe(route('book.show', $book->slug));
@@ -149,11 +151,19 @@ it('folds dissertations and avtoreferats into Shakli=electronic alongside electr
     Dissertation::factory()->count(2)->create();
     Avtoreferat::factory()->create();
     Audiobook::factory()->create();
+    $readableArticle = Article::factory()->withPdf()->create();
+    // A catalogue record with no full text: it belongs in the catalog, but
+    // answering "Elektron" would promise a text nobody can open.
+    $bibliographicArticle = Article::factory()->create(['electronic_file' => null]);
 
     $res = $this->get(route('catalog', ['formats' => ['electronic']]));
 
-    // electronicBook + 2 dissertations + 1 avtoreferat = 4; excludes printBook and audiobook.
-    expect($res->viewData('total'))->toBe(4);
+    // electronicBook + 2 dissertations + 1 avtoreferat + 1 article with a file = 5.
+    expect($res->viewData('total'))->toBe(5);
+
+    $slugs = $res->viewData('items')->getCollection()->pluck('slug')->all();
+    expect($slugs)->toContain($readableArticle->slug)
+        ->and($slugs)->not->toContain($bibliographicArticle->slug);
 });
 
 it('combines multiple Shakli options additively', function () {
@@ -301,12 +311,15 @@ it('reports correct formatFacets() counts including the Electronic fold-in math'
     Avtoreferat::factory()->create();
     Audiobook::factory()->count(3)->create();
     Video::factory()->count(4)->create();
+    Article::factory()->withPdf()->create();
+    Article::factory()->create(['electronic_file' => null]); // counted nowhere
 
     $res = $this->get(route('catalog'));
     $facets = collect($res->viewData('formats'))->keyBy('id');
 
     expect($facets['print']['count'])->toBe(1)
-        ->and($facets['electronic']['count'])->toBe(4) // 1 electronic book + 2 dissertations + 1 avtoreferat
+        // 1 electronic book + 2 dissertations + 1 avtoreferat + 1 article with a file
+        ->and($facets['electronic']['count'])->toBe(5)
         ->and($facets['audio']['count'])->toBe(3)
         ->and($facets['video']['count'])->toBe(4);
 });
