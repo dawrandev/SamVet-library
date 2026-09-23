@@ -77,8 +77,8 @@ class ReaderCardService
                 'place' => $this->fitter->fit((string) $reader->affiliationPlace?->name, $medium, 600, 30, 18, 0.06),
                 // ID badges. The card's is Roboto Mono (slashed zeros); the
                 // formulyar's two are Inter Bold, widely spaced — different in Figma too.
-                'cardId' => $this->fitter->fit($idNumber, $mono, 276, 48, 24, 0.06),
-                'formulyarId' => $this->fitter->fit($idNumber, resource_path('fonts/Inter-Bold.ttf'), 440, 64, 32, 0.18),
+                'cardId' => $this->fitter->fit($idNumber, $mono, 292, 48, 24, 0.06),
+                'formulyarId' => $this->fitter->fit($idNumber, resource_path('fonts/Inter-Bold.ttf'), 470, 64, 32, 0.18),
             ],
         );
     }
