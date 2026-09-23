@@ -1,140 +1,162 @@
 @php
-    $isStudent = $reader->type->is_student;
-
-    // "Familyasi Ismi Sharifi" — split from the single stored full_name (the DB
-    // has no separate surname/first-name/patronymic columns). First word is the
-    // surname, second the first name, everything else (e.g. "Xabibulla o'g'li")
-    // is the patronymic — matches standard Uzbek naming order.
-    $nameParts = preg_split('/\s+/', trim((string) $reader->full_name), 3);
-    $surname = $nameParts[0] ?? '';
-    $firstName = $nameParts[1] ?? '';
-    $patronymic = $nameParts[2] ?? '';
+    /** @var \App\Data\ReaderCardData $card */
+    $L = \App\Support\ReaderCard\Layout::class;
+    $reader = $card->reader;
+    $palette = $card->palette;
+    $isStudent = $reader->type?->is_student ?? true;
 
     $placeLabel = $isStudent ? __('O‘qish joyi') : __('Ish joyi');
     $unitLabel = $isStudent ? __('Mutaxassisligi') : __('Bo‘limi');
     $groupLabel = $isStudent ? __('Guruhi') : __('Lavozimi');
 
-    $yearsCount = 5;
+    // The printed rules, broken exactly where the Figma frame breaks them.
+    // dompdf applies no kerning, so its lines run ~2% wider than Figma's and
+    // would wrap in different places if left to flow. Admin documents are
+    // Uzbek-only by project decision, so these are not translation keys.
+    $rules = [
+        ['ARMda kitobxon guvohnomasiz kitob berilmaydi.'],
+        ['O‘quv zalida adabiyotlardan foydalanish, kitobxon', 'guvohnomasini garovga berish orqali amalga oshiriladi.'],
+        ['O‘quv zalidan adabiyotlarni olib chiqish qat’iyan', 'taqiqlanadi.'],
+        ['Elektron o‘quv zalidan foydalanish uchun kitobxon', 'guvohnomasini taqdim etgandan so‘ng bo‘sh', 'kompyuterdan foydalanishga ruxsat etiladi.'],
+        ['Har o‘quv yili boshida kitobxonlar qayta ro‘yxatdan', 'o‘tkaziladi.'],
+        ['Har o‘quv yili so‘ngida ARMdan qarzdorligi yo‘qligi', 'to‘g‘risida kutubxona muhri va kutubxonachi imzosi orqali', 'tasdiqlash zarur.'],
+        ['ARMda kitobxonlarga berilgan adabiyotlar soni va muddati,', 'kitobxonlarga xizmat ko‘rsatishning boshqa tartibi “Axborot', 'resurs markazidan foydalanish qoidalari” orqali amalga', 'oshiriladi.'],
+    ];
+
+    // Right column of the inside: cap top of each year's first line, and the
+    // rule under each block — measured, not derived, because the first block
+    // sits closer to the title rule than the rest sit to each other.
+    $yearTops = [151, 351, 532, 713, 894];
+    $yearRules = [313, 494, 675, 856, 1036];
+
+    // Name fields: label cap top, value baseline, divider — 116px apart.
+    $fields = [
+        ['label' => __('Familyasi'), 'value' => $card->surname, 'size' => $card->sizes['surname'], 'label_cap' => 280, 'baseline' => 336, 'rule' => 342],
+        ['label' => __('Ismi'), 'value' => $card->firstName, 'size' => $card->sizes['firstName'], 'label_cap' => 396, 'baseline' => 451, 'rule' => 458],
+        ['label' => __('Sharifi'), 'value' => $card->patronymic, 'size' => $card->sizes['patronymic'], 'label_cap' => 511, 'baseline' => 567, 'rule' => 574],
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="utf-8">
+    @include('partials.admin.reader-card.styles')
     <style>
-        * { font-family: DejaVu Sans, sans-serif; box-sizing: border-box; }
-        @page { margin: 22px 25px; }
-        body { color: #1f2937; font-size: 16px; margin: 0; }
+        .rules { position: absolute; left: 50px; width: 690px; border-collapse: collapse; font-size: 22px; line-height: {{ $L::lineHeight(31) }}px; color: #303030; }
+        .rules td { padding: 0 0 16px 0; vertical-align: top; white-space: nowrap; }
+        .rules tr.last td { padding-bottom: 0; }
+        .rules td.num { width: 34px; padding-left: 7px; }
 
-        table.card { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        table.card > tr > td { vertical-align: top; padding: 0; }
-        td.left-col { width: 52%; padding-right: 25px; border-right: 1px solid #e5e7eb; }
-        td.right-col { width: 48%; padding-left: 25px; }
-
-        .badge { display: inline-block; color: #fff; font-size: 22px; font-weight: bold; letter-spacing: 0.5px; padding: 9px 22px; border-radius: 7px; margin-bottom: 18px; }
-
-        table.id-row { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
-        table.id-row td { vertical-align: top; }
-        .photo-cell { width: 157px; padding-right: 18px; }
-        /* The photo is the one element with no text to wrap, so it can grow
-           freely without risking the page-overflow bug (see the note on
-           table.card's margin-top below) — sized well past the other blocks. */
-        .photo { width: 145px; height: 182px; border: 1px solid #d1d5db; border-radius: 7px; object-fit: cover; }
-        .photo-empty { width: 145px; height: 182px; border: 1px solid #d1d5db; border-radius: 7px; background: #f3f4f6; text-align: center; }
-        .photo-empty span { display: block; padding-top: 78px; font-size: 14px; color: #9ca3af; }
-        .id-number { margin: 0 0 15px; font-size: 17px; color: #374151; }
-        .id-number b { font-size: 23px; color: #111827; margin-left: 8px; }
-
-        .name-block p { margin: 0 0 10px; font-size: 17px; color: #6b7280; }
-        .name-block p b { display: block; font-size: 22px; color: #111827; font-weight: bold; margin-top: 1px; }
-
-        .affiliation-box { background: #f9fafb; border: 1px solid #eef0f3; border-radius: 7px; padding: 15px 18px; margin: 15px 0 22px; }
-        /* Kept smaller than the rest: this box's two sub-columns hold long
-           department/specialty names for some readers and wrap onto several
-           lines — a bigger font here reintroduces the page-overflow bug
-           (verified across every reader's real data before shipping). */
-        .affiliation-box p { margin: 0 0 9px; font-size: 16px; color: #6b7280; }
-        .affiliation-box p b { display: block; font-size: 17px; color: #111827; font-weight: bold; margin-top: 1px; }
-        .affiliation-box p:last-child { margin-bottom: 0; }
-        table.affiliation-sub { width: 100%; border-collapse: collapse; }
-        table.affiliation-sub td { width: 50%; vertical-align: top; padding: 0; }
-
-        .footer-row { margin-top: 25px; }
-        .footer-row p { margin: 0 0 14px; font-size: 16px; color: #374151; }
-        .footer-row p:last-child { margin-bottom: 0; }
-        .sign-line { display: inline-block; border-bottom: 1px solid #9ca3af; width: 260px; height: 22px; margin-left: 8px; }
-
-        .right-title { font-size: 18px; font-weight: bold; text-align: center; color: #111827; line-height: 1.4; margin-bottom: 15px; }
-        .right-rule { border: none; border-top: 1px solid #d1d5db; margin: 0 0 18px; }
-        .year-row p { margin: 0 0 9px; font-size: 18px; color: #111827; }
-        .year-row p.year-line { font-weight: bold; }
-        .year-rule { border: none; border-top: 1px solid #eef0f3; margin: 0 0 18px; }
+        .label { font-size: 20px; font-weight: 300; letter-spacing: 0.06em; color: #4F4F4F; }
+        .value { font-weight: 500; letter-spacing: 0.06em; color: #333333; }
+        .sign-label { font-size: 16px; font-weight: 300; letter-spacing: 0.06em; color: #4F4F4F; }
+        .rule { position: absolute; height: 1px; }
+        .blank { position: absolute; height: 1px; background-color: #4F4F4F; }
     </style>
 </head>
 <body>
-    <table class="card">
-        <tr>
-            <td class="left-col">
-                <div class="badge" style="background: {{ $reader->type->certificate_color }};">{{ __('KITOBXON GUVOHNOMASI') }}</div>
+    {{-- ==================== Page 1: outside ==================== --}}
+    <div class="page ground">
+        <div class="abs bar" style="left: 52px; top: 50px; width: 642px; height: 64px;"></div>
+        <div class="abs line center bar-text" style="left: 52px; top: {{ $L::top(69, 36) }}px; width: 642px;">{{ __('ESLATMA!') }}</div>
 
-                <table class="id-row">
-                    <tr>
-                        <td class="photo-cell">
-                            @if ($photo)
-                                <img class="photo" src="{{ $photo }}" alt="">
-                            @else
-                                <div class="photo-empty"><span>{{ __('Rasm yo‘q') }}</span></div>
-                            @endif
-                        </td>
-                        <td>
-                            <p class="id-number">
-                                {{ __('ID raqam') }}:
-                                <b>{{ $reader->id_number ?: '—' }}</b>
-                            </p>
+        <table class="rules" style="top: {{ $L::top(170, 22, $L::lineHeight(31)) }}px;">
+            @foreach ($rules as $i => $lines)
+                <tr @class(['last' => $loop->last])>
+                    <td class="num">{{ $i + 1 }}.</td>
+                    <td>{!! collect($lines)->map(fn ($line) => e($line))->implode('<br>') !!}</td>
+                </tr>
+            @endforeach
+        </table>
 
-                            <div class="name-block">
-                                <p>{{ __('Familyasi') }}: <b>{{ $surname ?: '—' }}</b></p>
-                                <p>{{ __('Ismi') }}: <b>{{ $firstName ?: '—' }}</b></p>
-                                <p>{{ __('Sharifi') }}: <b>{{ $patronymic ?: '—' }}</b></p>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+        {{-- Warning box: a tinted strip with the darker "!" square on its left. --}}
+        <div class="abs" style="left: 50px; top: 912px; width: 644px; height: 94px; background-color: {{ $palette->soft }}; border-radius: 6px;"></div>
+        <div class="abs" style="left: 50px; top: 912px; width: 84px; height: 94px; background-color: {{ $palette->strong }}; border-radius: 6px 0 0 6px;"></div>
+        <div class="abs line center" style="left: 50px; top: {{ $L::top(941, 48) }}px; width: 84px; font-size: 48px; font-weight: 700; color: #FFFFFF;">!</div>
+        <div class="abs" style="left: 156px; top: {{ $L::top(934, 20, $L::lineHeight(32)) }}px; font-size: 20px; line-height: {{ $L::lineHeight(32) }}px; color: {{ $palette->ink }}; white-space: nowrap;">
+            {{ __('KITOBXON GUVOHNOMASIDAN BOSHQA SHAXS') }}<br>
+            {{ __('FOYDALANISHI QAT’IYAN TAQIQLANADI.') }}
+        </div>
 
-                <div class="affiliation-box">
-                    <p>{{ $placeLabel }}: <b>{{ $reader->affiliationPlace?->name ?: '—' }}</b></p>
-                    <table class="affiliation-sub">
-                        <tr>
-                            <td>{{ $unitLabel }}: <b>{{ $reader->affiliationUnit?->name ?: '—' }}</b></td>
-                            <td>{{ $groupLabel }}: <b>{{ $reader->affiliationGroup?->name ?: '—' }}</b></td>
-                        </tr>
-                    </table>
-                </div>
+        @include('partials.admin.reader-card.cover-header', ['logoTop' => 363])
 
-                <div class="footer-row">
-                    <p>{{ __('Kitobxon imzosi') }}: <span class="sign-line"></span></p>
-                    <p>
-                        @if ($reader->issued_date)
-                            {{ __('Berilgan sana') }}: {{ $reader->issued_date->format('d.m.Y') }}
-                        @else
-                            {{ __('Berilgan sana') }}: <span class="sign-line"></span>
-                        @endif
-                    </p>
-                </div>
-            </td>
+        <div class="abs line center" style="left: 793px; top: {{ $L::top(841, 48) }}px; width: 643px; font-size: 48px; font-weight: 700; color: #000000;">{{ __('KITOBXON GUVOHNOMASI') }}</div>
+        <div class="abs line center" style="left: 793px; top: {{ $L::top(975, 20) }}px; width: 643px; font-size: 20px; color: #000000;">{{ __('AXBOROT RESURS MARKAZIDAN FOYDALANISH UCHUN') }}</div>
+    </div>
 
-            <td class="right-col">
-                <div class="right-title">{{ __('AXBOROT RESURS MARKAZIDAN FOYDALANGANLIGI TO‘G‘RISIDA MA’LUMOT') }}</div>
-                <hr class="right-rule">
+    {{-- ==================== Page 2: inside ==================== --}}
+    <div class="page plain last">
+        <div class="abs bar" style="left: 50px; top: 50px; width: 644px; height: 64px;"></div>
+        <div class="abs line center bar-text" style="left: 50px; top: {{ $L::top(69, 36) }}px; width: 644px;">{{ __('KITOBXON GUVOHNOMASI') }}</div>
 
-                @for ($i = 1; $i <= $yearsCount; $i++)
-                    <div class="year-row">
-                        <p class="year-line">{{ $i }}. 20__&#8203;/20__ {{ __('o‘quv yili') }}</p>
-                        <p>{{ __('Registratsiya') }} &#8470;: __________</p>
-                    </div>
-                    <hr class="year-rule">
-                @endfor
-            </td>
-        </tr>
-    </table>
+        @if ($card->photoPath)
+            {{-- 300 x 392 frame; dompdf has no object-fit, so the photo is scaled to it. --}}
+            <img class="abs" src="{{ $card->photoPath }}" alt="" style="left: 50px; top: 175px; width: 300px; height: 392px;">
+        @else
+            <div class="abs" style="left: 50px; top: 175px; width: 300px; height: 392px; background-color: #E0E0E0;"></div>
+            <div class="abs line center" style="left: 50px; top: {{ $L::centered(371, 20) }}px; width: 300px; font-size: 20px; color: #828282;">{{ __('Rasm yo‘q') }}</div>
+        @endif
+
+        <div class="abs bar" style="left: 394px; top: 176px; width: 300px; height: 62px;"></div>
+        <div class="abs line center id-text" style="left: 394px; top: {{ $L::centered(207, $card->sizes['cardId'], 'mono') }}px; width: 300px; font-size: {{ $card->sizes['cardId'] }}px; letter-spacing: 0.06em;">{{ $card->idNumber }}</div>
+
+        @foreach ($fields as $field)
+            <div class="abs line label" style="left: 394px; top: {{ $L::top($field['label_cap'], 20) }}px;">{{ $field['label'] }}:</div>
+            <div class="abs line value" style="left: 394px; top: {{ $L::onBaseline($field['baseline'], $field['size']) }}px; font-size: {{ $field['size'] }}px;">{{ $field['value'] ?: '—' }}</div>
+            <div class="rule" style="left: 394px; top: {{ $field['rule'] }}px; width: 300px; background-color: #E0E0E0;"></div>
+        @endforeach
+
+        {{--
+            Affiliation box: laid out in flow, not pinned, because a specialty
+            name runs to 63 characters and wraps onto three lines — the box
+            grows into the free space above the signature lines instead of
+            spilling over them. Line boxes are 24px (labels, sub-values) and 36px
+            (the place), so with dompdf's baseline at 0.8 of the box the padding
+            and margins below land each line's capitals where Figma has them:
+            659, 691, 749 and 779, box bottom at 818.
+        --}}
+        @php($box24 = $L::lineHeight(24))
+        @php($box36 = $L::lineHeight(36))
+        <div class="abs" style="left: 50px; top: 635px; width: 644px; min-height: 183px; padding: 19px 22px 20px 22px; background-color: #F5F5F5; border-radius: 8px;">
+            <div class="label" style="line-height: {{ $box24 }}px;">{{ $placeLabel }}:</div>
+            <div class="value" style="margin-top: 6px; font-size: {{ $card->sizes['place'] }}px; line-height: {{ $box36 }}px;">{{ $reader->affiliationPlace?->name ?: '—' }}</div>
+            <table style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 314px; padding: 0 16px 0 0; vertical-align: top;">
+                        <div class="label" style="line-height: {{ $box24 }}px;">{{ $unitLabel }}:</div>
+                        <div class="value" style="margin-top: 6px; font-size: 20px; line-height: {{ $box24 }}px;">{{ $reader->affiliationUnit?->name ?: '—' }}</div>
+                    </td>
+                    <td style="padding: 0; vertical-align: top;">
+                        <div class="label" style="line-height: {{ $box24 }}px;">{{ $groupLabel }}:</div>
+                        <div class="value" style="margin-top: 6px; font-size: 20px; line-height: {{ $box24 }}px;">{{ $reader->affiliationGroup?->name ?: '—' }}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="blank" style="left: 50px; top: 965px; width: 297px;"></div>
+        <div class="blank" style="left: 398px; top: 965px; width: 296px;"></div>
+        @if ($reader->issued_date)
+            <div class="abs line value" style="left: 398px; top: {{ $L::onBaseline(956, 20) }}px; font-size: 20px;">{{ $reader->issued_date->format('d.m.Y') }}</div>
+        @endif
+        <div class="abs line sign-label" style="left: 50px; top: {{ $L::top(984, 16) }}px;">{{ __('Kitobxon imzosi') }}:</div>
+        <div class="abs line sign-label" style="left: 398px; top: {{ $L::top(984, 16) }}px;">{{ __('Berilgan sana') }}:</div>
+
+        {{-- Right column: record of use, one block per academic year. --}}
+        <div class="abs center" style="left: 795px; top: {{ $L::top(55, 24, $L::lineHeight(29)) }}px; width: 641px; font-size: 24px; line-height: {{ $L::lineHeight(29) }}px; font-weight: 700; letter-spacing: 0.1em; color: #000000; white-space: nowrap;">
+            {{ __('AXBOROT RESURS MARKAZIDAN') }}<br>
+            {{ __('FOYDALANGANLIGI TO‘G‘RISIDA MA’LUMOT') }}
+        </div>
+        <div class="rule" style="left: 795px; top: 133px; width: 641px; background-color: #E6E6E6;"></div>
+
+        @foreach ($yearTops as $i => $y)
+            <div class="abs line" style="left: 799px; top: {{ $L::top($y, 20) }}px; font-size: 20px;">{{ $i + 1 }}. 20__ / 20__ &nbsp;{{ __('o‘quv yili') }}</div>
+            <div class="abs line" style="left: 795px; top: {{ $L::top($y + 52, 20) }}px; font-size: 20px;">{{ __('Registratsiya') }} &#8470;</div>
+            <div class="blank" style="left: 952px; top: {{ $y + 67 }}px; width: 141px;"></div>
+            <div class="abs line" style="left: 795px; top: {{ $L::top($y + 91, 20) }}px; font-size: 20px;">{{ __('O‘qigan kitoblari') }}</div>
+            <div class="blank" style="left: 956px; top: {{ $y + 106 }}px; width: 137px;"></div>
+            <div class="rule" style="left: 795px; top: {{ $yearRules[$i] }}px; width: 641px; background-color: #E6E6E6;"></div>
+        @endforeach
+    </div>
 </body>
 </html>

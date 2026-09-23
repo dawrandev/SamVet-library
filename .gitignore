@@ -45,3 +45,6 @@ yarn-error.log
 /.claude/settings.local.json
 
 .env.dusk.local
+
+# Figma exports and sample PDFs for the reader card — source material, not code.
+/guvohnoma

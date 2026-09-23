@@ -1,43 +1,38 @@
+@php
+    /** @var \App\Data\ReaderCardData $card */
+    $L = \App\Support\ReaderCard\Layout::class;
+    $idSize = $card->sizes['formulyarId'];
+@endphp
 <!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="utf-8">
+    @include('partials.admin.reader-card.styles')
     <style>
-        * { font-family: DejaVu Sans, sans-serif; box-sizing: border-box; }
-        @page { margin: 0; }
-        body { color: #1f2937; margin: 0; }
-
-        .frame { margin: 16px; border: 3px solid #465fff; border-radius: 10px; height: 420px; position: relative; padding-top: 32px; }
-
-        .id { text-align: center; }
-        .id .label { font-size: 9px; color: #9ca3af; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 4px; line-height: 1; }
-        .id .value { font-size: 16px; font-weight: bold; color: #465fff; letter-spacing: 0.5px; margin: 0; line-height: 1; }
-
-        .logo-wrap { width: 140px; height: 140px; margin: 26px auto; border: 3px solid #465fff; border-radius: 50%; text-align: center; }
-        .logo-wrap img { width: 104px; height: 104px; margin-top: 18px; object-fit: contain; }
-
-        .name { text-align: center; padding: 0 40px; }
-        .name .rule { width: 60px; height: 2px; background: #465fff; margin: 0 auto 12px; border-radius: 2px; }
-        .name .value { font-size: 18px; font-weight: bold; color: #111827; letter-spacing: 0.3px; margin: 0; line-height: 1.3; }
+        /* Not the card's Roboto Mono: Figma sets the formulyar's ID in Inter. */
+        .cover-id { font-weight: 700; letter-spacing: 0.18em; color: #F2F2F2; }
     </style>
 </head>
 <body>
-    <div class="frame">
-        <div class="id">
-            <p class="label">{{ __('ID') }}</p>
-            <p class="value">{{ $reader->id_number ?: '—' }}</p>
+    {{--
+        Formulyar cover, folded down the middle: the right half is the front,
+        the left half the back, and the ID runs up the spine edge so the cover
+        can be found on a shelf. Figma draws no name on it, only the ID.
+    --}}
+    <div class="page ground last">
+        <div class="abs bar" style="left: 636px; top: 288px; width: 108px; height: 486px;"></div>
+        {{-- A 486 x 108 line box turned a quarter clockwise about its centre,
+             which is the badge's centre (690, 531). --}}
+        <div class="abs" style="left: 447px; top: 477px; width: 486px; height: 108px; transform: rotate(90deg);">
+            <div class="abs line center cover-id" style="left: 0; top: {{ $L::centered(54, $idSize) }}px; width: 486px; font-size: {{ $idSize }}px;">{{ $card->idNumber }}</div>
         </div>
 
-        <div class="logo-wrap">
-            @if ($logo)
-                <img src="{{ $logo }}" alt="">
-            @endif
-        </div>
+        @include('partials.admin.reader-card.cover-header', ['logoTop' => 322])
 
-        <div class="name">
-            <div class="rule"></div>
-            <p class="value">{{ $reader->full_name }}</p>
-        </div>
+        <div class="abs line center" style="left: 793px; top: {{ $L::top(763, 48) }}px; width: 643px; font-size: 48px; font-weight: 700; color: #000000;">{{ __('KITOBXON FORMULYARI') }}</div>
+
+        <div class="abs bar" style="left: 874px; top: 844px; width: 486px; height: 108px;"></div>
+        <div class="abs line center cover-id" style="left: 874px; top: {{ $L::centered(898, $idSize) }}px; width: 486px; font-size: {{ $idSize }}px;">{{ $card->idNumber }}</div>
     </div>
 </body>
 </html>

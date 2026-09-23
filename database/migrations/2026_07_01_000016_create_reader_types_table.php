@@ -21,20 +21,23 @@ return new class extends Migration
             // on the reader form, or staff fields (ish joyi/bo'lim/lavozim).
             $table->boolean('is_student')->default(true);
             // Badge color on the printed reader certificate (hex).
-            $table->string('certificate_color', 7)->default('#d97706');
+            $table->string('certificate_color', 7)->default('#C58A00');
             $table->timestamps();
         });
 
         // Seed in the exact display order the librarian wants — ordered by id,
         // not name, since "Bakalavr (kunduzgi/kechki/tashqi)" should stay together.
+        // The colours are the printed card's Figma variants, which CardPalette
+        // knows the matching warning-box tints for; databases seeded before the
+        // card was redrawn are moved onto them by the 2026_09_23 migration.
         $rows = [
-            ['name' => 'Bakalavr talabasi (kunduzgi)', 'is_student' => true, 'certificate_color' => '#2563eb'],
-            ['name' => 'Bakalavr talabasi (kechki)', 'is_student' => true, 'certificate_color' => '#2563eb'],
-            ['name' => 'Bakalavr talabasi (tashqi)', 'is_student' => true, 'certificate_color' => '#2563eb'],
-            ['name' => 'Magistr talabasi', 'is_student' => true, 'certificate_color' => '#7c3aed'],
-            ['name' => 'Doktorant', 'is_student' => true, 'certificate_color' => '#dc2626'],
-            ['name' => 'Professor-o‘qituvchi', 'is_student' => false, 'certificate_color' => '#12b76a'],
-            ['name' => 'Filial xodimi', 'is_student' => false, 'certificate_color' => '#12b76a'],
+            ['name' => 'Bakalavr talabasi (kunduzgi)', 'is_student' => true, 'certificate_color' => '#349AED'],
+            ['name' => 'Bakalavr talabasi (kechki)', 'is_student' => true, 'certificate_color' => '#349AED'],
+            ['name' => 'Bakalavr talabasi (tashqi)', 'is_student' => true, 'certificate_color' => '#349AED'],
+            ['name' => 'Magistr talabasi', 'is_student' => true, 'certificate_color' => '#3F2B96'],
+            ['name' => 'Doktorant', 'is_student' => true, 'certificate_color' => '#8B0000'],
+            ['name' => 'Professor-o‘qituvchi', 'is_student' => false, 'certificate_color' => '#27AE60'],
+            ['name' => 'Filial xodimi', 'is_student' => false, 'certificate_color' => '#27AE60'],
         ];
 
         $now = now();
